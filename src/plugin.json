@@ -1,0 +1,68 @@
+{
+  "name": "Strava",
+  "id": "grafana-strava-datasource",
+  "type": "datasource",
+
+  "partials": {
+    "config": "public/app/plugins/datasource/grafana-strava-datasource/partials/config.html"
+  },
+
+  "metrics": true,
+  "annotations": true,
+
+  "routes": [
+    {
+      "path": "strava",
+      "method": "GET",
+      "url": "https://www.strava.com/api/v3",
+      "tokenAuth": {
+        "url": "https://www.strava.com/oauth/token",
+        "params": {
+          "grant_type": "authorization_code",
+          "client_id": "{{.JsonData.clientId}}",
+          "client_secret": "{{.SecureJsonData.clientSecret}}",
+          "resource": "https://www.strava.com/api/v3/"
+        }
+      }
+    },
+    {
+      "path": "api",
+      "method": "GET",
+      "url": "https://www.strava.com/api/v3",
+      "headers": [{
+        "name": "Authorization",
+        "content": "Bearer {{.SecureJsonData.accessToken}}"
+      }]
+
+    }
+  ],
+
+  "info": {
+    "description": "Strava datasource",
+    "author": {
+      "name": "Grafana Labs",
+      "url": "https://grafana.com"
+    },
+    "logos": {
+      "small": "img/strava_logo.svg",
+      "large": "img/strava_logo.svg"
+    },
+    "links": [
+      {
+        "name": "Website",
+        "url": "https://grafana.com/plugins/grafana-strava-datasource"
+      },
+      {
+        "name": "License",
+        "url": "https://grafana.com/plugins/grafana-strava-datasource/license"
+      }
+    ],
+    "version": "0.0.1",
+    "updated": "2019-11-29"
+  },
+
+  "dependencies": {
+    "grafanaVersion": "6.5",
+    "plugins": []
+  }
+}
