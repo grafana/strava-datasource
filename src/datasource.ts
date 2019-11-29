@@ -8,6 +8,7 @@ import {
   DataQueryRequest,
   DataSourceInstanceSettings,
 } from '@grafana/data';
+import StravaApi from './stravaApi';
 
 import { StravaQuery, StravaJsonData } from "types";
 
@@ -15,6 +16,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   type: any;
   apiUrl: string;
   datasourceName: string;
+  stravaApi: StravaApi;
 
   /** @ngInject */
   constructor(
@@ -26,6 +28,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     super(instanceSettings);
     this.type = 'strava';
     this.apiUrl = instanceSettings.url;
+    this.stravaApi = new StravaApi(instanceSettings.url, backendSrv);
   }
 
   async query(options: DataQueryRequest<StravaQuery>) {
