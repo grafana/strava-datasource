@@ -7,6 +7,8 @@ import { getDatasourceSrv } from 'grafana/app/features/plugins/datasource_srv';
 import StravaDatasource from '../datasource';
 import { StravaJsonData, StravaSecureJsonData } from '../types';
 
+const AuthCodePattern = /code=([\w]+)/;
+
 export type Props = DataSourcePluginOptionsEditorProps<StravaJsonData>;
 
 type StravaSettings = DataSourceSettings<StravaJsonData, StravaSecureJsonData>;
@@ -142,11 +144,17 @@ export class ConfigEditor extends PureComponent<Props, State> {
     });
   }
 
+  isLocationContainsCode = () => {
+    return AuthCodePattern.test(window.location.search);
+  }
+
+  isLocationContainsError = () => {
+    return /error=/.test(window.location.search);
+  }
+
   fillAuthCodeFromLocation = () => {
-    const authCodePattern = /code=([\w]+)/;
-    const result = authCodePattern.exec(window.location.search);
-    console.log(result);
-    const authCode = result[1];
+    const result = AuthCodePattern.exec(window.location.search);
+    const authCode = result && result.length && result[1];
     this.updateDatasource({
       ...this.state.config,
       secureJsonData: {
@@ -158,7 +166,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
 
   getConnectWithStravaHref = () => {
     const authUrl = 'https://www.strava.com/oauth/authorize';
-    const currentLocation = window.location.href;
+    const currentLocation = window.location.origin + window.location.pathname;
     const clientID = this.state.config.jsonData.clientID;
     const authScope = 'read_all,profile:read_all,activity:read_all';
     return `${authUrl}?client_id=${clientID}&response_type=code&redirect_uri=${currentLocation}&approval_prompt=force&scope=${authScope}`;
@@ -166,7 +174,6 @@ export class ConfigEditor extends PureComponent<Props, State> {
 
   render() {
     const { config } = this.state;
-    console.log(window.location);
     const connectWithStravaHref = this.getConnectWithStravaHref();
 
     return (
