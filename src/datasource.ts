@@ -48,6 +48,14 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     });
   }
 
+  getActivities() {
+    return this.request('athlete/activities').then(response => {
+      console.log(response);
+    }).catch(error => {
+      console.log(error);
+    });
+  }
+
   handleResponse(data) {
     console.log(data);
   }
