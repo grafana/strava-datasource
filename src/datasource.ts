@@ -34,12 +34,12 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   async query(options: DataQueryRequest<StravaQuery>) {
     console.log(options);
 
-    const data = await this.request('clubs/567311/members');
+    const data = await this.request('athlete/activities');
     return this.handleResponse(data);
   }
 
   testDatasource() {
-    return this.request('clubs/567311/members').then(response => {
+    return this.request('athlete/activities').then(response => {
       console.log(response);
       return { status: 'success', message: 'Data source is working' };
     }).catch(error => {
@@ -63,8 +63,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   async request(url: string, options?: any) {
     try {
       const { data } = await this.backendSrv.datasourceRequest({
-        // url: `${this.apiUrl}/strava/${url}`,
-        url: `${this.apiUrl}/api/${url}`,
+        url: `${this.apiUrl}/strava/${url}`,
+        // url: `${this.apiUrl}/api/${url}`,
         method: 'GET',
       });
       return data;

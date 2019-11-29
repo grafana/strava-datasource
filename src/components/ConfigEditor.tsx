@@ -4,15 +4,15 @@ import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana
 import { SelectableValue } from '@grafana/data';
 //@ts-ignore
 import { getDatasourceSrv } from 'grafana/app/features/plugins/datasource_srv';
-// import CloudWatchDatasource from '../datasource';
+import StravaDatasource from '../datasource';
 import { StravaJsonData, StravaSecureJsonData } from '../types';
 
 export type Props = DataSourcePluginOptionsEditorProps<StravaJsonData>;
 
-type CloudwatchSettings = DataSourceSettings<StravaJsonData, StravaSecureJsonData>;
+type StravaSettings = DataSourceSettings<StravaJsonData, StravaSecureJsonData>;
 
 export interface State {
-  config: CloudwatchSettings;
+  config: StravaSettings;
 }
 
 export class ConfigEditor extends PureComponent<Props, State> {
@@ -92,6 +92,16 @@ export class ConfigEditor extends PureComponent<Props, State> {
     });
   }
 
+  onResetAuthCode = () => {
+    this.updateDatasource({
+      ...this.state.config,
+      secureJsonFields: {
+        ...this.state.config.secureJsonFields,
+        authCode: false,
+      },
+    });
+  }
+
   onAccessTokenChange = (accessToken: string) => {
     this.updateDatasource({
       ...this.state.config,
@@ -122,8 +132,42 @@ export class ConfigEditor extends PureComponent<Props, State> {
     });
   }
 
+  onAuthCodeChange = (authCode: string) => {
+    this.updateDatasource({
+      ...this.state.config,
+      secureJsonData: {
+        ...this.state.config.secureJsonData,
+        authCode,
+      },
+    });
+  }
+
+  fillAuthCodeFromLocation = () => {
+    const authCodePattern = /code=([\w]+)/;
+    const result = authCodePattern.exec(window.location.search);
+    console.log(result);
+    const authCode = result[1];
+    this.updateDatasource({
+      ...this.state.config,
+      secureJsonData: {
+        ...this.state.config.secureJsonData,
+        authCode,
+      },
+    });
+  }
+
+  getConnectWithStravaHref = () => {
+    const authUrl = 'https://www.strava.com/oauth/authorize';
+    const currentLocation = window.location.href;
+    const clientID = this.state.config.jsonData.clientID;
+    const authScope = 'read_all,profile:read_all,activity:read_all';
+    return `${authUrl}?client_id=${clientID}&response_type=code&redirect_uri=${currentLocation}&approval_prompt=force&scope=${authScope}`;
+  }
+
   render() {
     const { config } = this.state;
+    console.log(window.location);
+    const connectWithStravaHref = this.getConnectWithStravaHref();
 
     return (
       <>
@@ -169,15 +213,15 @@ export class ConfigEditor extends PureComponent<Props, State> {
               </div>
             </div>
           )}
-          {config.secureJsonFields.accessToken ? (
+          {config.secureJsonFields.authCode ? (
             <div className="gf-form-inline">
               <div className="gf-form">
-                <FormLabel className="width-14">Access Token</FormLabel>
+                <FormLabel className="width-14">Auth Code</FormLabel>
                 <Input className="width-25" placeholder="Configured" disabled={true} />
               </div>
               <div className="gf-form">
                 <div className="max-width-30 gf-form-inline">
-                  <Button variant="secondary" type="button" onClick={this.onResetAccessToken}>
+                  <Button variant="secondary" type="button" onClick={this.onResetAuthCode}>
                     Reset
                   </Button>
                 </div>
@@ -186,17 +230,28 @@ export class ConfigEditor extends PureComponent<Props, State> {
           ) : (
             <div className="gf-form-inline">
               <div className="gf-form">
-                <FormLabel className="width-14">Access Token</FormLabel>
-                <div className="width-30">
+                <FormLabel className="width-14">Auth Code</FormLabel>
+                <div className="width-25">
                   <Input
-                    className="width-30"
-                    value={config.secureJsonData.accessToken || ''}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => this.onAccessTokenChange(event.target.value)}
+                    value={config.secureJsonData.authCode || ''}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => this.onAuthCodeChange(event.target.value)}
                   />
                 </div>
               </div>
+                <div className="gf-form">
+                  <div className="max-width-30 gf-form-inline">
+                    <Button className="width-5" variant="secondary" type="button" onClick={this.fillAuthCodeFromLocation}>
+                      Fill
+                    </Button>
+                  </div>
+                </div>
             </div>
           )}
+        </div>
+        <div className="gf-form-group">
+          <a type="button" href={connectWithStravaHref}>
+            <img src="public/plugins/grafana-strava-datasource/img/btn_strava_connectwith_orange.svg" />
+          </a>
         </div>
       </>
     );

@@ -5,25 +5,21 @@ export interface StravaJsonData extends DataSourceJsonData {
 }
 
 export interface StravaSecureJsonData {
-  accessToken: string;
-  clientSecret?: string;
+  accessToken?: string;
+  clientSecret: string;
+  authCode: string;
 }
 
 export interface StravaQuery extends DataQuery {
   queryType: StravaQueryType;
   activityStat: StravaActivityStat;
+  format: StravaQueryFormat;
 }
 
-export interface StravaQueryTypeOption {
-  value: StravaQueryType;
-  label: string;
-  description?: string;
-}
-
-export interface StravaActivityStatOption {
-  value: StravaActivityStat;
-  label: string;
-  description?: string;
+export enum StravaQueryFormat {
+  TimeSeries = 'time_series',
+  Table = 'table',
+  WorldMap = 'worldmap',
 }
 
 export enum StravaQueryType {

@@ -14,8 +14,7 @@ export default class StravaApi {
   async request(url: string, options?: any) {
     try {
       const { data } = await this.backendSrv.datasourceRequest({
-        // url: `${this.apiUrl}/strava/${url}`,
-        url: `${this.apiUrl}/api/${url}`,
+        url: `${this.apiUrl}/strava/${url}`,
         method: 'GET',
       });
       return data;

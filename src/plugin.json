@@ -16,12 +16,12 @@
       "method": "GET",
       "url": "https://www.strava.com/api/v3",
       "tokenAuth": {
-        "url": "https://www.strava.com/oauth/token",
+        "url": "https://www.strava.com/api/v3/oauth/token",
         "params": {
           "grant_type": "authorization_code",
-          "client_id": "{{.JsonData.clientId}}",
+          "client_id": "{{.JsonData.clientID}}",
           "client_secret": "{{.SecureJsonData.clientSecret}}",
-          "resource": "https://www.strava.com/api/v3/"
+          "code": "{{.SecureJsonData.authCode}}"
         }
       }
     },
