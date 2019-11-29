@@ -34,7 +34,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   async query(options: DataQueryRequest<StravaQuery>) {
     console.log(options);
 
-    const data = await this.request('athlete/activities');
+    const data = await this.stravaApi.requestWithPagination('athlete/activities');
     return this.handleResponse(data);
   }
 
