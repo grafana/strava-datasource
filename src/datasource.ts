@@ -1,4 +1,3 @@
-import moment from "moment";
 import {
   DataQueryRequest,
   DataSourceApi,
@@ -39,40 +38,37 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   async query(options: DataQueryRequest<StravaQuery>) {
-    const { range } = options;
-    const from = range.from.valueOf();
-    const to = range.to.valueOf();
+    console.log(options);
+    const data = [];
 
-    const data = options.targets.map(target => {
-      this.stravaApi.getActivities().then(response => {
-        return new MutableDataFrame({
-          refId: target.refId,
-          fields: [
-            { name: "Time", values: [from, to], type: FieldType.time },
-            {
-              name: "Value",
-              values: [response.elapsed_time, response.elapsed_time],
-              type: FieldType.number
-            }
-          ]
-        });
-      });
+    const activities = await this.stravaApi.getActivities({
+      before: options.range.to.unix(),
+      after: options.range.from.unix(),
     });
 
+    for (const target of options.targets) {
+      switch (target.format) {
+        case StravaQueryFormat.Table:
+          const tableData = this.transformActivitiesToTable(activities, options.targets[0]);
+          data.push(tableData);
+          break;
+        case StravaQueryFormat.WorldMap:
+          const wmData = this.transformActivitiesToWorldMap(activities, options.targets[0]);
+          data.push(wmData);
+          break;
+        default:
+          const tsData = this.transformActivitiesToTimeseries(activities, options.targets[0]);
+          data.push(tsData);
+          break;
+      }
+    }
+
+    console.log(data);
     return { data };
   }
 
-  convertToTimeSeries(data: any): TimeSeries {
-    return {
-      target: "activities",
-      datapoints: data.map(entry => {
-        return [entry.elapsed_time, moment(entry.start_date).valueOf()];
-      })
-    };
-  }
-
   testDatasource() {
-    return this.request("athlete/activities")
+    return this.stravaApi.getActivities({ per_page: 2, limit: 2})
       .then(response => {
         console.log(response);
         return { status: "success", message: "Data source is working" };
@@ -83,7 +79,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       });
   }
 
-  transformActivitiesToTimeseries(data: any[], target: StravaQuery) {
+  transformActivitiesToTimeseries(data: any[], target: StravaQuery): TimeSeries {
     const datapoints = [];
     for (const activity of data) {
       datapoints.push([
@@ -93,7 +89,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
     return {
-      series: target.activityStat,
+      target: target.activityStat,
       datapoints
     };
   }
@@ -159,19 +155,5 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       }
     }
     return table;
-  }
-
-  async request(url: string, options?: any) {
-    try {
-      const { data } = await this.backendSrv.datasourceRequest({
-        url: `${this.apiUrl}/strava/${url}`,
-        // url: `${this.apiUrl}/api/${url}`,
-        method: "GET"
-      });
-      return data;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
   }
 }

@@ -5,12 +5,12 @@ export default class StravaApi {
     this.apiUrl = url;
   }
 
-  async getAuthenticatedAthlete() {
-    return await this.request('athlete');
+  async getAuthenticatedAthlete(params?: any) {
+    return await this.request('athlete', params);
   }
 
-  async getActivities() {
-    return await this.request('athlete/activities');
+  async getActivities(params?: any) {
+    return await this.requestWithPagination('athlete/activities', params);
   }
 
   async requestWithPagination(url: string, params?: any) {
