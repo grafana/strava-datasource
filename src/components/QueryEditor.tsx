@@ -91,7 +91,6 @@ export class QueryEditor extends PureComponent<Props, State> {
   render() {
     const { query, datasource, onChange, onRunQuery, data } = this.props;
     const { athlete } = this.state;
-    console.log(athlete);
 
     return (
       <>

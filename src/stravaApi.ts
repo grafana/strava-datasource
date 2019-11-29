@@ -6,9 +6,11 @@ export default class StravaApi {
   }
 
   async getAuthenticatedAthlete() {
-    const data = await this.request('athlete');
-    console.log(data);
-    return data;
+    return await this.request('athlete');
+  }
+
+  async getActivities() {
+    return await this.request('athlete/activities');
   }
 
   async request(url: string, options?: any) {
