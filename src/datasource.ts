@@ -7,10 +7,11 @@ import {
   DataSourceApi,
   DataQueryRequest,
   DataSourceInstanceSettings,
+  TableData,
 } from '@grafana/data';
 import StravaApi from './stravaApi';
 
-import { StravaQuery, StravaJsonData } from "types";
+import { StravaQuery, StravaJsonData, StravaActivityStat } from './types';
 
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
@@ -34,8 +35,13 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   async query(options: DataQueryRequest<StravaQuery>) {
     console.log(options);
 
-    const data = await this.stravaApi.requestWithPagination('athlete/activities');
-    return this.handleResponse(data);
+    const data = await this.stravaApi.requestWithPagination('athlete/activities', { limit: 10, per_page: 10 });
+    const tableData = this.transformActivitiesToWorldMapResponse(data, options.targets[0]);
+    console.log(tableData);
+    return {
+      state: 'Done',
+      data: [tableData],
+    };
   }
 
   testDatasource() {
@@ -58,6 +64,35 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
   handleResponse(data) {
     console.log(data);
+  }
+
+  transformActivitiesToWorldMapResponse(data: any[], target: StravaQuery) {
+    const unit =
+      target.activityStat === StravaActivityStat.Distance ||
+      target.activityStat === StravaActivityStat.ElevationGain ? 'lengthm' : 's';
+    const table: TableData = {
+      type: 'table',
+      columns: [
+        { text: 'value', unit },
+        { text: 'name' },
+        { text: 'latitude' },
+        { text: 'longitude' },
+      ],
+      rows: []
+    };
+
+    for (const activity of data) {
+      const row = [
+        activity[target.activityStat],
+        activity.name,
+        activity.start_latitude,
+        activity.start_longitude,
+      ];
+      if (activity.start_latitude && activity.start_longitude) {
+        table.rows.push(row);
+      }
+    }
+    return table;
   }
 
   async request(url: string, options?: any) {
