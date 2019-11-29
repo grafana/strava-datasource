@@ -1,10 +1,13 @@
+import moment from "moment";
 import {
   DataQueryRequest,
   DataSourceApi,
   DataSourceInstanceSettings,
   FieldType,
   MutableDataFrame,
-  TimeSeries
+  TimeSeries,
+  TableData,
+  dateTime,
 } from "@grafana/data";
 import StravaApi from "./stravaApi";
 
@@ -12,14 +15,11 @@ import {
   StravaActivityStat,
   StravaJsonData,
   StravaQuery,
-  StravaQueryType
+  StravaQueryType,
+  StravaQueryFormat
 } from "./types";
-import moment from "moment";
 
-export default class StravaDatasource extends DataSourceApi<
-  StravaQuery,
-  StravaJsonData
-> {
+export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
   apiUrl: string;
   datasourceName: string;
@@ -81,6 +81,84 @@ export default class StravaDatasource extends DataSourceApi<
         console.log(error);
         return { status: "error", message: "Cannot connect to Strava API" };
       });
+  }
+
+  transformActivitiesToTimeseries(data: any[], target: StravaQuery) {
+    const datapoints = [];
+    for (const activity of data) {
+      datapoints.push([
+        activity[target.activityStat],
+        dateTime(activity.start_date).valueOf(),
+      ]);
+    }
+    datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
+    return {
+      series: target.activityStat,
+      datapoints
+    };
+  }
+
+  transformActivitiesToTable(data: any[], target: StravaQuery) {
+    const table: TableData = {
+      type: 'table',
+      columns: [
+        { text: 'Time'},
+        { text: 'name' },
+        { text: 'distance', unit: 'lengthm' },
+        { text: 'moving_time', unit: 's' },
+        { text: 'elapsed_time', unit: 's' },
+        { text: 'total_elevation_gain', unit: 'lengthm' },
+        { text: 'type' },
+        { text: 'kilojoules', unit: 'joule' },
+      ],
+      rows: []
+    };
+
+    for (const activity of data) {
+      const row = [
+        dateTime(activity.start_date),
+        activity.name,
+        activity.distance,
+        activity.moving_time,
+        activity.elapsed_time,
+        activity.total_elevation_gain,
+        activity.type,
+        activity.kilojoules,
+      ];
+      if (activity.start_latitude && activity.start_longitude) {
+        table.rows.push(row);
+      }
+    }
+    return table;
+  }
+
+  transformActivitiesToWorldMap(data: any[], target: StravaQuery) {
+    const unit =
+      target.activityStat === StravaActivityStat.Distance ||
+      target.activityStat === StravaActivityStat.ElevationGain ? 'lengthm' : 's';
+    const table: TableData = {
+      type: 'table',
+      columns: [
+        { text: 'value', unit },
+        { text: 'name' },
+        { text: 'latitude' },
+        { text: 'longitude' },
+      ],
+      rows: []
+    };
+
+    for (const activity of data) {
+      const row = [
+        activity[target.activityStat],
+        activity.name,
+        activity.start_latitude,
+        activity.start_longitude,
+      ];
+      if (activity.start_latitude && activity.start_longitude) {
+        table.rows.push(row);
+      }
+    }
+    return table;
   }
 
   async request(url: string, options?: any) {
