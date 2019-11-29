@@ -49,15 +49,15 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     for (const target of options.targets) {
       switch (target.format) {
         case StravaQueryFormat.Table:
-          const tableData = this.transformActivitiesToTable(activities, options.targets[0]);
+          const tableData = this.transformActivitiesToTable(activities, target);
           data.push(tableData);
           break;
         case StravaQueryFormat.WorldMap:
-          const wmData = this.transformActivitiesToWorldMap(activities, options.targets[0]);
+          const wmData = this.transformActivitiesToWorldMap(activities, target);
           data.push(wmData);
           break;
         default:
-          const tsData = this.transformActivitiesToTimeseries(activities, options.targets[0]);
+          const tsData = this.transformActivitiesToTimeseries(activities, target);
           data.push(tsData);
           break;
       }
