@@ -38,7 +38,6 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   async query(options: DataQueryRequest<StravaQuery>) {
-    console.log(options);
     const data = [];
 
     const activities = await this.stravaApi.getActivities({
@@ -63,7 +62,6 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       }
     }
 
-    console.log(data);
     return { data };
   }
 
