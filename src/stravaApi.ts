@@ -100,4 +100,4 @@ function getHash(srt: string) {
     }
   }
   return hash;
-};
+}
