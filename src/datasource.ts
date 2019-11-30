@@ -9,7 +9,7 @@ import {
   dateTime,
 } from "@grafana/data";
 import StravaApi from "./stravaApi";
-
+import polyline from './polyline';
 import {
   StravaActivityStat,
   StravaJsonData,
@@ -142,16 +142,34 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     };
 
     for (const activity of data) {
+      const middlePoint = getActivityMiddlePoint(activity);
+      const latitude = middlePoint ? middlePoint[0] : activity.start_latitude;
+      const longitude = middlePoint ? middlePoint[1] : activity.start_longitude;
       const row = [
         activity[target.activityStat],
         activity.name,
-        activity.start_latitude,
-        activity.start_longitude,
+        latitude,
+        longitude,
       ];
       if (activity.start_latitude && activity.start_longitude) {
         table.rows.push(row);
       }
     }
     return table;
+  }
+}
+
+function getActivityMiddlePoint(activity: any): number[] {
+  if (!activity.map || !activity.map.summary_polyline) {
+    return null;
+  }
+
+  const summaryPolyline = activity.map.summary_polyline;
+  const points = polyline.decode(summaryPolyline);
+  if (points && points.length) {
+    const middleIndex = Math.floor(points.length / 2);
+    return points[middleIndex];
+  } else {
+    return null;
   }
 }
