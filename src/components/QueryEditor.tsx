@@ -15,6 +15,7 @@ const stravaActivityStatOptions: Array<SelectableValue<StravaActivityStat>> = [
   { value: StravaActivityStat.ElapsedTime, label: 'Elapsed Time' },
   { value: StravaActivityStat.MovingTime, label: 'Moving Time' },
   { value: StravaActivityStat.ElevationGain, label: 'Elevation Gain' },
+  { value: StravaActivityStat.AveragePower, label: 'Average Power' },
 ];
 
 const FORMAT_OPTIONS: Array<SelectableValue<StravaQueryFormat>> = [

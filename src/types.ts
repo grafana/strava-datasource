@@ -31,4 +31,5 @@ export enum StravaActivityStat {
   MovingTime = 'moving_time',
   ElapsedTime = 'elapsed_time',
   ElevationGain = 'total_elevation_gain',
+  AveragePower = 'average_watts',
 }
