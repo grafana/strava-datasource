@@ -2,7 +2,7 @@ import React, { PureComponent, ChangeEvent } from 'react';
 import { cx, css } from 'emotion';
 import { SelectableValue, QueryEditorProps } from '@grafana/data';
 import { Input, FormLabel, Segment, SegmentAsync, Select } from '@grafana/ui';
-import { StravaQuery, StravaQueryType, StravaActivityStat, StravaQueryFormat, StravaActivityType } from '../types';
+import { StravaQuery, StravaQueryType, StravaActivityStat, StravaQueryFormat, StravaActivityType, StravaJsonData } from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
 
@@ -40,7 +40,7 @@ export const DefaultTarget: State = {
   refId: '',
 };
 
-export type Props = QueryEditorProps<StravaDatasource, StravaQuery>;
+export type Props = QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData>;
 
 interface State extends StravaQuery {
   athlete: any;
