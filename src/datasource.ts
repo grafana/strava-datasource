@@ -106,8 +106,9 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
     const aggInterval = getAggregationInterval(range);
     datapoints = groupBySum(datapoints, aggInterval);
+    const alias = `${target.activityType ? target.activityType + '_' : '' }${target.activityStat}`;
     return {
-      target: target.activityStat,
+      target: alias,
       datapoints
     };
   }
