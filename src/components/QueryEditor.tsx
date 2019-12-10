@@ -52,6 +52,7 @@ export class QueryEditor extends PureComponent<Props, State> {
   queryDefaults: Partial<StravaQuery> = {
     format: StravaQueryFormat.TimeSeries,
     queryType: StravaQueryType.Activities,
+    activityType: null,
     activityStat: StravaActivityStat.Distance,
   };
 
@@ -73,7 +74,7 @@ export class QueryEditor extends PureComponent<Props, State> {
   }
 
   getSelectedActivityType = () => {
-    return stravaActivityTypeOptions.find(v => v.value === this.props.query.activityStat);
+    return stravaActivityTypeOptions.find(v => v.value === this.props.query.activityType);
   }
 
   getFormatOption = () => {
