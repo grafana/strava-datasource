@@ -139,9 +139,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         activity.type,
         activity.kilojoules,
       ];
-      if (activity.start_latitude && activity.start_longitude) {
-        table.rows.push(row);
-      }
+      table.rows.push(row);
     }
     return table;
   }
