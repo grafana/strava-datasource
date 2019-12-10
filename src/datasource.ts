@@ -16,7 +16,8 @@ import {
   StravaJsonData,
   StravaQuery,
   StravaQueryType,
-  StravaQueryFormat
+  StravaQueryFormat,
+  StravaActivityType
 } from "./types";
 
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
@@ -48,17 +49,18 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     });
 
     for (const target of options.targets) {
+      const filteredActivities = this.filterActivities(activities, target.activityType);
       switch (target.format) {
         case StravaQueryFormat.Table:
-          const tableData = this.transformActivitiesToTable(activities, target);
+          const tableData = this.transformActivitiesToTable(filteredActivities, target);
           data.push(tableData);
           break;
         case StravaQueryFormat.WorldMap:
-          const wmData = this.transformActivitiesToWorldMap(activities, target);
+          const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
           data.push(wmData);
           break;
         default:
-          const tsData = this.transformActivitiesToTimeseries(activities, target, options.range);
+          const tsData = this.transformActivitiesToTimeseries(filteredActivities, target, options.range);
           data.push(tsData);
           break;
       }
@@ -77,6 +79,20 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         console.log(error);
         return { status: "error", message: "Cannot connect to Strava API" };
       });
+  }
+
+  filterActivities(activities: any[], activityType: StravaActivityType): any[] {
+    if (!activityType) {
+      // No filter, return all
+      return activities;
+    }
+
+    return activities.filter(activitiy => {
+      if (activityType === 'Other') {
+        return activitiy.type !== 'Run' && activitiy.type !== 'Ride';
+      } else {}
+      return activitiy.type === activityType;
+    });
   }
 
   transformActivitiesToTimeseries(data: any[], target: StravaQuery, range: TimeRange): TimeSeries {

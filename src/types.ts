@@ -13,6 +13,7 @@ export interface StravaSecureJsonData {
 export interface StravaQuery extends DataQuery {
   queryType: StravaQueryType;
   activityStat: StravaActivityStat;
+  activityType: StravaActivityType;
   format: StravaQueryFormat;
 }
 
@@ -33,3 +34,5 @@ export enum StravaActivityStat {
   ElevationGain = 'total_elevation_gain',
   AveragePower = 'average_watts',
 }
+
+export type StravaActivityType = string | null;
