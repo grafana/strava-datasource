@@ -1,10 +1,6 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { FormLabel, Select, Input, Button } from '@grafana/ui';
+import { FormLabel, Input, Button } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
-import { SelectableValue } from '@grafana/data';
-//@ts-ignore
-import { getDatasourceSrv } from 'grafana/app/features/plugins/datasource_srv';
-import StravaDatasource from '../datasource';
 import { StravaJsonData, StravaSecureJsonData } from '../types';
 
 const AuthCodePattern = /code=([\w]+)/;
@@ -38,9 +34,6 @@ export class ConfigEditor extends PureComponent<Props, State> {
   }
 
   static defaults = (options: any) => {
-    options.jsonData.authType = options.jsonData.authType || 'credentials';
-    options.jsonData.timeField = options.jsonData.timeField || '@timestamp';
-
     if (!options.hasOwnProperty('secureJsonData')) {
       options.secureJsonData = {};
     }

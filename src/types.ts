@@ -5,7 +5,6 @@ export interface StravaJsonData extends DataSourceJsonData {
 }
 
 export interface StravaSecureJsonData {
-  accessToken?: string;
   clientSecret: string;
   authCode: string;
 }
