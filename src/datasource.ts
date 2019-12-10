@@ -7,6 +7,7 @@ import {
   TimeSeries,
   TableData,
   dateTime,
+  TimeRange,
 } from "@grafana/data";
 import StravaApi from "./stravaApi";
 import polyline from './polyline';
@@ -39,6 +40,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
   async query(options: DataQueryRequest<StravaQuery>) {
     const data = [];
+    console.log(options);
 
     const activities = await this.stravaApi.getActivities({
       before: options.range.to.unix(),
@@ -56,7 +58,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
           data.push(wmData);
           break;
         default:
-          const tsData = this.transformActivitiesToTimeseries(activities, target);
+          const tsData = this.transformActivitiesToTimeseries(activities, target, options.range);
           data.push(tsData);
           break;
       }
@@ -77,8 +79,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       });
   }
 
-  transformActivitiesToTimeseries(data: any[], target: StravaQuery): TimeSeries {
-    const datapoints = [];
+  transformActivitiesToTimeseries(data: any[], target: StravaQuery, range: TimeRange): TimeSeries {
+    let datapoints = [];
     for (const activity of data) {
       datapoints.push([
         activity[target.activityStat],
@@ -86,6 +88,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       ]);
     }
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
+    const aggInterval = getAggregationInterval(range);
+    datapoints = groupBySum(datapoints, aggInterval);
     return {
       target: target.activityStat,
       datapoints
@@ -172,4 +176,67 @@ function getActivityMiddlePoint(activity: any): number[] {
   } else {
     return null;
   }
+}
+
+function getAggregationInterval(range: TimeRange): number {
+  const interval = range.to.unix() - range.from.unix();
+  const interval_ms = interval * 1000;
+  switch (true) {
+    // 4d
+    case interval_ms <= 345600000:
+      return 3600000; // 1h
+    // 90d
+    case interval_ms <= 7776000000:
+      return 86400000; // 1d
+    // 1y
+    case interval_ms <= 31536000000:
+      return 604800000; // 1w
+    default:
+      return 604800000; // 1w
+  }
+}
+
+const POINT_VALUE = 0;
+const POINT_TIMESTAMP = 1;
+
+export function groupBySum(datapoints: any[], interval: number): any[] {
+  if (datapoints.length === 0) {
+    return [];
+  }
+
+  let grouped_series = [];
+  let frame_values = [];
+  let frame_value;
+  let frame_ts = datapoints.length ? getPointTimeFrame(datapoints[0][POINT_TIMESTAMP], interval) : 0;
+  let point_frame_ts = frame_ts;
+  let point;
+  const sum = (acc, val) => acc + val;
+
+  for (let i = 0; i < datapoints.length; i++) {
+    point = datapoints[i];
+    point_frame_ts = getPointTimeFrame(point[POINT_TIMESTAMP], interval);
+    if (point_frame_ts === frame_ts) {
+      frame_values.push(point[POINT_VALUE]);
+    } else if (point_frame_ts > frame_ts) {
+      frame_value = frame_values.reduce(sum);
+      grouped_series.push([frame_value, frame_ts]);
+
+      // Move frame window to next non-empty interval and fill empty by null
+      frame_ts += interval;
+      while (frame_ts < point_frame_ts) {
+        grouped_series.push([null, frame_ts]);
+        frame_ts += interval;
+      }
+      frame_values = [point[POINT_VALUE]];
+    }
+  }
+
+  frame_value = frame_values.reduce(sum);
+  grouped_series.push([frame_value, frame_ts]);
+
+  return grouped_series;
+}
+
+function getPointTimeFrame(timestamp, ms_interval) {
+  return Math.floor(timestamp / ms_interval) * ms_interval;
 }
