@@ -8,6 +8,8 @@ import {
   TableData,
   dateTime,
   TimeRange,
+  TimeSeriesPoints,
+  TimeSeriesValue
 } from "@grafana/data";
 import StravaApi from "./stravaApi";
 import polyline from './polyline';
@@ -19,6 +21,7 @@ import {
   StravaQueryFormat,
   StravaActivityType
 } from "./types";
+import moment from "moment";
 
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
@@ -105,7 +108,11 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
     const aggInterval = getAggregationInterval(range);
-    datapoints = groupBySum(datapoints, aggInterval);
+    if (aggInterval >= INTERVAL_4w) {
+      datapoints = groupByMonthSum(datapoints, aggInterval);
+    } else {
+      datapoints = groupBySum(datapoints, aggInterval);
+    }
     const alias = `${target.activityType ? target.activityType + '_' : '' }${target.activityStat}`;
     return {
       target: alias,
@@ -193,28 +200,45 @@ function getActivityMiddlePoint(activity: any): number[] {
   }
 }
 
+const INTERVAL_1h = 3600000;
+const INTERVAL_1d = 86400000;
+const INTERVAL_1w = 604800000;
+const INTERVAL_4w = 2419200000;
+
 function getAggregationInterval(range: TimeRange): number {
   const interval = range.to.unix() - range.from.unix();
   const interval_ms = interval * 1000;
   switch (true) {
     // 4d
     case interval_ms <= 345600000:
-      return 3600000; // 1h
+      return INTERVAL_1h; // 1h
     // 90d
     case interval_ms <= 7776000000:
-      return 86400000; // 1d
+      return INTERVAL_1d; // 1d
     // 1y
     case interval_ms <= 31536000000:
-      return 604800000; // 1w
+      return INTERVAL_1w; // 1w
     default:
-      return 604800000; // 1w
+      return INTERVAL_4w; // 4w
   }
 }
 
 const POINT_VALUE = 0;
 const POINT_TIMESTAMP = 1;
 
-export function groupBySum(datapoints: any[], interval: number): any[] {
+const AGG_SUM = (values: TimeSeriesValue[]) => {
+  return values.reduce((acc, val) => acc + val);
+};
+
+export function groupBySum(datapoints: TimeSeriesPoints, interval: number): TimeSeriesPoints {
+  return groupByTime(datapoints, interval, getPointTimeFrame, getNextTimeFrame, AGG_SUM);
+}
+
+export function groupByMonthSum(datapoints: TimeSeriesPoints, interval: number): TimeSeriesPoints {
+  return groupByTime(datapoints, null, getClosestMonth, getNextMonth, AGG_SUM);
+}
+
+export function groupByTime(datapoints: any[], interval: number, intervalFn, nextIntervalFn, groupByFn): any[] {
   if (datapoints.length === 0) {
     return [];
   }
@@ -222,31 +246,30 @@ export function groupBySum(datapoints: any[], interval: number): any[] {
   let grouped_series = [];
   let frame_values = [];
   let frame_value;
-  let frame_ts = datapoints.length ? getPointTimeFrame(datapoints[0][POINT_TIMESTAMP], interval) : 0;
+  let frame_ts = datapoints.length ? intervalFn(datapoints[0][POINT_TIMESTAMP], interval) : 0;
   let point_frame_ts = frame_ts;
   let point;
-  const sum = (acc, val) => acc + val;
 
   for (let i = 0; i < datapoints.length; i++) {
     point = datapoints[i];
-    point_frame_ts = getPointTimeFrame(point[POINT_TIMESTAMP], interval);
+    point_frame_ts = intervalFn(point[POINT_TIMESTAMP], interval);
     if (point_frame_ts === frame_ts) {
       frame_values.push(point[POINT_VALUE]);
     } else if (point_frame_ts > frame_ts) {
-      frame_value = frame_values.reduce(sum);
+      frame_value = groupByFn(frame_values);
       grouped_series.push([frame_value, frame_ts]);
 
       // Move frame window to next non-empty interval and fill empty by null
-      frame_ts += interval;
+      frame_ts = nextIntervalFn(frame_ts, interval);
       while (frame_ts < point_frame_ts) {
         grouped_series.push([null, frame_ts]);
-        frame_ts += interval;
+        frame_ts = nextIntervalFn(frame_ts, interval);
       }
       frame_values = [point[POINT_VALUE]];
     }
   }
 
-  frame_value = frame_values.reduce(sum);
+  frame_value = groupByFn(frame_values);
   grouped_series.push([frame_value, frame_ts]);
 
   return grouped_series;
@@ -254,4 +277,18 @@ export function groupBySum(datapoints: any[], interval: number): any[] {
 
 function getPointTimeFrame(timestamp, ms_interval) {
   return Math.floor(timestamp / ms_interval) * ms_interval;
+}
+
+function getNextTimeFrame(timestamp, ms_interval) {
+  return timestamp + ms_interval;
+}
+
+function getClosestMonth(timestamp): number {
+  const month_time = moment(timestamp).startOf('month');
+  return month_time.unix() * 1000;
+}
+
+function getNextMonth(timestamp): number {
+  const next_month_time = moment(timestamp).add(1, 'month');
+  return next_month_time.unix() * 1000;
 }

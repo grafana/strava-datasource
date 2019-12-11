@@ -19,7 +19,7 @@ module.exports = {
   },
   externals: [
     // remove the line below if you don't want to use buildin versions
-    'jquery', 'lodash', 'angular', 'rxjs/operators', 'rxjs', 'emotion',
+    'jquery', 'lodash', 'angular', 'rxjs/operators', 'rxjs', 'emotion', 'moment',
     'slate', 'slate-plain-serializer', '@grafana/slate-react', 'react', 'react-dom',
     '@grafana/ui', '@grafana/data', '@grafana/runtime',
     function(context, request, callback) {
