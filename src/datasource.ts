@@ -109,11 +109,11 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
     const aggInterval = getAggregationInterval(range);
     if (aggInterval >= INTERVAL_4w) {
-      datapoints = groupByMonthSum(datapoints, aggInterval);
+      datapoints = groupByMonthSum(datapoints, range);
     } else if (aggInterval === INTERVAL_1w) {
-      datapoints = groupByWeekSum(datapoints, aggInterval);
+      datapoints = groupByWeekSum(datapoints, range);
     } else {
-      datapoints = groupBySum(datapoints, aggInterval);
+      datapoints = groupBySum(datapoints, range, aggInterval);
     }
     const alias = `${target.activityType ? target.activityType + '_' : '' }${target.activityStat}`;
     return {
@@ -232,27 +232,29 @@ const AGG_SUM = (values: TimeSeriesValue[]) => {
   return values.reduce((acc, val) => acc + val);
 };
 
-export function groupBySum(datapoints: TimeSeriesPoints, interval: number): TimeSeriesPoints {
-  return groupByTime(datapoints, interval, getPointTimeFrame, getNextTimeFrame, AGG_SUM);
+export function groupBySum(datapoints: TimeSeriesPoints, range: TimeRange, interval: number): TimeSeriesPoints {
+  return groupByTime(datapoints, range, interval, getPointTimeFrame, getNextTimeFrame, AGG_SUM);
 }
 
-export function groupByWeekSum(datapoints: TimeSeriesPoints, interval: number): TimeSeriesPoints {
-  return groupByTime(datapoints, null, getClosestWeek, getNextWeek, AGG_SUM);
+export function groupByWeekSum(datapoints: TimeSeriesPoints, range: TimeRange): TimeSeriesPoints {
+  return groupByTime(datapoints, range, null, getClosestWeek, getNextWeek, AGG_SUM);
 }
 
-export function groupByMonthSum(datapoints: TimeSeriesPoints, interval: number): TimeSeriesPoints {
-  return groupByTime(datapoints, null, getClosestMonth, getNextMonth, AGG_SUM);
+export function groupByMonthSum(datapoints: TimeSeriesPoints, range: TimeRange): TimeSeriesPoints {
+  return groupByTime(datapoints, range, null, getClosestMonth, getNextMonth, AGG_SUM);
 }
 
-export function groupByTime(datapoints: any[], interval: number, intervalFn, nextIntervalFn, groupByFn): any[] {
+export function groupByTime(datapoints: any[], range: TimeRange, interval: number, intervalFn, nextIntervalFn, groupByFn): any[] {
   if (datapoints.length === 0) {
     return [];
   }
 
+  const time_from = range.from.unix() * 1000;
+  const time_to = range.to.unix() * 1000;
   let grouped_series = [];
   let frame_values = [];
   let frame_value;
-  let frame_ts = datapoints.length ? intervalFn(datapoints[0][POINT_TIMESTAMP], interval) : 0;
+  let frame_ts = datapoints.length ? intervalFn(time_from, interval) : 0;
   let point_frame_ts = frame_ts;
   let point;
 
@@ -262,7 +264,7 @@ export function groupByTime(datapoints: any[], interval: number, intervalFn, nex
     if (point_frame_ts === frame_ts) {
       frame_values.push(point[POINT_VALUE]);
     } else if (point_frame_ts > frame_ts) {
-      frame_value = groupByFn(frame_values);
+      frame_value = frame_values.length ? groupByFn(frame_values) : null;
       grouped_series.push([frame_value, frame_ts]);
 
       // Move frame window to next non-empty interval and fill empty by null
@@ -277,6 +279,13 @@ export function groupByTime(datapoints: any[], interval: number, intervalFn, nex
 
   frame_value = groupByFn(frame_values);
   grouped_series.push([frame_value, frame_ts]);
+
+  // Move frame window to end of time range and fill empty by null
+  frame_ts = nextIntervalFn(frame_ts, interval);
+  while (frame_ts < time_to) {
+    grouped_series.push([null, frame_ts]);
+    frame_ts = nextIntervalFn(frame_ts, interval);
+  }
 
   return grouped_series;
 }
