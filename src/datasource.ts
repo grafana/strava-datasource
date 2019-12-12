@@ -110,6 +110,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     const aggInterval = getAggregationInterval(range);
     if (aggInterval >= INTERVAL_4w) {
       datapoints = groupByMonthSum(datapoints, aggInterval);
+    } else if (aggInterval === INTERVAL_1w) {
+      datapoints = groupByWeekSum(datapoints, aggInterval);
     } else {
       datapoints = groupBySum(datapoints, aggInterval);
     }
@@ -234,6 +236,10 @@ export function groupBySum(datapoints: TimeSeriesPoints, interval: number): Time
   return groupByTime(datapoints, interval, getPointTimeFrame, getNextTimeFrame, AGG_SUM);
 }
 
+export function groupByWeekSum(datapoints: TimeSeriesPoints, interval: number): TimeSeriesPoints {
+  return groupByTime(datapoints, null, getClosestWeek, getNextWeek, AGG_SUM);
+}
+
 export function groupByMonthSum(datapoints: TimeSeriesPoints, interval: number): TimeSeriesPoints {
   return groupByTime(datapoints, null, getClosestMonth, getNextMonth, AGG_SUM);
 }
@@ -291,4 +297,16 @@ function getClosestMonth(timestamp): number {
 function getNextMonth(timestamp): number {
   const next_month_time = moment(timestamp).add(1, 'month');
   return next_month_time.unix() * 1000;
+}
+
+function getClosestWeek(timestamp): number {
+  // The first Monday after the Unix Epoch begins on Jan 5, 1970, 00:00.
+  // This is a UNIX timestamp of 96 hours or 345600000 ms
+  const FIRST_MONDAY_MS = 345600000;
+  const week_ts = timestamp - FIRST_MONDAY_MS;
+  return Math.floor(week_ts / INTERVAL_1w) * INTERVAL_1w + FIRST_MONDAY_MS;
+}
+
+function getNextWeek(timestamp): number {
+  return timestamp + INTERVAL_1w;
 }
