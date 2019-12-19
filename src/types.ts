@@ -14,12 +14,22 @@ export interface StravaQuery extends DataQuery {
   activityStat: StravaActivityStat;
   activityType: StravaActivityType;
   format: StravaQueryFormat;
+  interval: StravaQueryInterval;
 }
 
 export enum StravaQueryFormat {
   TimeSeries = 'time_series',
   Table = 'table',
   WorldMap = 'worldmap',
+}
+
+export enum StravaQueryInterval {
+  No = 'no',
+  Auto = 'auto',
+  Hour = 'hour',
+  Day = 'day',
+  Week = 'week',
+  Month = 'month',
 }
 
 export enum StravaQueryType {

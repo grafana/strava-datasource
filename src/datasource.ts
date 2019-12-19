@@ -19,7 +19,8 @@ import {
   StravaQuery,
   StravaQueryType,
   StravaQueryFormat,
-  StravaActivityType
+  StravaActivityType,
+  StravaQueryInterval
 } from "./types";
 import moment from "moment";
 
@@ -107,13 +108,17 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       ]);
     }
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
-    const aggInterval = getAggregationInterval(range);
-    if (aggInterval >= INTERVAL_4w) {
-      datapoints = groupByMonthSum(datapoints, range);
-    } else if (aggInterval === INTERVAL_1w) {
-      datapoints = groupByWeekSum(datapoints, range);
-    } else {
-      datapoints = groupBySum(datapoints, range, aggInterval);
+    if (target.interval !== StravaQueryInterval.No) {
+      const aggInterval = !target.interval || target.interval === StravaQueryInterval.Auto ?
+        getAggregationInterval(range) :
+        getAggregationIntervalFromTarget(target);
+      if (aggInterval >= INTERVAL_4w) {
+        datapoints = groupByMonthSum(datapoints, range);
+      } else if (aggInterval === INTERVAL_1w) {
+        datapoints = groupByWeekSum(datapoints, range);
+      } else {
+        datapoints = groupBySum(datapoints, range, aggInterval);
+      }
     }
     const alias = `${target.activityType ? target.activityType + '_' : '' }${target.activityStat}`;
     return {
@@ -222,6 +227,21 @@ function getAggregationInterval(range: TimeRange): number {
       return INTERVAL_1w; // 1w
     default:
       return INTERVAL_4w; // 4w
+  }
+}
+
+function getAggregationIntervalFromTarget(target: StravaQuery): number {
+  switch (target.interval) {
+    case StravaQueryInterval.Hour:
+      return INTERVAL_1h;
+    case StravaQueryInterval.Day:
+      return INTERVAL_1d;
+    case StravaQueryInterval.Week:
+      return INTERVAL_1w;
+    case StravaQueryInterval.Month:
+      return INTERVAL_4w;
+    default:
+      return INTERVAL_4w;
   }
 }
 

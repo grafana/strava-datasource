@@ -2,7 +2,7 @@ import React, { PureComponent, ChangeEvent } from 'react';
 import { cx, css } from 'emotion';
 import { SelectableValue, QueryEditorProps } from '@grafana/data';
 import { Input, FormLabel, Segment, SegmentAsync, Select } from '@grafana/ui';
-import { StravaQuery, StravaQueryType, StravaActivityStat, StravaQueryFormat, StravaActivityType, StravaJsonData } from '../types';
+import { StravaQuery, StravaQueryType, StravaActivityStat, StravaQueryFormat, StravaActivityType, StravaJsonData, StravaQueryInterval } from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
 
@@ -31,13 +31,23 @@ const FORMAT_OPTIONS: Array<SelectableValue<StravaQueryFormat>> = [
   { label: 'World Map', value: StravaQueryFormat.WorldMap },
 ];
 
+const INTERVAL_OPTIONS: Array<SelectableValue<StravaQueryInterval>> = [
+  { label: 'Auto', value: StravaQueryInterval.Auto },
+  { label: 'No', value: StravaQueryInterval.No },
+  { label: 'Hour', value: StravaQueryInterval.Hour },
+  { label: 'Day', value: StravaQueryInterval.Day },
+  { label: 'Week', value: StravaQueryInterval.Week },
+  { label: 'Month', value: StravaQueryInterval.Month },
+];
+
 export const DefaultTarget: State = {
-  athlete: {},
-  format: StravaQueryFormat.TimeSeries,
-  queryType: StravaQueryType.Activities,
-  activityStat: StravaActivityStat.Distance,
-  activityType: null,
   refId: '',
+  athlete: {},
+  queryType: StravaQueryType.Activities,
+  activityType: null,
+  activityStat: StravaActivityStat.Distance,
+  format: StravaQueryFormat.TimeSeries,
+  interval: StravaQueryInterval.Auto,
 };
 
 export type Props = QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData>;
@@ -81,6 +91,10 @@ export class QueryEditor extends PureComponent<Props, State> {
     return FORMAT_OPTIONS.find(v => v.value === this.props.query.format);
   }
 
+  getIntervalOption = () => {
+    return INTERVAL_OPTIONS.find(v => v.value === this.props.query.interval);
+  }
+
   onQueryTypeChanged = (option: SelectableValue<StravaQueryType>) => {
     const { query } = this.props;
     this.onChange({ ...query, queryType: option.value });
@@ -99,6 +113,11 @@ export class QueryEditor extends PureComponent<Props, State> {
   onFormatChange = (option: SelectableValue<StravaQueryFormat>) => {
     const { query } = this.props;
     this.onChange({ ...query, format: option.value });
+  }
+
+  onIntervalChange = (option: SelectableValue<StravaQueryInterval>) => {
+    const { query } = this.props;
+    this.onChange({ ...query, interval: option.value });
   }
 
   onChange(query: StravaQuery) {
@@ -146,6 +165,8 @@ export class QueryEditor extends PureComponent<Props, State> {
         <div className="gf-form-inline">
           <FormLabel>Format</FormLabel>
           <Select isSearchable={false} options={FORMAT_OPTIONS} onChange={this.onFormatChange} value={this.getFormatOption()} />
+          <FormLabel>Interval</FormLabel>
+          <Select isSearchable={false} options={INTERVAL_OPTIONS} onChange={this.onIntervalChange} value={this.getIntervalOption()} />
         </div>
       </>
     );
