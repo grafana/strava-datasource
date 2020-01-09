@@ -13,7 +13,7 @@
     "build": "webpack --config webpack/webpack.prod.conf.js",
     "dev": "webpack --config webpack/webpack.dev.conf.js",
     "start": "webpack --config webpack/webpack.dev.conf.js --watch",
-    "test": "jest --config jest.config.js",
+    "test": "jest --config jest.config.js --passWithNoTests",
     "jest": "jest --config jest.config.js --notify --watch",
     "ci-test": "jest --config jest.config.js"
   },
