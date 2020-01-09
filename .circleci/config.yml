@@ -65,11 +65,16 @@ jobs:
           keys:
             - yarn-packages-{{ checksum "yarn.lock" }}
       - run:
+          name: yarn install
+          command: 'yarn install --pure-lockfile --no-progress'
+          no_output_timeout: 15m
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+          - ./node_modules
+      - run:
           name: Test
-          command: |
-            yarn install --pure-lockfile --no-progress
-            sudo npm install -g jest
-            yarn test
+          command: yarn test
       - store_artifacts:
           path: coverage
 
