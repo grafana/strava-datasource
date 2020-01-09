@@ -45,7 +45,6 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
   async query(options: DataQueryRequest<StravaQuery>) {
     const data = [];
-    console.log(options);
 
     const activities = await this.stravaApi.getActivities({
       before: options.range.to.unix(),
@@ -76,7 +75,6 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   testDatasource() {
     return this.stravaApi.getActivities({ per_page: 2, limit: 2})
       .then(response => {
-        console.log(response);
         return { status: "success", message: "Data source is working" };
       })
       .catch(error => {
