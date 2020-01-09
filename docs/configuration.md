@@ -17,14 +17,14 @@ Learn more about Strava API applications at [Strava developer docs](https://deve
 
 Then go to grafana and create new Strava datasource.
 
-[New Data Source](img/config_1.png)
+![New Data Source](img/config_1.png)
 
 Fill _Client ID_ field with value obtained from Strava API application page. Click _Connect with Strava_ button and authorize grafana datasource to connect to Strava. 
 
-[Authorize datasource](img/config_2.png)
+![Authorize datasource](img/config_2.png)
 
 You will be redirected back to the datasource configuration page. Now fill _Client ID_ and _Client Secret_ fields. To obtain _Auth Code_, click _Fill_ button. Auth Code will be copied from the page URL. Finally, set desired data source name and click _Save & Test_ button. If connection is properly configured, you will see _Data source is working_ message.
 
-[Save & Test](img/config_3.png)
+![Save & Test](img/config_3.png)
 
 Now you can create some dashboards!
