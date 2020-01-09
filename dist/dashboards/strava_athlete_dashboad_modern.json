@@ -1,0 +1,707 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_STRAVA",
+      "label": "Strava",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "grafana-strava-datasource",
+      "pluginName": "Strava"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "6.5.0"
+    },
+    {
+      "type": "datasource",
+      "id": "grafana-strava-datasource",
+      "name": "Strava",
+      "version": "0.0.1"
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "text2",
+      "name": "Text v2",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 13,
+      "options": {
+        "content": "# Monthly Summary",
+        "mode": "markdown"
+      },
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "",
+      "type": "text2"
+    },
+    {
+      "cacheTimeout": null,
+      "datasource": "${DS_STRAVA}",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 2
+      },
+      "id": 9,
+      "links": [],
+      "options": {
+        "colorMode": "background",
+        "fieldOptions": {
+          "calcs": [
+            "count"
+          ],
+          "defaults": {
+            "mappings": [
+              {
+                "id": 0,
+                "op": "=",
+                "text": "N/A",
+                "type": 1,
+                "value": "null"
+              }
+            ],
+            "max": 100,
+            "min": 0,
+            "nullValueMode": "connected",
+            "thresholds": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "semi-dark-green",
+                "value": 0
+              }
+            ],
+            "title": "Activities",
+            "unit": "none"
+          },
+          "override": {},
+          "overrides": [],
+          "values": false
+        },
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal"
+      },
+      "pluginVersion": "6.6.0-pre",
+      "targets": [
+        {
+          "activityStat": "moving_time",
+          "activityType": null,
+          "format": "time_series",
+          "interval": "no",
+          "queryType": "Activities",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "1M",
+      "timeShift": null,
+      "title": "",
+      "type": "stat"
+    },
+    {
+      "cacheTimeout": null,
+      "datasource": "${DS_STRAVA}",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 2
+      },
+      "id": 8,
+      "links": [],
+      "options": {
+        "colorMode": "background",
+        "fieldOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "defaults": {
+            "decimals": 0,
+            "mappings": [
+              {
+                "id": 0,
+                "op": "=",
+                "text": "N/A",
+                "type": 1,
+                "value": "null"
+              }
+            ],
+            "max": 100,
+            "min": 0,
+            "nullValueMode": "connected",
+            "thresholds": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ],
+            "title": "Distance",
+            "unit": "lengthm"
+          },
+          "override": {},
+          "overrides": [],
+          "values": false
+        },
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal"
+      },
+      "pluginVersion": "6.6.0-pre",
+      "targets": [
+        {
+          "activityStat": "distance",
+          "activityType": null,
+          "queryType": "Activities",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "1M",
+      "timeShift": null,
+      "title": "",
+      "type": "stat"
+    },
+    {
+      "cacheTimeout": null,
+      "datasource": "${DS_STRAVA}",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 2
+      },
+      "id": 10,
+      "links": [],
+      "options": {
+        "colorMode": "background",
+        "fieldOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "defaults": {
+            "decimals": 1,
+            "mappings": [
+              {
+                "id": 0,
+                "op": "=",
+                "text": "N/A",
+                "type": 1,
+                "value": "null"
+              }
+            ],
+            "max": 100,
+            "min": 0,
+            "nullValueMode": "connected",
+            "thresholds": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "dark-blue",
+                "value": 0
+              }
+            ],
+            "title": "Time",
+            "unit": "dthms"
+          },
+          "override": {},
+          "overrides": [],
+          "values": false
+        },
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal"
+      },
+      "pluginVersion": "6.6.0-pre",
+      "targets": [
+        {
+          "activityStat": "moving_time",
+          "activityType": null,
+          "queryType": "Activities",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "1M",
+      "timeShift": null,
+      "title": "",
+      "type": "stat"
+    },
+    {
+      "cacheTimeout": null,
+      "datasource": "${DS_STRAVA}",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 2
+      },
+      "id": 11,
+      "links": [],
+      "options": {
+        "colorMode": "background",
+        "fieldOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "defaults": {
+            "mappings": [
+              {
+                "id": 0,
+                "op": "=",
+                "text": "N/A",
+                "type": 1,
+                "value": "null"
+              }
+            ],
+            "max": 10000,
+            "min": 0,
+            "nullValueMode": "connected",
+            "thresholds": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "dark-red",
+                "value": 0
+              }
+            ],
+            "title": "Elevation gain",
+            "unit": "lengthm"
+          },
+          "override": {},
+          "overrides": [],
+          "values": false
+        },
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal"
+      },
+      "pluginVersion": "6.6.0-pre",
+      "targets": [
+        {
+          "activityStat": "total_elevation_gain",
+          "activityType": null,
+          "queryType": "Activities",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "1M",
+      "timeShift": null,
+      "title": "",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 14,
+      "options": {
+        "content": "# Year Summary\n\n\n",
+        "mode": "markdown"
+      },
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "",
+      "type": "text2"
+    },
+    {
+      "aliasColors": {
+        "Other_moving_time": "blue",
+        "Ride_moving_time": "light-green",
+        "Run_moving_time": "dark-orange",
+        "moving_time": "orange",
+        "total_elevation_gain": "blue"
+      },
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_STRAVA}",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "hiddenSeries": false,
+      "id": 6,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "activityStat": "moving_time",
+          "activityType": "Run",
+          "format": "time_series",
+          "queryType": "Activities",
+          "refId": "A"
+        },
+        {
+          "activityStat": "moving_time",
+          "activityType": "Ride",
+          "format": "time_series",
+          "queryType": "Activities",
+          "refId": "B"
+        },
+        {
+          "activityStat": "moving_time",
+          "activityType": "Other",
+          "format": "time_series",
+          "queryType": "Activities",
+          "refId": "C"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Moving time",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": null,
+          "format": "dthms",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "columns": [],
+      "datasource": "${DS_STRAVA}",
+      "fontSize": "100%",
+      "gridPos": {
+        "h": 15,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "id": 2,
+      "options": {},
+      "pageSize": null,
+      "showHeader": true,
+      "sort": {
+        "col": 0,
+        "desc": true
+      },
+      "styles": [
+        {
+          "alias": "Time",
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "pattern": "Time",
+          "type": "date"
+        },
+        {
+          "alias": "",
+          "colorMode": null,
+          "colors": [
+            "#56A64B",
+            "#FA6400",
+            "#C4162A"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 1,
+          "link": false,
+          "mappingType": 1,
+          "pattern": "distance",
+          "thresholds": [
+            "30000",
+            "50000"
+          ],
+          "type": "number",
+          "unit": "short"
+        },
+        {
+          "alias": "",
+          "colorMode": null,
+          "colors": [
+            "#56A64B",
+            "#FA6400",
+            "#C4162A"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "mappingType": 1,
+          "pattern": "moving_time",
+          "thresholds": [
+            "3600",
+            "10800"
+          ],
+          "type": "number",
+          "unit": "short"
+        },
+        {
+          "alias": "",
+          "colorMode": null,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "decimals": 2,
+          "pattern": "/.*/",
+          "thresholds": [],
+          "type": "number",
+          "unit": "short"
+        }
+      ],
+      "targets": [
+        {
+          "activityStat": "distance",
+          "format": "table",
+          "queryType": "Activities",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Activities",
+      "transform": "table",
+      "type": "table"
+    },
+    {
+      "aliasColors": {
+        "total_elevation_gain": "super-light-blue"
+      },
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_STRAVA}",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "hiddenSeries": false,
+      "id": 5,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "alias": "total_elevation_gain",
+          "bars": false,
+          "pointradius": 4,
+          "points": true,
+          "yaxis": 2
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "activityStat": "distance",
+          "format": "time_series",
+          "queryType": "Activities",
+          "refId": "A"
+        },
+        {
+          "activityStat": "total_elevation_gain",
+          "format": "time_series",
+          "queryType": "Activities",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Distance/Elevation gain",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "lengthm",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 21,
+  "style": "dark",
+  "tags": [
+    "strava"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1y",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "Strava Athlete Dashboad Modern",
+  "version": 1
+}
