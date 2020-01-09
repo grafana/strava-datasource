@@ -27,4 +27,4 @@ You will be redirected back to the datasource configuration page. Now fill _Clie
 
 ![Save & Test](img/config_3.png)
 
-Now you can create some dashboards!
+Now you can create some dashboards! Also, you can import dashboards from the _Dashboards_ tab at the data source configuration page.

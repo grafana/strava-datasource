@@ -41,6 +41,7 @@ module.exports = {
       { from: '../CHANGELOG.md', to: '.' },
       { from: 'plugin.json' },
       { from: 'img/*' },
+      { from: 'dashboards/*' },
       { from: 'partials/*' }
     ]),
   ],
