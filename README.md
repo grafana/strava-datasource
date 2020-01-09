@@ -12,4 +12,4 @@ Features:
 
 ### Configuration
 
-See configuration docs.
+See [configuration](docs/configuration.md) docs.
