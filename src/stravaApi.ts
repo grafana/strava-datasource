@@ -30,7 +30,7 @@ export default class StravaApi {
       try {
         chunk = await this.request(url, params);
       } catch (error) {
-        break;
+        throw error;
       }
       data = data.concat(chunk);
       page++;
@@ -44,12 +44,12 @@ export default class StravaApi {
 
   async _request(url: string, params?: any) {
     try {
-      const { data } = await this.backendSrv.datasourceRequest({
+      const response = await this.backendSrv.datasourceRequest({
         url: `${this.apiUrl}/strava/${url}`,
         method: 'GET',
         params,
       });
-      return data;
+      return response.data;
     } catch (error) {
       console.log(error);
       throw error;
