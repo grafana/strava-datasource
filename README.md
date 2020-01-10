@@ -12,7 +12,7 @@ Features:
 
 ### Configuration
 
-See [configuration](docs/configuration.md) docs.
+See [configuration](https://github.com/grafana/strava-datasource/blob/master/docs/configuration.md) docs.
 
 ### Quick start
 
