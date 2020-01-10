@@ -1,0 +1,82 @@
+{
+  "name": "Strava",
+  "id": "grafana-strava-datasource",
+  "type": "datasource",
+
+  "metrics": true,
+  "annotations": false,
+
+  "routes": [
+    {
+      "path": "strava",
+      "method": "GET",
+      "url": "https://www.strava.com/api/v3",
+      "tokenAuth": {
+        "url": "https://www.strava.com/api/v3/oauth/token",
+        "params": {
+          "grant_type": "authorization_code",
+          "client_id": "{{.JsonData.clientID}}",
+          "client_secret": "{{.SecureJsonData.clientSecret}}",
+          "code": "{{.SecureJsonData.authCode}}"
+        }
+      }
+    },
+    {
+      "path": "api",
+      "method": "GET",
+      "url": "https://www.strava.com/api/v3",
+      "headers": [{
+        "name": "Authorization",
+        "content": "Bearer {{.SecureJsonData.accessToken}}"
+      }]
+
+    }
+  ],
+
+  "info": {
+    "description": "Strava datasource",
+    "author": {
+      "name": "Grafana Labs",
+      "url": "https://grafana.com"
+    },
+    "logos": {
+      "small": "img/strava_logo.svg",
+      "large": "img/strava_logo.svg"
+    },
+    "links": [
+      {
+        "name": "Website",
+        "url": "https://grafana.com/plugins/grafana-strava-datasource"
+      },
+      {
+        "name": "License",
+        "url": "https://grafana.com/plugins/grafana-strava-datasource/license"
+      }
+    ],
+    "version": "1.0.1",
+    "updated": "2020-01-10"
+  },
+
+  "includes": [
+    {
+      "type": "dashboard",
+      "name": "Strava Athlete Dashboad Modern",
+      "path": "dashboards/strava_athlete_dashboad_modern.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Strava Athlete Dashboad",
+      "path": "dashboards/strava_athlete_dashboad.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Strava Datasource",
+      "path": "dashboards/strava_datasource.json"
+    }
+  ],
+
+  "dependencies": {
+    "grafanaVersion": "6.5",
+    "plugins": []
+  }
+}
