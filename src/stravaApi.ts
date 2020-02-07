@@ -42,6 +42,10 @@ export default class StravaApi {
     return data;
   }
 
+  async exchangeToken(authCode) {
+    return await this.tsdbAuthRequest({ authCode });
+  }
+
   async request(url: string, params?: any) {
     return this.proxyfy(this._request, '_request', this)(url, params);
   }
@@ -49,10 +53,8 @@ export default class StravaApi {
   async _request(url: string, params?: any) {
     try {
       const response = await this.backendSrv.datasourceRequest({
-        // url: `${this.apiUrl}/strava/${url}`,
-        url: '/api/tsdb/query',
-        // method: 'GET',
-        method: 'POST',
+        url: `${this.apiUrl}/strava/${url}`,
+        method: 'GET',
         params,
       });
       return response.data;
@@ -73,7 +75,32 @@ export default class StravaApi {
           datasourceId: this.datasourceId,
           queryType: 'stravaAPI',
           target: {
-            method: endpoint,
+            endpoint,
+            params,
+          },
+        }],
+      };
+
+      const response = await this.backendSrv.datasourceRequest({
+        url: '/api/tsdb/query',
+        method: 'POST',
+        data: tsdbRequestData
+      });
+      console.log(response);
+      return this.handleTsdbResponse(response);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  async tsdbAuthRequest(params?: any) {
+    try {
+      const tsdbRequestData = {
+        queries: [{
+          datasourceId: this.datasourceId,
+          queryType: 'stravaAuth',
+          target: {
             params,
           },
         }],

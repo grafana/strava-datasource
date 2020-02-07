@@ -75,6 +75,9 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   testDatasource() {
+    const authCode = this.getAuthCode();
+    console.log(authCode);
+    this.stravaApi.exchangeToken(authCode);
     return this.stravaApi.getActivities({ per_page: 2, limit: 2})
       .then(response => {
         return { status: "success", message: "Data source is working" };
@@ -83,6 +86,13 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         console.log(error);
         return { status: "error", message: "Cannot connect to Strava API" };
       });
+  }
+
+  getAuthCode() {
+    const AuthCodePattern = /code=([\w]+)/;
+    const result = AuthCodePattern.exec(window.location.search);
+    const authCode = result && result.length && result[1];
+    return authCode;
   }
 
   filterActivities(activities: any[], activityType: StravaActivityType): any[] {

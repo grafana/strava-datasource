@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/grafana/grafana-plugin-model/go/datasource"
@@ -15,6 +17,8 @@ var pluginLogger = hclog.New(&hclog.LoggerOptions{
 
 func main() {
 	pluginLogger.Debug("Running Strava backend datasource")
+	pluginDir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	pluginLogger.Debug(pluginDir)
 
 	plugin.Serve(&plugin.ServeConfig{
 
@@ -25,8 +29,9 @@ func main() {
 		},
 		Plugins: map[string]plugin.Plugin{
 			"strava-backend-datasource": &datasource.DatasourcePluginImpl{Plugin: &StravaPlugin{
-				datasourceCache: NewCache(10*time.Minute, 10*time.Minute),
+				datasourceCache: NewCache(10*time.Minute, 10*time.Minute, pluginDir),
 				logger:          pluginLogger,
+				dataDir:         pluginDir,
 			}},
 		},
 
