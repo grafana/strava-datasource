@@ -6,6 +6,10 @@
   "metrics": true,
   "annotations": false,
 
+  "backend": true,
+  "alerting": false,
+  "executable": "./strava-plugin",
+
   "routes": [
     {
       "path": "strava",
