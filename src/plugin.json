@@ -10,33 +10,6 @@
   "alerting": false,
   "executable": "./strava-plugin",
 
-  "routes": [
-    {
-      "path": "strava",
-      "method": "GET",
-      "url": "https://www.strava.com/api/v3",
-      "tokenAuth": {
-        "url": "https://www.strava.com/api/v3/oauth/token",
-        "params": {
-          "grant_type": "authorization_code",
-          "client_id": "{{.JsonData.clientID}}",
-          "client_secret": "{{.SecureJsonData.clientSecret}}",
-          "code": "{{.SecureJsonData.authCode}}"
-        }
-      }
-    },
-    {
-      "path": "api",
-      "method": "GET",
-      "url": "https://www.strava.com/api/v3",
-      "headers": [{
-        "name": "Authorization",
-        "content": "Bearer {{.SecureJsonData.accessToken}}"
-      }]
-
-    }
-  ],
-
   "info": {
     "description": "Strava datasource",
     "author": {
