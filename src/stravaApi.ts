@@ -1,14 +1,17 @@
 export default class StravaApi {
+  datasourceId: number;
   apiUrl: string;
   promises: any;
 
-  constructor(url: string, private backendSrv: any) {
-    this.apiUrl = url;
+  constructor(datasourceId: number, private backendSrv: any) {
+    this.datasourceId = datasourceId;
+    // this.apiUrl = url;
     this.promises = {};
   }
 
   async getAuthenticatedAthlete(params?: any) {
-    return await this.request('athlete', params);
+    // return await this.request('athlete', params);
+    return await this.tsdbRequest('athlete', params);
   }
 
   async getActivities(params?: any) {
@@ -28,7 +31,8 @@ export default class StravaApi {
         page,
       };
       try {
-        chunk = await this.request(url, params);
+        // chunk = await this.request(url, params);
+        chunk = await this.tsdbRequest(url, params);
       } catch (error) {
         throw error;
       }
@@ -45,8 +49,10 @@ export default class StravaApi {
   async _request(url: string, params?: any) {
     try {
       const response = await this.backendSrv.datasourceRequest({
-        url: `${this.apiUrl}/strava/${url}`,
-        method: 'GET',
+        // url: `${this.apiUrl}/strava/${url}`,
+        url: '/api/tsdb/query',
+        // method: 'GET',
+        method: 'POST',
         params,
       });
       return response.data;
@@ -54,6 +60,44 @@ export default class StravaApi {
       console.log(error);
       throw error;
     }
+  }
+
+  async tsdbRequest(endpoint: string, params?: any) {
+    return this.proxyfy(this._tsdbRequest, '_tsdbRequest', this)(endpoint, params);
+  }
+
+  async _tsdbRequest(endpoint: string, params?: any) {
+    try {
+      const tsdbRequestData = {
+        queries: [{
+          datasourceId: this.datasourceId,
+          queryType: 'stravaAPI',
+          target: {
+            method: endpoint,
+            params,
+          },
+        }],
+      };
+
+      const response = await this.backendSrv.datasourceRequest({
+        url: '/api/tsdb/query',
+        method: 'POST',
+        data: tsdbRequestData
+      });
+      console.log(response);
+      return this.handleTsdbResponse(response);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  handleTsdbResponse(response) {
+    if (!response || !response.data || !response.data.results) {
+      return [];
+    }
+
+    return response.data.results['stravaAPI'].meta;
   }
 
   proxyfy(func, funcName, funcScope) {

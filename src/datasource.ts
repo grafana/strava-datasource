@@ -26,6 +26,7 @@ import moment from "moment";
 
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
+  datasourceId: number;
   apiUrl: string;
   datasourceName: string;
   stravaApi: StravaApi;
@@ -39,8 +40,9 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   ) {
     super(instanceSettings);
     this.type = "strava";
+    this.datasourceId = instanceSettings.id;
     this.apiUrl = instanceSettings.url;
-    this.stravaApi = new StravaApi(instanceSettings.url, backendSrv);
+    this.stravaApi = new StravaApi(this.datasourceId, backendSrv);
   }
 
   async query(options: DataQueryRequest<StravaQuery>) {
