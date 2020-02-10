@@ -27,7 +27,7 @@ const StravaAPITokenUrl = "https://www.strava.com/api/v3/oauth/token"
 type StravaPlugin struct {
 	plugin.NetRPCUnsupportedPlugin
 	logger          hclog.Logger
-	datasourceCache *Cache
+	datasourceCache *cache.Cache
 	dataDir         string
 }
 
@@ -36,7 +36,7 @@ type StravaPlugin struct {
 type StravaDatasource struct {
 	dsInfo       *datasource.DatasourceInfo
 	refreshToken string
-	cache        *Cache
+	cache        *DSCache
 	logger       hclog.Logger
 	httpClient   *http.Client
 }
@@ -45,7 +45,7 @@ type StravaDatasource struct {
 func newStravaDatasource(dsInfo *datasource.DatasourceInfo, dataDir string) (*StravaDatasource, error) {
 	return &StravaDatasource{
 		dsInfo: dsInfo,
-		cache:  NewCache(10*time.Minute, 10*time.Minute, dataDir),
+		cache:  NewDSCache(dsInfo, 10*time.Minute, 10*time.Minute, dataDir),
 		httpClient: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
@@ -114,7 +114,6 @@ func (ds *StravaDatasource) StravaAuthQuery(ctx context.Context, tsdbReq *dataso
 	if err != nil {
 		return nil, err
 	}
-	ds.logger.Debug(tokenExchangeResp.RefreshToken)
 	tokenExchangeRespJson, err := json.Marshal(tokenExchangeResp)
 
 	response := &datasource.DatasourceResponse{
@@ -130,18 +129,22 @@ func (ds *StravaDatasource) StravaAuthQuery(ctx context.Context, tsdbReq *dataso
 
 func (ds *StravaDatasource) GetAccessToken() (string, error) {
 	accessToken, expTime, found := ds.cache.gocache.GetWithExpiration("accessToken")
-	if found && time.Now().Before(expTime) {
+	accessTokenExpired := time.Now().After(expTime)
+	if found && !accessTokenExpired {
 		return accessToken.(string), nil
+	} else if found && accessTokenExpired {
+		ds.logger.Debug("Access token expired, obtaining new one")
 	}
 
 	var refreshToken string
 	var err error
 	refreshTokenCached, found := ds.cache.Get("refreshToken")
 	if !found {
-		refreshToken, err = ds.cache.GetFromFile("refreshToken")
+		refreshToken, err = ds.cache.Load("refreshToken")
 		if err != nil {
-			return "", errors.New("Refresh token not found")
+			return "", errors.New("Refresh token not found, authorize datasource first")
 		}
+		ds.logger.Debug("Refresh token loaded from file", "refresh token", refreshToken)
 	} else {
 		refreshToken = refreshTokenCached.(string)
 	}
@@ -154,6 +157,9 @@ func (ds *StravaDatasource) GetAccessToken() (string, error) {
 	return tokenResp.AccessToken, nil
 }
 
+// ExchangeToken invokes first time when authentication required and exchange authorization code for the
+// access and refresh tokens
+// https://developers.strava.com/docs/authentication/#tokenexchange
 func (ds *StravaDatasource) ExchangeToken(tsdbReq *datasource.DatasourceRequest, authCode string) (*TokenExchangeResponse, error) {
 	jsonDataStr := ds.dsInfo.GetJsonData()
 	jsonData, err := simplejson.NewJson([]byte(jsonDataStr))
@@ -164,8 +170,6 @@ func (ds *StravaDatasource) ExchangeToken(tsdbReq *datasource.DatasourceRequest,
 
 	secureJsonData := ds.dsInfo.GetDecryptedSecureJsonData()
 	clientSecret := secureJsonData["clientSecret"]
-
-	ds.logger.Debug(authCode, clientId, clientSecret)
 
 	authParams := map[string][]string{
 		"client_id":     {clientId},
@@ -194,11 +198,11 @@ func (ds *StravaDatasource) ExchangeToken(tsdbReq *datasource.DatasourceRequest,
 	accessTokenExpAt := respJson.Get("expires_at").MustInt64()
 	accessTokenExpIn := time.Until(time.Unix(accessTokenExpAt, 0))
 	refreshToken := respJson.Get("refresh_token").MustString()
-	ds.logger.Debug(refreshToken, accessToken)
+	ds.logger.Debug("Got new refresh token", "refresh token", refreshToken)
 
 	ds.cache.Set("accessToken", accessToken, accessTokenExpIn)
 	ds.cache.Set("refreshToken", refreshToken, cache.NoExpiration)
-	ds.cache.SaveToFile("refreshToken", refreshToken)
+	ds.cache.Save("refreshToken", refreshToken)
 
 	return &TokenExchangeResponse{
 		AccessToken:      accessToken,
@@ -207,6 +211,8 @@ func (ds *StravaDatasource) ExchangeToken(tsdbReq *datasource.DatasourceRequest,
 	}, nil
 }
 
+// RefreshAccessToken refreshes expired Access token using refresh token
+// https://developers.strava.com/docs/authentication/#refreshingexpiredaccesstokens
 func (ds *StravaDatasource) RefreshAccessToken(refreshToken string) (*TokenExchangeResponse, error) {
 	jsonDataStr := ds.dsInfo.GetJsonData()
 	jsonData, err := simplejson.NewJson([]byte(jsonDataStr))
@@ -245,12 +251,12 @@ func (ds *StravaDatasource) RefreshAccessToken(refreshToken string) (*TokenExcha
 	accessTokenExpAt := respJson.Get("expires_at").MustInt64()
 	accessTokenExpIn := time.Until(time.Unix(accessTokenExpAt, 0))
 	refreshTokenNew := respJson.Get("refresh_token").MustString()
-	ds.logger.Debug(refreshTokenNew, accessToken)
 
 	ds.cache.Set("accessToken", accessToken, accessTokenExpIn)
 	if refreshTokenNew != refreshToken {
+		ds.logger.Debug("Got new refresh token", "refresh token", refreshTokenNew)
 		ds.cache.Set("refreshToken", refreshTokenNew, cache.NoExpiration)
-		ds.cache.SaveToFile("refreshToken", refreshTokenNew)
+		ds.cache.Save("refreshToken", refreshTokenNew)
 	}
 
 	return &TokenExchangeResponse{
@@ -265,8 +271,6 @@ func (ds *StravaDatasource) StravaAPIQuery(ctx context.Context, tsdbReq *datasou
 	if err != nil {
 		return nil, err
 	}
-
-	ds.logger.Debug(accessToken)
 
 	query := tsdbReq.Queries[0]
 	queryJSON, err := simplejson.NewJson([]byte(query.ModelJson))
@@ -301,7 +305,7 @@ func (ds *StravaDatasource) StravaAPIQuery(ctx context.Context, tsdbReq *datasou
 
 	apiResponse, err := makeHTTPRequest(ctx, ds.httpClient, req)
 	apiResponseStr := string(apiResponse)
-	ds.logger.Debug(apiResponseStr)
+	// ds.logger.Debug(apiResponseStr)
 
 	response := &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
@@ -344,7 +348,7 @@ func (p *StravaPlugin) GetDatasource(tsdbReq *datasource.DatasourceRequest) (*St
 
 	dsInfo := tsdbReq.GetDatasource()
 	if p.logger.IsDebug() {
-		p.logger.Debug(fmt.Sprintf("Datasource cache miss (Org %d Id %d '%s' %s)", dsInfo.GetOrgId(), dsInfo.GetId(), dsInfo.GetName(), dsInfoHash))
+		p.logger.Debug("Datasource cache miss", "Org", dsInfo.GetOrgId(), "Id", dsInfo.GetId(), "Name", dsInfo.GetName(), "Hash", dsInfoHash)
 	}
 
 	ds, err := p.NewStravaDatasource(dsInfo)
