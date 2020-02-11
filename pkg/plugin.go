@@ -11,6 +11,8 @@ import (
 	cache "github.com/patrickmn/go-cache"
 )
 
+const DATA_PATH_VARIABLE = "GF_STRAVA_DS_DATA_PATH"
+
 var pluginLogger = hclog.New(&hclog.LoggerOptions{
 	Name:  "strava-datasource",
 	Level: hclog.LevelFromString("DEBUG"),
@@ -18,11 +20,15 @@ var pluginLogger = hclog.New(&hclog.LoggerOptions{
 
 func main() {
 	pluginLogger.Debug("Running Strava backend datasource")
-	pluginDir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	pluginLogger.Debug("Plugin data dir set", "path", pluginDir)
+
+	var dataDir string
+	dataDir, exist := os.LookupEnv(DATA_PATH_VARIABLE)
+	if !exist {
+		dataDir, _ = filepath.Abs(filepath.Dir(os.Args[0]))
+	}
+	pluginLogger.Debug("Plugin data dir", "path", dataDir)
 
 	plugin.Serve(&plugin.ServeConfig{
-
 		HandshakeConfig: plugin.HandshakeConfig{
 			ProtocolVersion:  1,
 			MagicCookieKey:   "grafana_plugin_type",
@@ -32,7 +38,7 @@ func main() {
 			"strava-backend-datasource": &datasource.DatasourcePluginImpl{Plugin: &StravaPlugin{
 				datasourceCache: cache.New(10*time.Minute, 10*time.Minute),
 				logger:          pluginLogger,
-				dataDir:         pluginDir,
+				dataDir:         dataDir,
 			}},
 		},
 
