@@ -279,25 +279,20 @@ func (ds *StravaDatasource) StravaAPIQuery(ctx context.Context, tsdbReq *datasou
 	}
 	endpoint := queryJSON.Get("target").Get("endpoint").MustString()
 	params := queryJSON.Get("target").Get("params").MustMap()
-	values := make(url.Values)
+
+	requestUrlStr := fmt.Sprintf("%s/%s", StravaAPIUrl, endpoint)
+	requestUrl, err := url.Parse(requestUrlStr)
+
+	q := requestUrl.Query()
 	for param, value := range params {
-		values.Add(param, fmt.Sprint(value))
+		q.Add(param, fmt.Sprint(value))
 	}
-	paramsEncoded := values.Encode()
-
-	requestUrl := StravaAPIUrl + "/" + endpoint
-	if paramsEncoded != "" {
-		requestUrl += "?" + paramsEncoded
-	}
-
-	parsedUrl, err := url.Parse(requestUrl)
-	if err != nil {
-		return nil, err
-	}
+	requestUrl.RawQuery = q.Encode()
+	ds.logger.Debug("Strava API query", "url", requestUrl.String())
 
 	req := &http.Request{
 		Method: "GET",
-		URL:    parsedUrl,
+		URL:    requestUrl,
 		Header: map[string][]string{
 			"Authorization": {"Bearer " + accessToken},
 		},
