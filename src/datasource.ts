@@ -75,7 +75,9 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
   async testDatasource() {
     const authCode = this.getAuthCode();
-    this.stravaApi.exchangeToken(authCode);
+    if (authCode) {
+      this.stravaApi.exchangeToken(authCode);
+    }
     return this.stravaApi.getActivities({ per_page: 2, limit: 2})
       .then(response => {
         return { status: "success", message: "Data source is working" };

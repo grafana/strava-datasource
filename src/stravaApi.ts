@@ -121,6 +121,10 @@ export default class StravaApi {
   }
 
   handleTsdbResponse(response) {
+    if (response && (response.status >= 400 || response.status < 0)) {
+      throw Error(response.statusText);
+    }
+
     if (!response || !response.data || !response.data.results) {
       return [];
     }
