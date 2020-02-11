@@ -14,8 +14,6 @@ import (
 
 	simplejson "github.com/bitly/go-simplejson"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
-	hclog "github.com/hashicorp/go-hclog"
-	plugin "github.com/hashicorp/go-plugin"
 	cache "github.com/patrickmn/go-cache"
 	"golang.org/x/net/context/ctxhttp"
 )
@@ -23,25 +21,7 @@ import (
 const StravaAPIUrl = "https://www.strava.com/api/v3"
 const StravaAPITokenUrl = "https://www.strava.com/api/v3/oauth/token"
 
-// StravaPlugin implements the Grafana backend interface and forwards queries to the StravaDatasource
-type StravaPlugin struct {
-	plugin.NetRPCUnsupportedPlugin
-	logger          hclog.Logger
-	datasourceCache *cache.Cache
-	dataDir         string
-}
-
-// StravaDatasource stores state about a specific datasource and provides methods to make
-// requests to the Zabbix API
-type StravaDatasource struct {
-	dsInfo       *datasource.DatasourceInfo
-	refreshToken string
-	cache        *DSCache
-	logger       hclog.Logger
-	httpClient   *http.Client
-}
-
-// newStravaDatasource returns an initialized ZabbixDatasource
+// newStravaDatasource returns an initialized StravaDatasource instance
 func newStravaDatasource(dsInfo *datasource.DatasourceInfo, dataDir string) (*StravaDatasource, error) {
 	return &StravaDatasource{
 		dsInfo: dsInfo,
@@ -84,7 +64,7 @@ func (p *StravaPlugin) Query(ctx context.Context, tsdbReq *datasource.Datasource
 		return nil, err
 	}
 
-	queryType, err := GetQueryType(tsdbReq)
+	queryType, err := getQueryType(tsdbReq)
 	if err != nil {
 		return nil, err
 	}
@@ -96,10 +76,10 @@ func (p *StravaPlugin) Query(ctx context.Context, tsdbReq *datasource.Datasource
 		resp, err = StravaDS.StravaAuthQuery(ctx, tsdbReq)
 	default:
 		err = errors.New("Query not implemented")
-		return BuildErrorResponse(err), nil
+		return buildErrorResponse(err, nil), nil
 	}
 
-	return
+	return resp, nil
 }
 
 func (ds *StravaDatasource) StravaAuthQuery(ctx context.Context, tsdbReq *datasource.DatasourceRequest) (*datasource.DatasourceResponse, error) {
@@ -299,36 +279,10 @@ func (ds *StravaDatasource) StravaAPIQuery(ctx context.Context, tsdbReq *datasou
 	}
 
 	apiResponse, err := makeHTTPRequest(ctx, ds.httpClient, req)
-	apiResponseStr := string(apiResponse)
-	// ds.logger.Debug(apiResponseStr)
-
-	response := &datasource.DatasourceResponse{
-		Results: []*datasource.QueryResult{
-			&datasource.QueryResult{
-				RefId:    "stravaAPI",
-				MetaJson: apiResponseStr,
-			},
-		},
-	}
-	return response, nil
-}
-
-func makeHTTPRequest(ctx context.Context, httpClient *http.Client, req *http.Request) ([]byte, error) {
-	res, err := ctxhttp.Do(ctx, httpClient, req)
 	if err != nil {
-		return nil, err
+		return buildErrorResponse(err, &apiResponse), err
 	}
-	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("invalid status code. status: %v", res.Status)
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
+	return buildResponse(apiResponse)
 }
 
 // GetDatasource Returns cached datasource or creates new one
@@ -355,8 +309,8 @@ func (p *StravaPlugin) GetDatasource(tsdbReq *datasource.DatasourceRequest) (*St
 	return ds, nil
 }
 
-// GetQueryType determines the query type from a query or list of queries
-func GetQueryType(tsdbReq *datasource.DatasourceRequest) (string, error) {
+// getQueryType determines the query type from a query or list of queries
+func getQueryType(tsdbReq *datasource.DatasourceRequest) (string, error) {
 	queryType := "query"
 	if len(tsdbReq.Queries) > 0 {
 		firstQuery := tsdbReq.Queries[0]
@@ -369,30 +323,48 @@ func GetQueryType(tsdbReq *datasource.DatasourceRequest) (string, error) {
 	return queryType, nil
 }
 
-// BuildResponse transforms a Strava API response to a DatasourceResponse
-func BuildResponse(responseData interface{}) (*datasource.DatasourceResponse, error) {
-	jsonBytes, err := json.Marshal(responseData)
+func makeHTTPRequest(ctx context.Context, httpClient *http.Client, req *http.Request) ([]byte, error) {
+	res, err := ctxhttp.Do(ctx, httpClient, req)
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
 
+	if res.StatusCode != http.StatusOK {
+		return body, fmt.Errorf("Error status: %v", res.Status)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
+
+// buildResponse transforms a Strava API response to a DatasourceResponse
+func buildResponse(responseData []byte) (*datasource.DatasourceResponse, error) {
 	return &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
 			&datasource.QueryResult{
-				RefId:    "StravaAPI",
-				MetaJson: string(jsonBytes),
+				RefId:    "stravaAPI",
+				MetaJson: string(responseData),
 			},
 		},
 	}, nil
 }
 
-// BuildErrorResponse creates a QueryResult that forwards an error to the front-end
-func BuildErrorResponse(err error) *datasource.DatasourceResponse {
+// buildErrorResponse creates a QueryResult that forwards an error to the front-end
+func buildErrorResponse(err error, responseData *[]byte) *datasource.DatasourceResponse {
+	metaJson := ""
+	if responseData != nil {
+		metaJson = string(*responseData)
+	}
 	return &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
 			&datasource.QueryResult{
-				RefId: "StravaAPI",
-				Error: err.Error(),
+				RefId:    "stravaAPI",
+				Error:    err.Error(),
+				MetaJson: metaJson,
 			},
 		},
 	}

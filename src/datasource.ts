@@ -34,7 +34,6 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   /** @ngInject */
   constructor(
     instanceSettings: DataSourceInstanceSettings<StravaJsonData>,
-    private backendSrv: any,
     private templateSrv: any,
     private timeSrv: any
   ) {
@@ -42,7 +41,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     this.type = "strava";
     this.datasourceId = instanceSettings.id;
     this.apiUrl = instanceSettings.url;
-    this.stravaApi = new StravaApi(this.datasourceId, backendSrv);
+    this.stravaApi = new StravaApi(this.datasourceId);
   }
 
   async query(options: DataQueryRequest<StravaQuery>) {
@@ -74,9 +73,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return { data };
   }
 
-  testDatasource() {
+  async testDatasource() {
     const authCode = this.getAuthCode();
-    console.log(authCode);
     this.stravaApi.exchangeToken(authCode);
     return this.stravaApi.getActivities({ per_page: 2, limit: 2})
       .then(response => {

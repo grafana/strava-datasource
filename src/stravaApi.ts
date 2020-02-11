@@ -1,9 +1,11 @@
+import { getBackendSrv } from '@grafana/runtime';
+
 export default class StravaApi {
   datasourceId: number;
   apiUrl: string;
   promises: any;
 
-  constructor(datasourceId: number, private backendSrv: any) {
+  constructor(datasourceId: number) {
     this.datasourceId = datasourceId;
     // this.apiUrl = url;
     this.promises = {};
@@ -52,7 +54,7 @@ export default class StravaApi {
 
   async _request(url: string, params?: any) {
     try {
-      const response = await this.backendSrv.datasourceRequest({
+      const response = await getBackendSrv().datasourceRequest({
         url: `${this.apiUrl}/strava/${url}`,
         method: 'GET',
         params,
@@ -81,7 +83,7 @@ export default class StravaApi {
         }],
       };
 
-      const response = await this.backendSrv.datasourceRequest({
+      const response = await getBackendSrv().datasourceRequest({
         url: '/api/tsdb/query',
         method: 'POST',
         data: tsdbRequestData
@@ -106,12 +108,11 @@ export default class StravaApi {
         }],
       };
 
-      const response = await this.backendSrv.datasourceRequest({
+      const response = await getBackendSrv().datasourceRequest({
         url: '/api/tsdb/query',
         method: 'POST',
         data: tsdbRequestData
       });
-      console.log(response);
       return this.handleTsdbResponse(response);
     } catch (error) {
       console.log(error);
@@ -124,7 +125,12 @@ export default class StravaApi {
       return [];
     }
 
-    return response.data.results['stravaAPI'].meta;
+    const responseData = response.data.results['stravaAPI'];
+    if (responseData.error) {
+      throw Error(responseData.error);
+    }
+
+    return responseData.meta;
   }
 
   proxyfy(func, funcName, funcScope) {
