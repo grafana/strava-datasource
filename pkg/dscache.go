@@ -56,7 +56,9 @@ func (c *DSCache) Load(request string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(value), nil
+	response := string(value)
+	c.Set(request, response, cache.NoExpiration)
+	return response, nil
 }
 
 func (c *DSCache) BuildDSCacheKey(request string) string {
