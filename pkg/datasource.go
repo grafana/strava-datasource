@@ -79,7 +79,7 @@ func (p *StravaPlugin) Query(ctx context.Context, tsdbReq *datasource.Datasource
 		return buildErrorResponse(err, nil), nil
 	}
 
-	return resp, nil
+	return
 }
 
 func (ds *StravaDatasource) StravaAuthQuery(ctx context.Context, tsdbReq *datasource.DatasourceRequest) (*datasource.DatasourceResponse, error) {
@@ -120,8 +120,10 @@ func (ds *StravaDatasource) GetAccessToken() (string, error) {
 	var err error
 	refreshTokenCached, found := ds.cache.Get("refreshToken")
 	if !found {
+		ds.logger.Debug("Loading refresh token from file")
 		refreshToken, err = ds.cache.Load("refreshToken")
 		if err != nil {
+			ds.logger.Error(err.Error())
 			return "", errors.New("Refresh token not found, authorize datasource first")
 		}
 		ds.logger.Debug("Refresh token loaded from file", "refresh token", refreshToken)
@@ -131,6 +133,7 @@ func (ds *StravaDatasource) GetAccessToken() (string, error) {
 
 	tokenResp, err := ds.RefreshAccessToken(refreshToken)
 	if err != nil {
+		ds.logger.Error(err.Error())
 		return "", err
 	}
 

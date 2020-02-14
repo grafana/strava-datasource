@@ -9,8 +9,14 @@ import (
 	"time"
 
 	"github.com/grafana/grafana-plugin-model/go/datasource"
+	hclog "github.com/hashicorp/go-hclog"
 	cache "github.com/patrickmn/go-cache"
 )
+
+var cacheLogger = hclog.New(&hclog.LoggerOptions{
+	Name:  "strava-ds-cache",
+	Level: hclog.LevelFromString("DEBUG"),
+})
 
 // DSCache is a abstraction over go-cache.
 type DSCache struct {
@@ -52,6 +58,7 @@ func (c *DSCache) Save(request string, response interface{}) error {
 func (c *DSCache) Load(request string) (string, error) {
 	cacheKey := c.BuildDSCacheKey(request)
 	filename := fmt.Sprintf("%s/%s", c.dataDir, cacheKey)
+	cacheLogger.Debug("Loading key from file", "key", request, "path", filename)
 	value, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return "", err
