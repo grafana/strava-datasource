@@ -21,6 +21,9 @@ import (
 const StravaAPIUrl = "https://www.strava.com/api/v3"
 const StravaAPITokenUrl = "https://www.strava.com/api/v3/oauth/token"
 
+const StravaApiQueryType = "stravaAPI"
+const StravaAuthQueryType = "stravaAuth"
+
 // newStravaDatasource returns an initialized StravaDatasource instance
 func newStravaDatasource(dsInfo *datasource.DatasourceInfo, dataDir string) (*StravaDatasource, error) {
 	return &StravaDatasource{
@@ -70,9 +73,9 @@ func (p *StravaPlugin) Query(ctx context.Context, tsdbReq *datasource.Datasource
 	}
 
 	switch queryType {
-	case "stravaAPI":
+	case StravaApiQueryType:
 		resp, err = StravaDS.StravaAPIQuery(ctx, tsdbReq)
-	case "stravaAuth":
+	case StravaAuthQueryType:
 		resp, err = StravaDS.StravaAuthQuery(ctx, tsdbReq)
 	default:
 		err = errors.New("Query not implemented")
@@ -90,16 +93,19 @@ func (ds *StravaDatasource) StravaAuthQuery(ctx context.Context, tsdbReq *dataso
 		return nil, err
 	}
 	authCode := queryJSON.Get("target").Get("params").Get("authCode").MustString()
-	tokenExchangeResp, err := ds.ExchangeToken(tsdbReq, authCode)
+	_, err = ds.ExchangeToken(tsdbReq, authCode)
 	if err != nil {
 		return nil, err
 	}
-	tokenExchangeRespJson, err := json.Marshal(tokenExchangeResp)
+
+	tokenExchangeRespJson, err := json.Marshal(map[string]string{
+		"message": "Authorization code successfully exchanged for refresh token",
+	})
 
 	response := &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
 			&datasource.QueryResult{
-				RefId:    "stravaAPI",
+				RefId:    StravaAuthQueryType,
 				MetaJson: string(tokenExchangeRespJson),
 			},
 		},
@@ -349,7 +355,7 @@ func buildResponse(responseData []byte) (*datasource.DatasourceResponse, error) 
 	return &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
 			&datasource.QueryResult{
-				RefId:    "stravaAPI",
+				RefId:    StravaApiQueryType,
 				MetaJson: string(responseData),
 			},
 		},
@@ -365,7 +371,7 @@ func buildErrorResponse(err error, responseData *[]byte) *datasource.DatasourceR
 	return &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
 			&datasource.QueryResult{
-				RefId:    "stravaAPI",
+				RefId:    StravaApiQueryType,
 				Error:    err.Error(),
 				MetaJson: metaJson,
 			},

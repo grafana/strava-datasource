@@ -97,30 +97,31 @@ export default class StravaApi {
   }
 
   async tsdbAuthRequest(params?: any) {
-    try {
-      const tsdbRequestData = {
-        queries: [{
-          datasourceId: this.datasourceId,
-          queryType: 'stravaAuth',
-          target: {
-            params,
-          },
-        }],
-      };
+    const queryType = 'stravaAuth';
+    const tsdbRequestData = {
+      queries: [{
+        datasourceId: this.datasourceId,
+        queryType: 'stravaAuth',
+        target: {
+          params,
+        },
+      }],
+    };
 
+    try {
       const response = await getBackendSrv().datasourceRequest({
         url: '/api/tsdb/query',
         method: 'POST',
         data: tsdbRequestData
       });
-      return this.handleTsdbResponse(response);
+      return this.handleTsdbResponse(response, queryType);
     } catch (error) {
       console.log(error);
       throw error;
     }
   }
 
-  handleTsdbResponse(response) {
+  handleTsdbResponse(response, queryType = 'stravaAPI') {
     if (response && (response.status >= 400 || response.status < 0)) {
       throw Error(response.statusText);
     }
@@ -129,7 +130,7 @@ export default class StravaApi {
       return [];
     }
 
-    const responseData = response.data.results['stravaAPI'];
+    const responseData = response.data.results[queryType];
     if (responseData.error) {
       throw Error(responseData.error);
     }
