@@ -1,6 +1,6 @@
 import React, { PureComponent, ChangeEvent } from 'react';
 import { cx, css } from 'emotion';
-import { SelectableValue, QueryEditorProps } from '@grafana/data';
+import { SelectableValue, QueryEditorProps, ExploreQueryFieldProps } from '@grafana/data';
 import { Input, FormLabel, Segment, SegmentAsync, Select } from '@grafana/ui';
 import { StravaQuery, StravaQueryType, StravaActivityStat, StravaQueryFormat, StravaActivityType, StravaJsonData, StravaQueryInterval } from '../types';
 import StravaDatasource from '../datasource';
@@ -50,7 +50,7 @@ export const DefaultTarget: State = {
   interval: StravaQueryInterval.Auto,
 };
 
-export type Props = QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData>;
+export type Props = ExploreQueryFieldProps<StravaDatasource, StravaQuery, StravaJsonData>;
 
 interface State extends StravaQuery {
   athlete: any;

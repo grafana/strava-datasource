@@ -13,4 +13,5 @@ export const plugin = new DataSourcePlugin<StravaDatasource, StravaQuery, Strava
 )
   .setConfigEditor(ConfigEditor)
   .setQueryEditor(QueryEditor)
+  .setExploreQueryField(QueryEditor)
   .setAnnotationQueryCtrl(StravaAnnotationsQueryCtrl);
