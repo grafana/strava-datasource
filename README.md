@@ -26,7 +26,3 @@ export GF_STRAVA_DS_DATA_PATH=/var/lib/grafana/strava
 When data source is configured, you can import example dashboards from _Dashboards_ tab at the data source configuration page. That's a good starting point for your custom dashboards.
 
 Unfortunately, Strava API has some limitations and you can query only your own activities. But for multi-user dashboards you can configure multiple data sources and authorize separate user for each of them.
-
-### Known issues
-
-After some time after authorization you may see an error while refreshing dashboard. Check grafana logs and if you see `status=401` message, try to re-connect data source to Strava. Click _Connect with Strava_ button, grant access and then click _Reset_ button at the right of _Auth Code_ input. Then click _Fill_ to copy new auth code from page URL and save data source configuration.
