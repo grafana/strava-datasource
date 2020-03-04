@@ -26,6 +26,7 @@ import moment from "moment";
 
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
+  datasourceId: number;
   apiUrl: string;
   datasourceName: string;
   stravaApi: StravaApi;
@@ -33,14 +34,14 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   /** @ngInject */
   constructor(
     instanceSettings: DataSourceInstanceSettings<StravaJsonData>,
-    private backendSrv: any,
     private templateSrv: any,
     private timeSrv: any
   ) {
     super(instanceSettings);
     this.type = "strava";
+    this.datasourceId = instanceSettings.id;
     this.apiUrl = instanceSettings.url;
-    this.stravaApi = new StravaApi(instanceSettings.url, backendSrv);
+    this.stravaApi = new StravaApi(this.datasourceId);
   }
 
   async query(options: DataQueryRequest<StravaQuery>) {
@@ -72,15 +73,30 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return { data };
   }
 
-  testDatasource() {
-    return this.stravaApi.getActivities({ per_page: 2, limit: 2})
-      .then(response => {
-        return { status: "success", message: "Data source is working" };
-      })
-      .catch(error => {
-        console.log(error);
-        return { status: "error", message: "Cannot connect to Strava API" };
-      });
+  async testDatasource() {
+    const authCode = this.getAuthCode();
+    if (authCode) {
+      // Exchange auth code for new refresh token if "Connect with Strava" button clicked
+      try {
+        await this.stravaApi.exchangeToken(authCode);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    try {
+      await this.stravaApi.getActivities({ per_page: 2, limit: 2});
+      return { status: "success", message: "Data source is working" };
+    } catch (err) {
+      return { status: "error", message: "Cannot connect to Strava API" };
+    }
+  }
+
+  getAuthCode() {
+    const AuthCodePattern = /code=([\w]+)/;
+    const result = AuthCodePattern.exec(window.location.search);
+    const authCode = result && result.length && result[1];
+    return authCode;
   }
 
   filterActivities(activities: any[], activityType: StravaActivityType): any[] {

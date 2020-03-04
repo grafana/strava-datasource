@@ -213,40 +213,6 @@ export class ConfigEditor extends PureComponent<Props, State> {
               </div>
             </div>
           )}
-          {config.secureJsonFields.authCode ? (
-            <div className="gf-form-inline">
-              <div className="gf-form">
-                <FormLabel className="width-14">Auth Code</FormLabel>
-                <Input className="width-25" placeholder="Configured" disabled={true} />
-              </div>
-              <div className="gf-form">
-                <div className="max-width-30 gf-form-inline">
-                  <Button variant="secondary" type="button" onClick={this.onResetAuthCode}>
-                    Reset
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="gf-form-inline">
-              <div className="gf-form">
-                <FormLabel className="width-14">Auth Code</FormLabel>
-                <div className="width-25">
-                  <Input
-                    value={config.secureJsonData.authCode || ''}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) => this.onAuthCodeChange(event.target.value)}
-                  />
-                </div>
-              </div>
-                <div className="gf-form">
-                  <div className="max-width-30 gf-form-inline">
-                    <Button className="width-5" variant="secondary" type="button" onClick={this.fillAuthCodeFromLocation}>
-                      Fill
-                    </Button>
-                  </div>
-                </div>
-            </div>
-          )}
         </div>
         <div className="gf-form-group">
           <a type="button" href={connectWithStravaHref}>

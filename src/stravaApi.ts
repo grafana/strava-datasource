@@ -1,14 +1,19 @@
+import { getBackendSrv } from '@grafana/runtime';
+
 export default class StravaApi {
+  datasourceId: number;
   apiUrl: string;
   promises: any;
 
-  constructor(url: string, private backendSrv: any) {
-    this.apiUrl = url;
+  constructor(datasourceId: number) {
+    this.datasourceId = datasourceId;
+    // this.apiUrl = url;
     this.promises = {};
   }
 
   async getAuthenticatedAthlete(params?: any) {
-    return await this.request('athlete', params);
+    // return await this.request('athlete', params);
+    return await this.tsdbRequest('athlete', params);
   }
 
   async getActivities(params?: any) {
@@ -28,7 +33,8 @@ export default class StravaApi {
         page,
       };
       try {
-        chunk = await this.request(url, params);
+        // chunk = await this.request(url, params);
+        chunk = await this.tsdbRequest(url, params);
       } catch (error) {
         throw error;
       }
@@ -38,13 +44,17 @@ export default class StravaApi {
     return data;
   }
 
+  async exchangeToken(authCode) {
+    return await this.tsdbAuthRequest({ authCode });
+  }
+
   async request(url: string, params?: any) {
     return this.proxyfy(this._request, '_request', this)(url, params);
   }
 
   async _request(url: string, params?: any) {
     try {
-      const response = await this.backendSrv.datasourceRequest({
+      const response = await getBackendSrv().datasourceRequest({
         url: `${this.apiUrl}/strava/${url}`,
         method: 'GET',
         params,
@@ -54,6 +64,78 @@ export default class StravaApi {
       console.log(error);
       throw error;
     }
+  }
+
+  async tsdbRequest(endpoint: string, params?: any) {
+    return this.proxyfy(this._tsdbRequest, '_tsdbRequest', this)(endpoint, params);
+  }
+
+  async _tsdbRequest(endpoint: string, params?: any) {
+    try {
+      const tsdbRequestData = {
+        queries: [{
+          datasourceId: this.datasourceId,
+          queryType: 'stravaAPI',
+          target: {
+            endpoint,
+            params,
+          },
+        }],
+      };
+
+      const response = await getBackendSrv().datasourceRequest({
+        url: '/api/tsdb/query',
+        method: 'POST',
+        data: tsdbRequestData
+      });
+      console.log(response);
+      return this.handleTsdbResponse(response);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  async tsdbAuthRequest(params?: any) {
+    const queryType = 'stravaAuth';
+    const tsdbRequestData = {
+      queries: [{
+        datasourceId: this.datasourceId,
+        queryType: 'stravaAuth',
+        target: {
+          params,
+        },
+      }],
+    };
+
+    try {
+      const response = await getBackendSrv().datasourceRequest({
+        url: '/api/tsdb/query',
+        method: 'POST',
+        data: tsdbRequestData
+      });
+      return this.handleTsdbResponse(response, queryType);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  handleTsdbResponse(response, queryType = 'stravaAPI') {
+    if (response && (response.status >= 400 || response.status < 0)) {
+      throw Error(response.statusText);
+    }
+
+    if (!response || !response.data || !response.data.results) {
+      return [];
+    }
+
+    const responseData = response.data.results[queryType];
+    if (responseData.error) {
+      throw Error(responseData.error);
+    }
+
+    return responseData.meta;
   }
 
   proxyfy(func, funcName, funcScope) {
