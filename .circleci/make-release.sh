@@ -31,6 +31,7 @@ fi
 RELEASE_BRANCH=release-$RELEASE_VER
 
 # Commit release
+git checkout -b "$RELEASE_BRANCH"
 git add --force dist/
 git commit -m "release $RELEASE_VER"
 
