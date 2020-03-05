@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.1.0] - 2020-03-05
+
+### Added
+- Authentication on the backend, [#2](https://github.com/grafana/strava-datasource/issues/2)
+
 ## [1.0.1] - 2020-01-10
 
 ### Fixed
