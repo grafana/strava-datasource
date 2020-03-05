@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.1.1] - 2020-03-05
+
+### Fixed
+- Don't use git LFS for plugin binaries
+
 ## [1.1.0] - 2020-03-05
 
 ### Added
