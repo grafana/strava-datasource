@@ -1,3 +1,0 @@
-dist/strava-plugin_linux_amd64 filter=lfs diff=lfs merge=lfs -text
-dist/strava-plugin_darwin_amd64 filter=lfs diff=lfs merge=lfs -text
-dist/strava-plugin_windows_amd64.exe filter=lfs diff=lfs merge=lfs -text

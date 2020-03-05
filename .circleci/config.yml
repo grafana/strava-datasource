@@ -140,14 +140,6 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "58:4a:11:32:2d:98:26:f7:33:b5:4d:f0:6b:72:08:fc"
-      - run:
-          name: Install git LFS
-          command: |
-            curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh -o /tmp/script.deb.sh
-            chmod +x /tmp/script.deb.sh
-            sudo /tmp/script.deb.sh
-            sudo apt install git-lfs
-          no_output_timeout: 5m
       - checkout
       - attach_workspace:
           at: .
