@@ -1,0 +1,59 @@
+{
+  "name": "Strava",
+  "id": "grafana-strava-datasource",
+  "type": "datasource",
+
+  "metrics": true,
+  "annotations": false,
+
+  "backend": true,
+  "alerting": false,
+  "executable": "./strava-plugin",
+
+  "info": {
+    "description": "Strava datasource",
+    "author": {
+      "name": "Grafana Labs",
+      "url": "https://grafana.com"
+    },
+    "logos": {
+      "small": "img/strava_logo.svg",
+      "large": "img/strava_logo.svg"
+    },
+    "links": [
+      {
+        "name": "Website",
+        "url": "https://grafana.com/plugins/grafana-strava-datasource"
+      },
+      {
+        "name": "License",
+        "url": "https://grafana.com/plugins/grafana-strava-datasource/license"
+      }
+    ],
+    "version": "1.1.0",
+    "updated": "2020-03-05"
+  },
+
+  "includes": [
+    {
+      "type": "dashboard",
+      "name": "Strava Athlete Dashboad Modern",
+      "path": "dashboards/strava_athlete_dashboad_modern.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Strava Athlete Dashboad",
+      "path": "dashboards/strava_athlete_dashboad.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Strava Datasource",
+      "path": "dashboards/strava_datasource.json"
+    }
+  ],
+
+  "dependencies": {
+    "grafanaVersion": "6.5",
+    "plugins": []
+  }
+}
