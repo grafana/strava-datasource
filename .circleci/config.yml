@@ -45,9 +45,9 @@ jobs:
             - dist/*
 
   build-backend:
-    <<: *defaults
+    working_directory: ~/grafana-strava-datasource
     docker:
-    - image: circleci/golang:1.13.7
+      - image: circleci/golang:1.13.7
     environment:
       GOPATH: /go
     steps:
@@ -90,7 +90,7 @@ jobs:
       - run: yarn lint
 
   lint-backend:
-    <<: *defaults
+    working_directory: ~/grafana-strava-datasource
     docker:
     - image: circleci/golang:1.13.7
     environment:
@@ -140,21 +140,20 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "58:4a:11:32:2d:98:26:f7:33:b5:4d:f0:6b:72:08:fc"
+      - run:
+          name: Install git LFS
+          command: |
+            curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh -o /tmp/script.deb.sh
+            chmod +x /tmp/script.deb.sh
+            sudo /tmp/script.deb.sh
+            sudo apt install git-lfs
+          no_output_timeout: 5m
       - checkout
       - attach_workspace:
           at: .
-      - restore_cache:
-          keys:
-            - dependency-cache-{{ checksum "yarn.lock" }}
       - run:
-          name: yarn install
-          command: 'yarn install --pure-lockfile --no-progress'
-          no_output_timeout: 15m
-      - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
-          paths:
-          - ./node_modules
-      - run: ./.circleci/make-release.sh
+          name: Create release branch
+          command: ./.circleci/make-release.sh
 
   codespell:
     docker:
@@ -206,6 +205,8 @@ workflows:
       - build-frontend:
           filters: *filter-only-release
       - build-backend:
+          requires:
+            - build-frontend
           filters: *filter-only-release
       - codespell:
           filters: *filter-only-release

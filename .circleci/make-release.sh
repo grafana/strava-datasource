@@ -12,6 +12,9 @@ git config --global user.email "$CI_GIT_EMAIL"
 git config --global user.name "$CI_GIT_USER"
 echo "git user is $CI_GIT_USER ($CI_GIT_EMAIL)"
 
+# Use git lfs for storing binaries
+git lfs install
+
 RELEASE_VER=$(echo "$CIRCLE_TAG" | grep -Po "(?<=v)[0-9]+(\.[0-9]+){2}(-.+|[^-.]*)")
 
 if [ -z "$RELEASE_VER" ]; then
@@ -26,10 +29,6 @@ else
 fi
 
 RELEASE_BRANCH=release-$RELEASE_VER
-
-# Build plugin
-git checkout -b "$RELEASE_BRANCH"
-yarn install --pure-lockfile && yarn build
 
 # Commit release
 git add --force dist/
