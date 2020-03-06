@@ -191,7 +191,11 @@ func (ds *StravaDatasource) ExchangeToken(tsdbReq *datasource.DatasourceRequest,
 
 	ds.cache.Set("accessToken", accessToken, accessTokenExpIn)
 	ds.cache.Set("refreshToken", refreshToken, cache.NoExpiration)
-	ds.cache.Save("refreshToken", refreshToken)
+
+	err = ds.cache.Save("refreshToken", refreshToken)
+	if err != nil {
+		ds.logger.Error("Error saving refresh token", err)
+	}
 
 	return &TokenExchangeResponse{
 		AccessToken:      accessToken,
@@ -245,7 +249,11 @@ func (ds *StravaDatasource) RefreshAccessToken(refreshToken string) (*TokenExcha
 	if refreshTokenNew != refreshToken {
 		ds.logger.Debug("Got new refresh token", "refresh token", refreshTokenNew)
 		ds.cache.Set("refreshToken", refreshTokenNew, cache.NoExpiration)
-		ds.cache.Save("refreshToken", refreshTokenNew)
+
+		err := ds.cache.Save("refreshToken", refreshTokenNew)
+		if err != nil {
+			ds.logger.Error("Error saving refresh token", err)
+		}
 	}
 
 	return &TokenExchangeResponse{

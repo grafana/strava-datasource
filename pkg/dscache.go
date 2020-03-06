@@ -52,6 +52,7 @@ func (c *DSCache) Get(request string) (interface{}, bool) {
 func (c *DSCache) Save(request string, response interface{}) error {
 	cacheKey := c.BuildDSCacheKey(request)
 	filename := fmt.Sprintf("%s/%s", c.dataDir, cacheKey)
+	cacheLogger.Debug("Saving key to file", "key", request, "path", filename)
 	return ioutil.WriteFile(filename, []byte(response.(string)), 0644)
 }
 
