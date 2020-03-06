@@ -114,16 +114,15 @@
             "max": 100,
             "min": 0,
             "nullValueMode": "connected",
-            "thresholds": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "semi-dark-green",
-                "value": 0
-              }
-            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "semi-dark-green",
+                  "value": null
+                }
+              ]
+            },
             "title": "Activities",
             "unit": "none"
           },
@@ -135,7 +134,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal"
       },
-      "pluginVersion": "6.6.0-pre",
+      "pluginVersion": "6.7.0-pre",
       "targets": [
         {
           "activityStat": "moving_time",
@@ -182,16 +181,15 @@
             "max": 100,
             "min": 0,
             "nullValueMode": "connected",
-            "thresholds": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "blue",
-                "value": 0
-              }
-            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "blue",
+                  "value": null
+                }
+              ]
+            },
             "title": "Distance",
             "unit": "lengthm"
           },
@@ -203,7 +201,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal"
       },
-      "pluginVersion": "6.6.0-pre",
+      "pluginVersion": "6.7.0-pre",
       "targets": [
         {
           "activityStat": "distance",
@@ -248,16 +246,15 @@
             "max": 100,
             "min": 0,
             "nullValueMode": "connected",
-            "thresholds": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "dark-blue",
-                "value": 0
-              }
-            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "dark-blue",
+                  "value": null
+                }
+              ]
+            },
             "title": "Time",
             "unit": "dthms"
           },
@@ -269,7 +266,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal"
       },
-      "pluginVersion": "6.6.0-pre",
+      "pluginVersion": "6.7.0-pre",
       "targets": [
         {
           "activityStat": "moving_time",
@@ -313,16 +310,15 @@
             "max": 10000,
             "min": 0,
             "nullValueMode": "connected",
-            "thresholds": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "dark-red",
-                "value": 0
-              }
-            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "dark-red",
+                  "value": null
+                }
+              ]
+            },
             "title": "Elevation gain",
             "unit": "lengthm"
           },
@@ -334,7 +330,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal"
       },
-      "pluginVersion": "6.6.0-pre",
+      "pluginVersion": "6.7.0-pre",
       "targets": [
         {
           "activityStat": "total_elevation_gain",
