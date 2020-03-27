@@ -83,23 +83,23 @@ export class QueryEditor extends PureComponent<Props, State> {
   }
 
   getSelectedQueryType = () => {
-    return stravaQueryTypeOptions.find((v) => v.value === this.props.query.queryType);
+    return stravaQueryTypeOptions.find(v => v.value === this.props.query.queryType);
   };
 
   getSelectedActivityStat = () => {
-    return stravaActivityStatOptions.find((v) => v.value === this.props.query.activityStat);
+    return stravaActivityStatOptions.find(v => v.value === this.props.query.activityStat);
   };
 
   getSelectedActivityType = () => {
-    return stravaActivityTypeOptions.find((v) => v.value === this.props.query.activityType);
+    return stravaActivityTypeOptions.find(v => v.value === this.props.query.activityType);
   };
 
   getFormatOption = () => {
-    return FORMAT_OPTIONS.find((v) => v.value === this.props.query.format);
+    return FORMAT_OPTIONS.find(v => v.value === this.props.query.format);
   };
 
   getIntervalOption = () => {
-    return INTERVAL_OPTIONS.find((v) => v.value === this.props.query.interval);
+    return INTERVAL_OPTIONS.find(v => v.value === this.props.query.interval);
   };
 
   onQueryTypeChanged = (option: SelectableValue<StravaQueryType>) => {

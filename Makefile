@@ -52,10 +52,7 @@ clean:
 	-rm -r ./dist/
 
 .PHONY: lint
-lint: lint-frontend lint-backend
-
-lint-frontend:
-	yarn lint
+lint: lint-backend
 
 lint-backend:
 	golint -min_confidence=1.1 -set_exit_status pkg/...
