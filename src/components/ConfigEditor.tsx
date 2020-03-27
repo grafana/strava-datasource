@@ -1,7 +1,10 @@
-import React, { PureComponent, ChangeEvent } from 'react';
-import { FormLabel, Input, Button } from '@grafana/ui';
-import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
-import { StravaJsonData, StravaSecureJsonData } from '../types';
+import React, { PureComponent, ChangeEvent } from "react";
+import { FormLabel, Input, Button } from "@grafana/ui";
+import {
+  DataSourcePluginOptionsEditorProps,
+  DataSourceSettings,
+} from "@grafana/data";
+import { StravaJsonData, StravaSecureJsonData } from "../types";
 
 const AuthCodePattern = /code=([\w]+)/;
 
@@ -34,20 +37,20 @@ export class ConfigEditor extends PureComponent<Props, State> {
   }
 
   static defaults = (options: any) => {
-    if (!options.hasOwnProperty('secureJsonData')) {
+    if (!options.hasOwnProperty("secureJsonData")) {
       options.secureJsonData = {};
     }
 
-    if (!options.hasOwnProperty('jsonData')) {
+    if (!options.hasOwnProperty("jsonData")) {
       options.jsonData = {};
     }
 
-    if (!options.hasOwnProperty('secureJsonFields')) {
+    if (!options.hasOwnProperty("secureJsonFields")) {
       options.secureJsonFields = {};
     }
 
     return options;
-  }
+  };
 
   updateDatasource = async (config: any) => {
     for (const j in config.jsonData) {
@@ -65,7 +68,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
     this.props.onOptionsChange({
       ...config,
     });
-  }
+  };
 
   onResetAccessToken = () => {
     this.updateDatasource({
@@ -75,7 +78,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         accessToken: false,
       },
     });
-  }
+  };
 
   onResetClientSecret = () => {
     this.updateDatasource({
@@ -85,7 +88,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         clientSecret: false,
       },
     });
-  }
+  };
 
   onResetAuthCode = () => {
     this.updateDatasource({
@@ -95,7 +98,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         authCode: false,
       },
     });
-  }
+  };
 
   onAccessTokenChange = (accessToken: string) => {
     this.updateDatasource({
@@ -105,7 +108,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         accessToken,
       },
     });
-  }
+  };
 
   onClientIDChange = (clientID: string) => {
     this.updateDatasource({
@@ -115,7 +118,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         clientID,
       },
     });
-  }
+  };
 
   onClientSecretChange = (clientSecret: string) => {
     this.updateDatasource({
@@ -125,7 +128,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         clientSecret,
       },
     });
-  }
+  };
 
   onAuthCodeChange = (authCode: string) => {
     this.updateDatasource({
@@ -135,15 +138,15 @@ export class ConfigEditor extends PureComponent<Props, State> {
         authCode,
       },
     });
-  }
+  };
 
   isLocationContainsCode = () => {
     return AuthCodePattern.test(window.location.search);
-  }
+  };
 
   isLocationContainsError = () => {
     return /error=/.test(window.location.search);
-  }
+  };
 
   fillAuthCodeFromLocation = () => {
     const result = AuthCodePattern.exec(window.location.search);
@@ -155,15 +158,15 @@ export class ConfigEditor extends PureComponent<Props, State> {
         authCode,
       },
     });
-  }
+  };
 
   getConnectWithStravaHref = () => {
-    const authUrl = 'https://www.strava.com/oauth/authorize';
+    const authUrl = "https://www.strava.com/oauth/authorize";
     const currentLocation = window.location.origin + window.location.pathname;
     const clientID = this.state.config.jsonData.clientID;
-    const authScope = 'read_all,profile:read_all,activity:read_all';
+    const authScope = "read_all,profile:read_all,activity:read_all";
     return `${authUrl}?client_id=${clientID}&response_type=code&redirect_uri=${currentLocation}&approval_prompt=force&scope=${authScope}`;
-  }
+  };
 
   render() {
     const { config } = this.state;
@@ -179,21 +182,31 @@ export class ConfigEditor extends PureComponent<Props, State> {
               <div className="width-30">
                 <Input
                   className="width-30"
-                  value={config.jsonData.clientID || ''}
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientIDChange(event.target.value)}
+                  value={config.jsonData.clientID || ""}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    this.onClientIDChange(event.target.value)
+                  }
                 />
               </div>
             </div>
           </div>
-          {config.secureJsonFields.clientSecret ? (
+          {config.secureJsonFields && config.secureJsonFields.clientSecret ? (
             <div className="gf-form-inline">
               <div className="gf-form">
                 <FormLabel className="width-14">Client Secret</FormLabel>
-                <Input className="width-25" placeholder="Configured" disabled={true} />
+                <Input
+                  className="width-25"
+                  placeholder="Configured"
+                  disabled={true}
+                />
               </div>
               <div className="gf-form">
                 <div className="max-width-30 gf-form-inline">
-                  <Button variant="secondary" type="button" onClick={this.onResetClientSecret}>
+                  <Button
+                    variant="secondary"
+                    type="button"
+                    onClick={this.onResetClientSecret}
+                  >
                     Reset
                   </Button>
                 </div>
@@ -206,8 +219,14 @@ export class ConfigEditor extends PureComponent<Props, State> {
                 <div className="width-30">
                   <Input
                     className="width-30"
-                    value={config.secureJsonData.clientSecret || ''}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientSecretChange(event.target.value)}
+                    value={
+                      config.secureJsonData
+                        ? config.secureJsonData.clientSecret
+                        : ""
+                    }
+                    onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                      this.onClientSecretChange(event.target.value)
+                    }
                   />
                 </div>
               </div>

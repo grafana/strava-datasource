@@ -1,4 +1,4 @@
-import { DataQuery, SelectableValue, DataSourceJsonData } from '@grafana/data';
+import { DataQuery, DataSourceJsonData } from "@grafana/data";
 
 export interface StravaJsonData extends DataSourceJsonData {
   clientID: string;
@@ -18,30 +18,30 @@ export interface StravaQuery extends DataQuery {
 }
 
 export enum StravaQueryFormat {
-  TimeSeries = 'time_series',
-  Table = 'table',
-  WorldMap = 'worldmap',
+  TimeSeries = "time_series",
+  Table = "table",
+  WorldMap = "worldmap",
 }
 
 export enum StravaQueryInterval {
-  No = 'no',
-  Auto = 'auto',
-  Hour = 'hour',
-  Day = 'day',
-  Week = 'week',
-  Month = 'month',
+  No = "no",
+  Auto = "auto",
+  Hour = "hour",
+  Day = "day",
+  Week = "week",
+  Month = "month",
 }
 
 export enum StravaQueryType {
-  Activities = 'Activities',
+  Activities = "Activities",
 }
 
 export enum StravaActivityStat {
-  Distance = 'distance',
-  MovingTime = 'moving_time',
-  ElapsedTime = 'elapsed_time',
-  ElevationGain = 'total_elevation_gain',
-  AveragePower = 'average_watts',
+  Distance = "distance",
+  MovingTime = "moving_time",
+  ElapsedTime = "elapsed_time",
+  ElevationGain = "total_elevation_gain",
+  AveragePower = "average_watts",
 }
 
 export type StravaActivityType = string | null;

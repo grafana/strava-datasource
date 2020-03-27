@@ -10,13 +10,13 @@
   },
   "private": true,
   "scripts": {
-    "build": "webpack --config webpack/webpack.prod.conf.js",
-    "dev": "webpack --config webpack/webpack.dev.conf.js",
+    "build": "grafana-toolkit plugin:build",
+    "test": "grafana-toolkit plugin:test",
+    "dev": "grafana-toolkit plugin:dev",
+    "watch": "grafana-toolkit plugin:dev --watch",
     "start": "webpack --config webpack/webpack.dev.conf.js --watch",
-    "test": "jest --config jest.config.js --passWithNoTests",
     "jest": "jest --config jest.config.js --notify --watch",
-    "ci-test": "jest --config jest.config.js",
-    "lint": "tslint --config tslint.json 'src/**/*.ts?(x)'"
+    "ci-test": "jest --config jest.config.js"
   },
   "devDependencies": {
     "@grafana/data": "^6.5.0",
@@ -38,6 +38,7 @@
     "moment": "^2.24.0",
     "ng-annotate-webpack-plugin": "^0.3.0",
     "node-sass": "^4.12.0",
+    "prettier": "^2.0.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "sass": "^1.21.0",
@@ -50,5 +51,12 @@
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.4"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@grafana/toolkit": "^6.7.1",
+    "babel-loader": "^8.1.0",
+    "eslint-plugin-prettier": "^3.1.2"
+  },
+  "resolutions": {
+    "@babel/preset-env": "^7.8.7"
+  }
 }

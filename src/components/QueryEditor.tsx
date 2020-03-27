@@ -1,47 +1,58 @@
-import React, { PureComponent, ChangeEvent } from 'react';
-import { cx, css } from 'emotion';
-import { SelectableValue, QueryEditorProps, ExploreQueryFieldProps } from '@grafana/data';
-import { Input, FormLabel, Segment, SegmentAsync, Select } from '@grafana/ui';
-import { StravaQuery, StravaQueryType, StravaActivityStat, StravaQueryFormat, StravaActivityType, StravaJsonData, StravaQueryInterval } from '../types';
-import StravaDatasource from '../datasource';
-import { AthleteLabel } from './AthleteLabel';
+import React, { PureComponent } from "react";
+import { SelectableValue, QueryEditorProps } from "@grafana/data";
+import { FormLabel, Select } from "@grafana/ui";
+import {
+  StravaActivityStat,
+  StravaActivityType,
+  StravaJsonData,
+  StravaQuery,
+  StravaQueryFormat,
+  StravaQueryInterval,
+  StravaQueryType,
+} from "../types";
+import StravaDatasource from "../datasource";
+import { AthleteLabel } from "./AthleteLabel";
 
 const stravaQueryTypeOptions: Array<SelectableValue<StravaQueryType>> = [
-  { value: StravaQueryType.Activities, label: 'Activities', description: 'Athlete Activities' }
+  {
+    value: StravaQueryType.Activities,
+    label: "Activities",
+    description: "Athlete Activities",
+  },
 ];
 
 const stravaActivityStatOptions: Array<SelectableValue<StravaActivityStat>> = [
-  { value: StravaActivityStat.Distance, label: 'Distance' },
-  { value: StravaActivityStat.ElapsedTime, label: 'Elapsed Time' },
-  { value: StravaActivityStat.MovingTime, label: 'Moving Time' },
-  { value: StravaActivityStat.ElevationGain, label: 'Elevation Gain' },
-  { value: StravaActivityStat.AveragePower, label: 'Average Power' },
+  { value: StravaActivityStat.Distance, label: "Distance" },
+  { value: StravaActivityStat.ElapsedTime, label: "Elapsed Time" },
+  { value: StravaActivityStat.MovingTime, label: "Moving Time" },
+  { value: StravaActivityStat.ElevationGain, label: "Elevation Gain" },
+  { value: StravaActivityStat.AveragePower, label: "Average Power" },
 ];
 
 const stravaActivityTypeOptions: Array<SelectableValue<StravaActivityType>> = [
-  { value: null, label: 'All' },
-  { value: 'Run', label: 'Run' },
-  { value: 'Ride', label: 'Ride' },
-  { value: 'Other', label: 'Other' },
+  { value: null, label: "All" },
+  { value: "Run", label: "Run" },
+  { value: "Ride", label: "Ride" },
+  { value: "Other", label: "Other" },
 ];
 
 const FORMAT_OPTIONS: Array<SelectableValue<StravaQueryFormat>> = [
-  { label: 'Time series', value: StravaQueryFormat.TimeSeries },
-  { label: 'Table', value: StravaQueryFormat.Table },
-  { label: 'World Map', value: StravaQueryFormat.WorldMap },
+  { label: "Time series", value: StravaQueryFormat.TimeSeries },
+  { label: "Table", value: StravaQueryFormat.Table },
+  { label: "World Map", value: StravaQueryFormat.WorldMap },
 ];
 
 const INTERVAL_OPTIONS: Array<SelectableValue<StravaQueryInterval>> = [
-  { label: 'Auto', value: StravaQueryInterval.Auto },
-  { label: 'No', value: StravaQueryInterval.No },
-  { label: 'Hour', value: StravaQueryInterval.Hour },
-  { label: 'Day', value: StravaQueryInterval.Day },
-  { label: 'Week', value: StravaQueryInterval.Week },
-  { label: 'Month', value: StravaQueryInterval.Month },
+  { label: "Auto", value: StravaQueryInterval.Auto },
+  { label: "No", value: StravaQueryInterval.No },
+  { label: "Hour", value: StravaQueryInterval.Hour },
+  { label: "Day", value: StravaQueryInterval.Day },
+  { label: "Week", value: StravaQueryInterval.Week },
+  { label: "Month", value: StravaQueryInterval.Month },
 ];
 
 export const DefaultTarget: State = {
-  refId: '',
+  refId: "",
   athlete: {},
   queryType: StravaQueryType.Activities,
   activityType: null,
@@ -50,7 +61,8 @@ export const DefaultTarget: State = {
   interval: StravaQueryInterval.Auto,
 };
 
-export type Props = ExploreQueryFieldProps<StravaDatasource, StravaQuery, StravaJsonData>;
+export interface Props
+  extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
 
 interface State extends StravaQuery {
   athlete: any;
@@ -66,59 +78,71 @@ export class QueryEditor extends PureComponent<Props, State> {
     activityStat: StravaActivityStat.Distance,
   };
 
-  constructor(props: Props) {
-    super(props);
-  }
-
   async componentDidMount() {
     const athlete = await this.props.datasource.stravaApi.getAuthenticatedAthlete();
     this.setState({ athlete });
   }
 
   getSelectedQueryType = () => {
-    return stravaQueryTypeOptions.find(v => v.value === this.props.query.queryType);
-  }
+    return stravaQueryTypeOptions.find(
+      (v) => v.value === this.props.query.queryType
+    );
+  };
 
   getSelectedActivityStat = () => {
-    return stravaActivityStatOptions.find(v => v.value === this.props.query.activityStat);
-  }
+    return stravaActivityStatOptions.find(
+      (v) => v.value === this.props.query.activityStat
+    );
+  };
 
   getSelectedActivityType = () => {
-    return stravaActivityTypeOptions.find(v => v.value === this.props.query.activityType);
-  }
+    return stravaActivityTypeOptions.find(
+      (v) => v.value === this.props.query.activityType
+    );
+  };
 
   getFormatOption = () => {
-    return FORMAT_OPTIONS.find(v => v.value === this.props.query.format);
-  }
+    return FORMAT_OPTIONS.find((v) => v.value === this.props.query.format);
+  };
 
   getIntervalOption = () => {
-    return INTERVAL_OPTIONS.find(v => v.value === this.props.query.interval);
-  }
+    return INTERVAL_OPTIONS.find((v) => v.value === this.props.query.interval);
+  };
 
   onQueryTypeChanged = (option: SelectableValue<StravaQueryType>) => {
     const { query } = this.props;
-    this.onChange({ ...query, queryType: option.value });
-  }
+    if (option.value) {
+      this.onChange({ ...query, queryType: option.value });
+    }
+  };
 
   onActivityStatChanged = (option: SelectableValue<StravaActivityStat>) => {
     const { query } = this.props;
-    this.onChange({ ...query, activityStat: option.value });
-  }
+    if (option.value) {
+      this.onChange({ ...query, activityStat: option.value });
+    }
+  };
 
   onActivityTypeChanged = (option: SelectableValue<StravaActivityType>) => {
     const { query } = this.props;
-    this.onChange({ ...query, activityType: option.value });
-  }
+    if (option.value) {
+      this.onChange({ ...query, activityType: option.value });
+    }
+  };
 
   onFormatChange = (option: SelectableValue<StravaQueryFormat>) => {
     const { query } = this.props;
-    this.onChange({ ...query, format: option.value });
-  }
+    if (option.value) {
+      this.onChange({ ...query, format: option.value });
+    }
+  };
 
   onIntervalChange = (option: SelectableValue<StravaQueryInterval>) => {
     const { query } = this.props;
-    this.onChange({ ...query, interval: option.value });
-  }
+    if (option.value) {
+      this.onChange({ ...query, interval: option.value });
+    }
+  };
 
   onChange(query: StravaQuery) {
     const { onChange, onRunQuery } = this.props;
@@ -127,7 +151,6 @@ export class QueryEditor extends PureComponent<Props, State> {
   }
 
   render() {
-    const { query, datasource, onChange, onRunQuery, data } = this.props;
     const { athlete } = this.state;
 
     return (
@@ -161,12 +184,23 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onActivityStatChanged}
             className="gf-form-select"
           />
+          )}
         </div>
         <div className="gf-form-inline">
           <FormLabel>Format</FormLabel>
-          <Select isSearchable={false} options={FORMAT_OPTIONS} onChange={this.onFormatChange} value={this.getFormatOption()} />
+          <Select
+            isSearchable={false}
+            options={FORMAT_OPTIONS}
+            onChange={this.onFormatChange}
+            value={this.getFormatOption()}
+          />
           <FormLabel>Interval</FormLabel>
-          <Select isSearchable={false} options={INTERVAL_OPTIONS} onChange={this.onIntervalChange} value={this.getIntervalOption()} />
+          <Select
+            isSearchable={false}
+            options={INTERVAL_OPTIONS}
+            onChange={this.onIntervalChange}
+            value={this.getIntervalOption()}
+          />
         </div>
       </>
     );
