@@ -1,4 +1,4 @@
-import { getBackendSrv } from "@grafana/runtime";
+import { getBackendSrv } from '@grafana/runtime';
 
 export default class StravaApi {
   datasourceId: number;
@@ -9,15 +9,15 @@ export default class StravaApi {
     this.datasourceId = datasourceId;
     // this.apiUrl = url;
     this.promises = {};
-    this.apiUrl = "";
+    this.apiUrl = '';
   }
 
   async getAuthenticatedAthlete(params?: any) {
-    return await this.tsdbRequest("athlete", params);
+    return await this.tsdbRequest('athlete', params);
   }
 
   async getActivities(params?: any) {
-    return await this.requestWithPagination("athlete/activities", params);
+    return await this.requestWithPagination('athlete/activities', params);
   }
 
   async requestWithPagination(url: string, params?: any) {
@@ -26,10 +26,7 @@ export default class StravaApi {
     let page = 1;
     const limit = params && params.limit;
     const per_page = (params && params.per_page) || 200;
-    while (
-      !(chunk.length === 0 && page !== 1) &&
-      !(limit && data.length >= limit)
-    ) {
+    while (!(chunk.length === 0 && page !== 1) && !(limit && data.length >= limit)) {
       params = {
         ...params,
         per_page,
@@ -52,14 +49,14 @@ export default class StravaApi {
   }
 
   async request(url: string, params?: any) {
-    return this.proxyfy(this._request, "_request", this)(url, params);
+    return this.proxyfy(this._request, '_request', this)(url, params);
   }
 
   async _request(url: string, params?: any) {
     try {
       const response = await getBackendSrv().datasourceRequest({
         url: `${this.apiUrl}/strava/${url}`,
-        method: "GET",
+        method: 'GET',
         params,
       });
       return response.data;
@@ -70,11 +67,7 @@ export default class StravaApi {
   }
 
   async tsdbRequest(endpoint: string, params?: any) {
-    return this.proxyfy(
-      this._tsdbRequest,
-      "_tsdbRequest",
-      this
-    )(endpoint, params);
+    return this.proxyfy(this._tsdbRequest, '_tsdbRequest', this)(endpoint, params);
   }
 
   async _tsdbRequest(endpoint: string, params?: any) {
@@ -83,7 +76,7 @@ export default class StravaApi {
         queries: [
           {
             datasourceId: this.datasourceId,
-            queryType: "stravaAPI",
+            queryType: 'stravaAPI',
             target: {
               endpoint,
               params,
@@ -93,8 +86,8 @@ export default class StravaApi {
       };
 
       const response = await getBackendSrv().datasourceRequest({
-        url: "/api/tsdb/query",
-        method: "POST",
+        url: '/api/tsdb/query',
+        method: 'POST',
         data: tsdbRequestData,
       });
       console.log(response);
@@ -106,12 +99,12 @@ export default class StravaApi {
   }
 
   async tsdbAuthRequest(params?: any) {
-    const queryType = "stravaAuth";
+    const queryType = 'stravaAuth';
     const tsdbRequestData = {
       queries: [
         {
           datasourceId: this.datasourceId,
-          queryType: "stravaAuth",
+          queryType: 'stravaAuth',
           target: {
             params,
           },
@@ -121,8 +114,8 @@ export default class StravaApi {
 
     try {
       const response = await getBackendSrv().datasourceRequest({
-        url: "/api/tsdb/query",
-        method: "POST",
+        url: '/api/tsdb/query',
+        method: 'POST',
         data: tsdbRequestData,
       });
       return this.handleTsdbResponse(response, queryType);
@@ -132,7 +125,7 @@ export default class StravaApi {
     }
   }
 
-  handleTsdbResponse(response: any, queryType = "stravaAPI") {
+  handleTsdbResponse(response: any, queryType = 'stravaAPI') {
     if (response && (response.status >= 400 || response.status < 0)) {
       throw Error(response.statusText);
     }
@@ -162,11 +155,7 @@ export default class StravaApi {
  * Wrap request to prevent multiple calls
  * with same params when waiting for result.
  */
-function callOnce(
-  func: any,
-  promiseKeeper: any,
-  funcScope: any
-): (...args: any[]) => any {
+function callOnce(func: any, promiseKeeper: any, funcScope: any): (...args: any[]) => any {
   return function () {
     var hash = getRequestHash(arguments);
     if (!promiseKeeper[hash]) {

@@ -12,7 +12,7 @@ export function decode(value: any) {
   var lat = 0;
   var lon = 0;
 
-  var values = integers(value, function (x: number, y: number) {
+  integers(value, function (x: number, y: number) {
     lat += x;
     lon += y;
     points.push([lat / PRECISION, lon / PRECISION]);

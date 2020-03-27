@@ -1,7 +1,7 @@
-import React, { FC } from "react";
-import { css, cx } from "emotion";
-import { FormLabel, stylesFactory, useTheme } from "@grafana/ui";
-import { GrafanaTheme } from "@grafana/data";
+import React, { FC } from 'react';
+import { css, cx } from 'emotion';
+import { FormLabel, stylesFactory, useTheme } from '@grafana/ui';
+import { GrafanaTheme } from '@grafana/data';
 
 const getStyles = stylesFactory((theme: GrafanaTheme) => {
   return {
@@ -24,7 +24,7 @@ interface Props {
 export const AthleteLabel: FC<Props> = ({ athlete }) => {
   const theme = useTheme();
   const styles = getStyles(theme);
-  const imgClass = cx("filter-table__avatar", styles.athleteAvatar);
+  const imgClass = cx('filter-table__avatar', styles.athleteAvatar);
   return (
     <div className="gf-form">
       <div className={styles.athleteLabel}>
