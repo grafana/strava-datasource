@@ -13,6 +13,15 @@ import StravaApi from './stravaApi';
 import polyline from './polyline';
 import { StravaActivityStat, StravaJsonData, StravaQuery, StravaQueryFormat, StravaActivityType, StravaQueryInterval } from './types';
 
+const DEFAULT_RANGE = {
+  from: dateTime(),
+  to: dateTime(),
+  raw: {
+    from: 'now',
+    to: 'now',
+  },
+};
+
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
   datasourceId: number;
@@ -34,8 +43,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     const data: any[] = [];
 
     const activities = await this.stravaApi.getActivities({
-      before: options.range.to.unix(),
-      after: options.range.from.unix(),
+      before: options.range?.to.unix(),
+      after: options.range?.from.unix(),
     });
 
     for (const target of options.targets) {
@@ -50,7 +59,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
           data.push(wmData);
           break;
         default:
-          const tsData = this.transformActivitiesToTimeseries(filteredActivities, target, options.range);
+          const tsData = this.transformActivitiesToTimeseries(filteredActivities, target, options.range || DEFAULT_RANGE);
           data.push(tsData);
           break;
       }

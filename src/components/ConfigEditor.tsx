@@ -1,5 +1,5 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { FormLabel, Input, Button } from '@grafana/ui';
+import { FormField, Button } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
 import { StravaJsonData, StravaSecureJsonData } from '../types';
 
@@ -175,21 +175,19 @@ export class ConfigEditor extends PureComponent<Props, State> {
         <div className="gf-form-group">
           <div className="gf-form-inline">
             <div className="gf-form">
-              <FormLabel className="width-14">Client ID</FormLabel>
-              <div className="width-30">
-                <Input
-                  className="width-30"
-                  value={config.jsonData.clientID || ''}
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientIDChange(event.target.value)}
-                />
-              </div>
+              <FormField
+                label="Client ID"
+                labelWidth={14}
+                inputWidth={30}
+                value={config.jsonData.clientID || ''}
+                onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientIDChange(event.target.value)}
+              />
             </div>
           </div>
           {config.secureJsonFields && config.secureJsonFields.clientSecret ? (
             <div className="gf-form-inline">
               <div className="gf-form">
-                <FormLabel className="width-14">Client Secret</FormLabel>
-                <Input className="width-25" placeholder="Configured" disabled={true} />
+                <FormField label="Client Secret" labelWidth={14} inputWidth={25} placeholder="Configured" disabled={true} />
               </div>
               <div className="gf-form">
                 <div className="max-width-30 gf-form-inline">
@@ -202,14 +200,13 @@ export class ConfigEditor extends PureComponent<Props, State> {
           ) : (
             <div className="gf-form-inline">
               <div className="gf-form">
-                <FormLabel className="width-14">Client Secret</FormLabel>
-                <div className="width-30">
-                  <Input
-                    className="width-30"
-                    value={config.secureJsonData ? config.secureJsonData.clientSecret : ''}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientSecretChange(event.target.value)}
-                  />
-                </div>
+                <FormField
+                  label="Client Secret"
+                  labelWidth={14}
+                  inputWidth={30}
+                  value={config.secureJsonData ? config.secureJsonData.clientSecret : ''}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientSecretChange(event.target.value)}
+                />
               </div>
             </div>
           )}
