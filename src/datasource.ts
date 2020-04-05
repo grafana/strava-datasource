@@ -55,7 +55,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
           data.push(tableData);
           break;
         case StravaQueryFormat.WorldMap:
-          const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
+          // const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
+          const wmData = this.transformActivitiesToGeoHeatmap(filteredActivities, target);
           data.push(wmData);
           break;
         default:
@@ -179,6 +180,37 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       const longitude = middlePoint ? middlePoint[1] : activity.start_longitude;
       const row = [activity[target.activityStat], activity.name, latitude, longitude];
       if (activity.start_latitude && activity.start_longitude) {
+        table.rows.push(row);
+      }
+    }
+    return table;
+  }
+
+  transformActivitiesToGeoHeatmap(data: any[], target: StravaQuery) {
+    const table: TableData = {
+      type: 'table',
+      columns: [
+        { text: 'value' },
+        { text: 'name' },
+        { text: 'latitude' },
+        { text: 'longitude' },
+      ],
+      rows: []
+    };
+
+    for (const activity of data) {
+      if (!activity.map || !activity.map.summary_polyline) {
+        continue;
+      }
+      const summaryPolyline = activity.map.summary_polyline;
+      const points = polyline.decode(summaryPolyline);
+      for (const point of points) {
+        const row = [
+          1,
+          activity.name,
+          point[0],
+          point[1],
+        ];
         table.rows.push(row);
       }
     }
