@@ -36,12 +36,6 @@ const stravaActivityTypeOptions: Array<SelectableValue<StravaActivityType>> = [
   { value: 'Other', label: 'Other' },
 ];
 
-const FORMAT_OPTIONS: Array<SelectableValue<StravaQueryFormat>> = [
-  { label: 'Time series', value: StravaQueryFormat.TimeSeries },
-  { label: 'Table', value: StravaQueryFormat.Table },
-  { label: 'World Map', value: StravaQueryFormat.WorldMap },
-];
-
 const INTERVAL_OPTIONS: Array<SelectableValue<StravaQueryInterval>> = [
   { label: 'Auto', value: StravaQueryInterval.Auto },
   { label: 'No', value: StravaQueryInterval.No },
@@ -92,10 +86,6 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   getSelectedActivityType = () => {
     return stravaActivityTypeOptions.find(v => v.value === this.props.query.activityType);
-  };
-
-  getFormatOption = () => {
-    return FORMAT_OPTIONS.find(v => v.value === this.props.query.format);
   };
 
   getIntervalOption = () => {
@@ -179,8 +169,6 @@ export class QueryEditor extends PureComponent<Props, State> {
           />
         </div>
         <div className="gf-form-inline">
-          <FormLabel>Format</FormLabel>
-          <Select isSearchable={false} options={FORMAT_OPTIONS} onChange={this.onFormatChange} value={this.getFormatOption()} />
           <FormLabel>Interval</FormLabel>
           <Select isSearchable={false} options={INTERVAL_OPTIONS} onChange={this.onIntervalChange} value={this.getIntervalOption()} />
         </div>

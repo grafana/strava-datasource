@@ -36,10 +36,5 @@
     "react-dom": "^16.8.6",
     "typescript": "^3.5.2",
     "ts-loader": "^6.2.2"
-  },
-  "dependencies": {
-  },
-  "resolutions": {
-    "@babel/preset-env": "^7.8.7"
   }
 }

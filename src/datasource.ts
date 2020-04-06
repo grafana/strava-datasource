@@ -6,21 +6,25 @@ import {
   TableData,
   dateTime,
   TimeRange,
+  DataFrame,
+  FieldType,
+  ArrayVector,
   TimeSeriesPoints,
   TimeSeriesValue,
 } from '@grafana/data';
 import StravaApi from './stravaApi';
-import polyline from './polyline';
-import { StravaActivityStat, StravaJsonData, StravaQuery, StravaQueryFormat, StravaActivityType, StravaQueryInterval } from './types';
+// @ts-ignore
+import PolylineUtil from './Polyline.encoded';
+import { StravaActivityStat, StravaJsonData, StravaQuery, StravaActivityType, StravaQueryInterval } from './types';
 
-const DEFAULT_RANGE = {
-  from: dateTime(),
-  to: dateTime(),
-  raw: {
-    from: 'now',
-    to: 'now',
-  },
-};
+// const DEFAULT_RANGE = {
+//   from: dateTime(),
+//   to: dateTime(),
+//   raw: {
+//     from: 'now',
+//     to: 'now',
+//   },
+// };
 
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
@@ -49,23 +53,48 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     for (const target of options.targets) {
       const filteredActivities = this.filterActivities(activities, target.activityType);
-      switch (target.format) {
-        case StravaQueryFormat.Table:
-          const tableData = this.transformActivitiesToTable(filteredActivities, target);
-          data.push(tableData);
-          break;
-        case StravaQueryFormat.WorldMap:
-          // const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
-          const wmData = this.transformActivitiesToGeoHeatmap(filteredActivities, target);
-          data.push(wmData);
-          break;
-        default:
-          const tsData = this.transformActivitiesToTimeseries(filteredActivities, target, options.range || DEFAULT_RANGE);
-          data.push(tsData);
-          break;
-      }
+      // Always return a dataframe. Let the panel decide how to decode it
+      filteredActivities.forEach((activity: any) => {
+        const summaryPolyline = activity.map.summary_polyline;
+        const points = PolylineUtil.decode(summaryPolyline);
+        const entry: DataFrame = {
+          refId: target.refId,
+          fields: [
+            {
+              name: 'Time',
+              type: FieldType.time,
+              values: new ArrayVector(points.map(() => dateTime(activity.start_date).valueOf())),
+              config: {
+                title: activity.name,
+              },
+            },
+            {
+              name: 'Latitude',
+              type: FieldType.number,
+              values: new ArrayVector(points.map((p: any) => p[0])),
+              config: {
+                title: activity.name,
+              },
+            },
+            {
+              name: 'Longitude',
+              type: FieldType.number,
+              values: new ArrayVector(points.map((p: any) => p[1])),
+              config: {
+                title: activity.name,
+              },
+            },
+          ],
+          meta: activity,
+          length: points.length
+        };
+
+        data.push(entry);
+      });
+      
     }
 
+    console.log("returning data", data);
     return { data };
   }
 
@@ -189,13 +218,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   transformActivitiesToGeoHeatmap(data: any[], target: StravaQuery) {
     const table: TableData = {
       type: 'table',
-      columns: [
-        { text: 'value' },
-        { text: 'name' },
-        { text: 'latitude' },
-        { text: 'longitude' },
-      ],
-      rows: []
+      columns: [{ text: 'value' }, { text: 'name' }, { text: 'latitude' }, { text: 'longitude' }],
+      rows: [],
     };
 
     for (const activity of data) {
@@ -203,14 +227,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         continue;
       }
       const summaryPolyline = activity.map.summary_polyline;
-      const points = polyline.decode(summaryPolyline);
+      const points = PolylineUtil.decode(summaryPolyline);
+      console.log("points", points);
       for (const point of points) {
-        const row = [
-          1,
-          activity.name,
-          point[0],
-          point[1],
-        ];
+        const row = [1, activity.name, point[0], point[1]];
         table.rows.push(row);
       }
     }
@@ -224,7 +244,7 @@ function getActivityMiddlePoint(activity: any): number[] | null {
   }
 
   const summaryPolyline = activity.map.summary_polyline;
-  const points = polyline.decode(summaryPolyline);
+  const points = PolylineUtil.decode(summaryPolyline);
   if (points && points.length) {
     const middleIndex = Math.floor(points.length / 2);
     return points[middleIndex];

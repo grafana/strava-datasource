@@ -42,7 +42,7 @@
     },
     {
       "type": "panel",
-      "id": "text2",
+      "id": "text",
       "name": "Text v2",
       "version": ""
     }
@@ -82,7 +82,7 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "",
-      "type": "text2"
+      "type": "text"
     },
     {
       "cacheTimeout": null,
