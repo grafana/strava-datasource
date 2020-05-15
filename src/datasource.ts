@@ -86,15 +86,14 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
             },
           ],
           meta: activity,
-          length: points.length
+          length: points.length,
         };
 
         data.push(entry);
       });
-      
     }
 
-    console.log("returning data", data);
+    console.log('returning data', data);
     return { data };
   }
 
@@ -228,7 +227,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       }
       const summaryPolyline = activity.map.summary_polyline;
       const points = PolylineUtil.decode(summaryPolyline);
-      console.log("points", points);
+      console.log('points', points);
       for (const point of points) {
         const row = [1, activity.name, point[0], point[1]];
         table.rows.push(row);
