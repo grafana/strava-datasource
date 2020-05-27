@@ -1,7 +1,6 @@
-import React, { PureComponent, ChangeEvent } from 'react';
-import { cx, css } from 'emotion';
-import { SelectableValue, QueryEditorProps, ExploreQueryFieldProps } from '@grafana/data';
-import { Input, FormLabel, Segment, SegmentAsync, Select } from '@grafana/ui';
+import React, { PureComponent } from 'react';
+import { SelectableValue, ExploreQueryFieldProps } from '@grafana/data';
+import { InlineFormLabel, Select } from '@grafana/ui';
 import { StravaQuery, StravaQueryType, StravaActivityStat, StravaQueryFormat, StravaActivityType, StravaJsonData, StravaQueryInterval } from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
@@ -134,7 +133,7 @@ export class QueryEditor extends PureComponent<Props, State> {
       <>
         <div className="gf-form-inline">
           <AthleteLabel athlete={athlete} />
-          <FormLabel width={5}>Type</FormLabel>
+          <InlineFormLabel width={5}>Type</InlineFormLabel>
           <Select
             isSearchable={false}
             width={10}
@@ -143,7 +142,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onQueryTypeChanged}
             className="gf-form-select"
           />
-          <FormLabel width={7}>Activity</FormLabel>
+          <InlineFormLabel width={7}>Activity</InlineFormLabel>
           <Select
             isSearchable={false}
             width={10}
@@ -152,7 +151,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onActivityTypeChanged}
             className="gf-form-select"
           />
-          <FormLabel width={5}>Stat</FormLabel>
+          <InlineFormLabel width={5}>Stat</InlineFormLabel>
           <Select
             isSearchable={false}
             width={10}
@@ -163,9 +162,9 @@ export class QueryEditor extends PureComponent<Props, State> {
           />
         </div>
         <div className="gf-form-inline">
-          <FormLabel>Format</FormLabel>
+          <InlineFormLabel>Format</InlineFormLabel>
           <Select isSearchable={false} options={FORMAT_OPTIONS} onChange={this.onFormatChange} value={this.getFormatOption()} />
-          <FormLabel>Interval</FormLabel>
+          <InlineFormLabel>Interval</InlineFormLabel>
           <Select isSearchable={false} options={INTERVAL_OPTIONS} onChange={this.onIntervalChange} value={this.getIntervalOption()} />
         </div>
       </>
