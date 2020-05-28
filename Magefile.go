@@ -217,7 +217,7 @@ func checkLinuxPtraceScope() {
 	val := strings.TrimSpace(string(byteValue[:]))
 	if "0" != val {
 		fmt.Printf("WARNING: \n")
-		fmt.Printf("ptrace_scope set to value other than 0 (currenlty:%s), this might prevent debugger from connecting\n", val)
+		fmt.Printf("ptrace_scope set to value other than 0 (currently:%s), this might prevent debugger from connecting\n", val)
 		fmt.Printf("try writing \"0\" to %s\n", ptracePath)
 		fmt.Printf("Set ptrace_scope to 0? y/N (default N)\n")
 
@@ -244,7 +244,7 @@ func Debugger() error {
 	// 1. kill any running instance
 	exeName := getExecutableName(runtime.GOOS, runtime.GOARCH)
 
-	// Kill any running processs
+	// Kill any running process
 	_ = killAllPIDs(findRunningPIDs(exeName))
 	_ = sh.RunV("pkill", "dlv")
 
