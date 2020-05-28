@@ -21,6 +21,7 @@
     "@grafana/data": "7.0.1",
     "@grafana/runtime": "7.0.1",
     "@grafana/ui": "7.0.1",
+    "@grafana/toolkit": "7.0.1",
     "@types/angular": "^1.6.54",
     "@types/jest": "^24.0.15",
     "@types/jquery": "^3.3.29",
@@ -49,7 +50,6 @@
     "webpack-cli": "^3.3.4"
   },
   "dependencies": {
-    "@grafana/toolkit": "^6.7.1",
     "babel-loader": "^8.1.0",
     "eslint-plugin-prettier": "^3.1.2"
   },
