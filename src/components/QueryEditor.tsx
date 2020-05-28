@@ -1,7 +1,15 @@
 import React, { PureComponent } from 'react';
 import { SelectableValue, QueryEditorProps } from '@grafana/data';
 import { InlineFormLabel, Select } from '@grafana/ui';
-import { StravaQuery, StravaQueryType, StravaActivityStat, StravaQueryFormat, StravaActivityType, StravaJsonData, StravaQueryInterval } from '../types';
+import {
+  StravaQuery,
+  StravaQueryType,
+  StravaActivityStat,
+  StravaQueryFormat,
+  StravaActivityType,
+  StravaJsonData,
+  StravaQueryInterval,
+} from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
 
