@@ -9,6 +9,7 @@ require (
 	github.com/hashicorp/go-hclog v0.12.0
 	github.com/hashicorp/go-plugin v1.0.1
 	github.com/kr/pretty v0.2.0 // indirect
+	github.com/magefile/mage v1.9.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	golang.org/x/net v0.0.0-20180826012351-8a410e7b638d
 )
