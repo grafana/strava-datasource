@@ -52,6 +52,4 @@ dist/
 package-lock.json
 
 tmp/
-
-
 **/*.d.ts
