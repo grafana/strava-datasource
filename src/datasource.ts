@@ -11,7 +11,14 @@ import {
 } from '@grafana/data';
 import StravaApi from './stravaApi';
 import polyline from './polyline';
-import { StravaActivityStat, StravaJsonData, StravaQuery, StravaQueryFormat, StravaActivityType, StravaQueryInterval } from './types';
+import {
+  StravaActivityStat,
+  StravaJsonData,
+  StravaQuery,
+  StravaQueryFormat,
+  StravaActivityType,
+  StravaQueryInterval,
+} from './types';
 
 const DEFAULT_RANGE = {
   from: dateTime(),
@@ -59,7 +66,11 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
           data.push(wmData);
           break;
         default:
-          const tsData = this.transformActivitiesToTimeseries(filteredActivities, target, options.range || DEFAULT_RANGE);
+          const tsData = this.transformActivitiesToTimeseries(
+            filteredActivities,
+            target,
+            options.range || DEFAULT_RANGE
+          );
           data.push(tsData);
           break;
       }
@@ -117,7 +128,9 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
     if (target.interval !== StravaQueryInterval.No) {
       const aggInterval =
-        !target.interval || target.interval === StravaQueryInterval.Auto ? getAggregationInterval(range) : getAggregationIntervalFromTarget(target);
+        !target.interval || target.interval === StravaQueryInterval.Auto
+          ? getAggregationInterval(range)
+          : getAggregationIntervalFromTarget(target);
       if (aggInterval >= INTERVAL_4w) {
         datapoints = groupByMonthSum(datapoints, range);
       } else if (aggInterval === INTERVAL_1w) {
@@ -166,7 +179,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   transformActivitiesToWorldMap(data: any[], target: StravaQuery) {
-    const unit = target.activityStat === StravaActivityStat.Distance || target.activityStat === StravaActivityStat.ElevationGain ? 'lengthm' : 's';
+    const unit =
+      target.activityStat === StravaActivityStat.Distance || target.activityStat === StravaActivityStat.ElevationGain
+        ? 'lengthm'
+        : 's';
     const table: TableData = {
       type: 'table',
       columns: [{ text: 'value', unit }, { text: 'name' }, { text: 'latitude' }, { text: 'longitude' }],

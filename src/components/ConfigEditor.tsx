@@ -175,7 +175,6 @@ export class ConfigEditor extends PureComponent<Props, State> {
         <div className="gf-form-group">
           <div className="gf-form-inline">
             <div className="gf-form">
-
               <InlineFormLabel className="width-14">Client ID</InlineFormLabel>
               <div className="width-30">
                 <LegacyForms.Input
@@ -189,7 +188,6 @@ export class ConfigEditor extends PureComponent<Props, State> {
           {config.secureJsonFields && config.secureJsonFields.clientSecret ? (
             <div className="gf-form-inline">
               <div className="gf-form">
-
                 <InlineFormLabel className="width-14">Client Secret</InlineFormLabel>
                 <LegacyForms.Input className="width-25" placeholder="Configured" disabled={true} />
               </div>

@@ -180,9 +180,19 @@ export class QueryEditor extends PureComponent<Props, State> {
         </div>
         <div className="gf-form-inline">
           <InlineFormLabel>Format</InlineFormLabel>
-          <Select isSearchable={false} options={FORMAT_OPTIONS} onChange={this.onFormatChange} value={this.getFormatOption()} />
+          <Select
+            isSearchable={false}
+            options={FORMAT_OPTIONS}
+            onChange={this.onFormatChange}
+            value={this.getFormatOption()}
+          />
           <InlineFormLabel>Interval</InlineFormLabel>
-          <Select isSearchable={false} options={INTERVAL_OPTIONS} onChange={this.onIntervalChange} value={this.getIntervalOption()} />
+          <Select
+            isSearchable={false}
+            options={INTERVAL_OPTIONS}
+            onChange={this.onIntervalChange}
+            value={this.getIntervalOption()}
+          />
         </div>
       </>
     );
