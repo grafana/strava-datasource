@@ -1,5 +1,5 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { FormField, Button } from '@grafana/ui';
+import { InlineFormLabel, LegacyForms, Button } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
 import { StravaJsonData, StravaSecureJsonData } from '../types';
 
@@ -175,19 +175,23 @@ export class ConfigEditor extends PureComponent<Props, State> {
         <div className="gf-form-group">
           <div className="gf-form-inline">
             <div className="gf-form">
-              <FormField
-                label="Client ID"
-                labelWidth={14}
-                inputWidth={30}
-                value={config.jsonData.clientID || ''}
-                onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientIDChange(event.target.value)}
-              />
+
+              <InlineFormLabel className="width-14">Client ID</InlineFormLabel>
+              <div className="width-30">
+                <LegacyForms.Input
+                  className="width-30"
+                  value={config.jsonData.clientID || ''}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientIDChange(event.target.value)}
+                />
+              </div>
             </div>
           </div>
           {config.secureJsonFields && config.secureJsonFields.clientSecret ? (
             <div className="gf-form-inline">
               <div className="gf-form">
-                <FormField label="Client Secret" labelWidth={14} inputWidth={25} placeholder="Configured" disabled={true} />
+
+                <InlineFormLabel className="width-14">Client Secret</InlineFormLabel>
+                <LegacyForms.Input className="width-25" placeholder="Configured" disabled={true} />
               </div>
               <div className="gf-form">
                 <div className="max-width-30 gf-form-inline">
@@ -200,13 +204,14 @@ export class ConfigEditor extends PureComponent<Props, State> {
           ) : (
             <div className="gf-form-inline">
               <div className="gf-form">
-                <FormField
-                  label="Client Secret"
-                  labelWidth={14}
-                  inputWidth={30}
-                  value={config.secureJsonData ? config.secureJsonData.clientSecret : ''}
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientSecretChange(event.target.value)}
-                />
+                <InlineFormLabel className="width-14">Client Secret</InlineFormLabel>
+                <div className="width-30">
+                  <LegacyForms.Input
+                    className="width-30"
+                    value={config.secureJsonData ? config.secureJsonData.clientSecret : ''}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientSecretChange(event.target.value)}
+                  />
+                </div>
               </div>
             </div>
           )}
