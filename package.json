@@ -21,7 +21,7 @@
     "@grafana/data": "next",
     "@grafana/runtime": "next",
     "@grafana/ui": "next",
-    "@grafana/toolkit": "canary",
+    "@grafana/toolkit": "next",
     "@types/angular": "^1.6.54",
     "@types/grafana": "github:CorpGlory/types-grafana",
     "@types/jest": "^24.0.15",

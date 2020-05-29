@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { SelectableValue, QueryEditorProps } from '@grafana/data';
-import { FormLabel, Select } from '@grafana/ui';
+import { InlineFormLabel, Select } from '@grafana/ui';
 import {
   StravaActivityStat,
   StravaActivityType,
@@ -140,7 +140,7 @@ export class QueryEditor extends PureComponent<Props, State> {
       <>
         <div className="gf-form-inline">
           <AthleteLabel athlete={athlete} />
-          <FormLabel width={5}>Type</FormLabel>
+          <InlineFormLabel width={5}>Type</InlineFormLabel>
           <Select
             isSearchable={false}
             width={10}
@@ -149,7 +149,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onQueryTypeChanged}
             className="gf-form-select"
           />
-          <FormLabel width={7}>Activity</FormLabel>
+          <InlineFormLabel width={7}>Activity</InlineFormLabel>
           <Select
             isSearchable={false}
             width={10}
@@ -158,7 +158,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onActivityTypeChanged}
             className="gf-form-select"
           />
-          <FormLabel width={5}>Stat</FormLabel>
+          <InlineFormLabel width={5}>Stat</InlineFormLabel>
           <Select
             isSearchable={false}
             width={10}
@@ -169,8 +169,13 @@ export class QueryEditor extends PureComponent<Props, State> {
           />
         </div>
         <div className="gf-form-inline">
-          <FormLabel>Interval</FormLabel>
-          <Select isSearchable={false} options={INTERVAL_OPTIONS} onChange={this.onIntervalChange} value={this.getIntervalOption()} />
+          <InlineFormLabel>Interval</InlineFormLabel>
+          <Select
+            isSearchable={false}
+            options={INTERVAL_OPTIONS}
+            onChange={this.onIntervalChange}
+            value={this.getIntervalOption()}
+          />
         </div>
       </>
     );

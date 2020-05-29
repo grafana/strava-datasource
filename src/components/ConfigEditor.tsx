@@ -1,5 +1,5 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { FormField, Button } from '@grafana/ui';
+import { LegacyForms, Button } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
 import { StravaJsonData, StravaSecureJsonData } from '../types';
 
@@ -175,7 +175,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         <div className="gf-form-group">
           <div className="gf-form-inline">
             <div className="gf-form">
-              <FormField
+              <LegacyForms.FormField
                 label="Client ID"
                 labelWidth={14}
                 inputWidth={30}
@@ -187,7 +187,13 @@ export class ConfigEditor extends PureComponent<Props, State> {
           {config.secureJsonFields && config.secureJsonFields.clientSecret ? (
             <div className="gf-form-inline">
               <div className="gf-form">
-                <FormField label="Client Secret" labelWidth={14} inputWidth={25} placeholder="Configured" disabled={true} />
+                <LegacyForms.FormField
+                  label="Client Secret"
+                  labelWidth={14}
+                  inputWidth={25}
+                  placeholder="Configured"
+                  disabled={true}
+                />
               </div>
               <div className="gf-form">
                 <div className="max-width-30 gf-form-inline">
@@ -200,7 +206,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
           ) : (
             <div className="gf-form-inline">
               <div className="gf-form">
-                <FormField
+                <LegacyForms.FormField
                   label="Client Secret"
                   labelWidth={14}
                   inputWidth={30}
