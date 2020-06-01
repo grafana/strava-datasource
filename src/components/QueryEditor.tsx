@@ -1,14 +1,14 @@
 import React, { PureComponent } from 'react';
-import { SelectableValue, QueryEditorProps } from '@grafana/data';
-import { InlineFormLabel, Select } from '@grafana/ui';
+import { QueryEditorProps, SelectableValue } from '@grafana/data';
+import { InlineFormLabel, Select, AsyncSelect } from '@grafana/ui';
 import {
-  StravaQuery,
-  StravaQueryType,
   StravaActivityStat,
-  StravaQueryFormat,
   StravaActivityType,
   StravaJsonData,
+  StravaQuery,
+  StravaQueryFormat,
   StravaQueryInterval,
+  StravaQueryType,
 } from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
@@ -18,6 +18,11 @@ const stravaQueryTypeOptions: Array<SelectableValue<StravaQueryType>> = [
     value: StravaQueryType.Activities,
     label: 'Activities',
     description: 'Athlete Activities',
+  },
+  {
+    value: StravaQueryType.Activity,
+    label: 'Activity',
+    description: 'Activity',
   },
 ];
 
@@ -63,7 +68,7 @@ export const DefaultTarget: State = {
 
 export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
 
-interface State extends StravaQuery {
+interface State {
   athlete: any;
 }
 
@@ -123,6 +128,14 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
   };
 
+  onActivityChanged = (option: SelectableValue<number>) => {
+    const { query } = this.props;
+
+    if (option.value) {
+      this.onChange({ ...query, activityId: option.value });
+    }
+  };
+
   onFormatChange = (option: SelectableValue<StravaQueryFormat>) => {
     const { query } = this.props;
     if (option.value) {
@@ -137,14 +150,31 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
   };
 
+  loadActivities = async () => {
+    const activities = await this.props.datasource.stravaApi.getActivities({
+      after: 1590152836,
+      before: 1590757636,
+    });
+
+    return activities.map(activity => ({
+      value: activity.id,
+      label: activity.name,
+    }));
+  };
+
   onChange(query: StravaQuery) {
     const { onChange, onRunQuery } = this.props;
     onChange(query);
+    if (query.activityType === StravaQueryType.Activity && !query.activityId) {
+      return;
+    }
+
     onRunQuery();
   }
 
   render() {
     const { athlete } = this.state;
+    const { query } = this.props;
 
     return (
       <>
@@ -160,14 +190,26 @@ export class QueryEditor extends PureComponent<Props, State> {
             className="gf-form-select"
           />
           <InlineFormLabel width={7}>Activity</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            width={10}
-            value={this.getSelectedActivityType()}
-            options={stravaActivityTypeOptions}
-            onChange={this.onActivityTypeChanged}
-            className="gf-form-select"
-          />
+          {query.queryType === StravaQueryType.Activities && (
+            <Select
+              isSearchable={false}
+              width={10}
+              value={this.getSelectedActivityType()}
+              options={stravaActivityTypeOptions}
+              onChange={this.onActivityTypeChanged}
+              className="gf-form-select"
+            />
+          )}
+          {query.queryType === StravaQueryType.Activity && (
+            <AsyncSelect
+              isSearchable={false}
+              width={10}
+              loadOptions={this.loadActivities}
+              defaultOptions
+              onChange={this.onActivityChanged}
+              className="gf-form-select"
+            />
+          )}
           <InlineFormLabel width={5}>Stat</InlineFormLabel>
           <Select
             isSearchable={false}
@@ -180,19 +222,9 @@ export class QueryEditor extends PureComponent<Props, State> {
         </div>
         <div className="gf-form-inline">
           <InlineFormLabel>Format</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            options={FORMAT_OPTIONS}
-            onChange={this.onFormatChange}
-            value={this.getFormatOption()}
-          />
+          <Select isSearchable={false} options={FORMAT_OPTIONS} onChange={this.onFormatChange} value={this.getFormatOption()} />
           <InlineFormLabel>Interval</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            options={INTERVAL_OPTIONS}
-            onChange={this.onIntervalChange}
-            value={this.getIntervalOption()}
-          />
+          <Select isSearchable={false} options={INTERVAL_OPTIONS} onChange={this.onIntervalChange} value={this.getIntervalOption()} />
         </div>
       </>
     );

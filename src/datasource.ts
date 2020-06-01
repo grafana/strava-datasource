@@ -1,23 +1,26 @@
 import {
+  DataFrame,
   DataQueryRequest,
   DataSourceApi,
   DataSourceInstanceSettings,
-  TimeSeries,
-  TableData,
   dateTime,
+  TableData,
   TimeRange,
+  TimeSeries,
   TimeSeriesPoints,
   TimeSeriesValue,
+  toDataFrame,
 } from '@grafana/data';
 import StravaApi from './stravaApi';
 import polyline from './polyline';
 import {
   StravaActivityStat,
+  StravaActivityType,
   StravaJsonData,
   StravaQuery,
   StravaQueryFormat,
-  StravaActivityType,
   StravaQueryInterval,
+  StravaQueryType,
 } from './types';
 
 const DEFAULT_RANGE = {
@@ -55,24 +58,33 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     });
 
     for (const target of options.targets) {
-      const filteredActivities = this.filterActivities(activities, target.activityType);
-      switch (target.format) {
-        case StravaQueryFormat.Table:
-          const tableData = this.transformActivitiesToTable(filteredActivities, target);
-          data.push(tableData);
-          break;
-        case StravaQueryFormat.WorldMap:
-          const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
-          data.push(wmData);
-          break;
-        default:
-          const tsData = this.transformActivitiesToTimeseries(
-            filteredActivities,
-            target,
-            options.range || DEFAULT_RANGE
-          );
-          data.push(tsData);
-          break;
+      if (target.queryType === StravaQueryType.Activity) {
+        const activity = await this.stravaApi.getActivity(target.activityId);
+        const streams = await this.stravaApi.getActivityStreams(target.activityId);
+        console.log('activity', activity);
+        console.log('streams', streams);
+        switch (target.format) {
+          default:
+            const timeSeriesData = this.transformActivityToTimeSeries(activity, target, options.range || DEFAULT_RANGE);
+            data.push(timeSeriesData);
+            break;
+        }
+      } else if (target.queryType === StravaQueryType.Activities) {
+        const filteredActivities = this.filterActivities(activities, target.activityType);
+        switch (target.format) {
+          case StravaQueryFormat.Table:
+            const tableData = this.transformActivitiesToTable(filteredActivities, target);
+            data.push(tableData);
+            break;
+          case StravaQueryFormat.WorldMap:
+            const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
+            data.push(wmData);
+            break;
+          default:
+            const tsData = this.transformActivitiesToTimeseries(filteredActivities, target, options.range || DEFAULT_RANGE);
+            data.push(tsData);
+            break;
+        }
       }
     }
 
@@ -128,9 +140,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
     if (target.interval !== StravaQueryInterval.No) {
       const aggInterval =
-        !target.interval || target.interval === StravaQueryInterval.Auto
-          ? getAggregationInterval(range)
-          : getAggregationIntervalFromTarget(target);
+        !target.interval || target.interval === StravaQueryInterval.Auto ? getAggregationInterval(range) : getAggregationIntervalFromTarget(target);
       if (aggInterval >= INTERVAL_4w) {
         datapoints = groupByMonthSum(datapoints, range);
       } else if (aggInterval === INTERVAL_1w) {
@@ -144,6 +154,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       target: alias,
       datapoints,
     };
+  }
+
+  transformActivityToTimeSeries(data: any, target: StravaQuery, range: TimeRange): DataFrame {
+    return toDataFrame({ datapoints: [{ ...data }] });
   }
 
   transformActivitiesToTable(data: any[], target: StravaQuery) {
@@ -179,10 +193,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   transformActivitiesToWorldMap(data: any[], target: StravaQuery) {
-    const unit =
-      target.activityStat === StravaActivityStat.Distance || target.activityStat === StravaActivityStat.ElevationGain
-        ? 'lengthm'
-        : 's';
+    const unit = target.activityStat === StravaActivityStat.Distance || target.activityStat === StravaActivityStat.ElevationGain ? 'lengthm' : 's';
     const table: TableData = {
       type: 'table',
       columns: [{ text: 'value', unit }, { text: 'name' }, { text: 'latitude' }, { text: 'longitude' }],

@@ -15,6 +15,7 @@ export interface StravaQuery extends DataQuery {
   activityType: StravaActivityType;
   format: StravaQueryFormat;
   interval: StravaQueryInterval;
+  activityId: number;
 }
 
 export enum StravaQueryFormat {
@@ -34,6 +35,7 @@ export enum StravaQueryInterval {
 
 export enum StravaQueryType {
   Activities = 'Activities',
+  Activity = 'Activity',
 }
 
 export enum StravaActivityStat {

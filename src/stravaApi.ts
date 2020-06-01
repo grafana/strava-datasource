@@ -20,6 +20,14 @@ export default class StravaApi {
     return await this.requestWithPagination('athlete/activities', params);
   }
 
+  async getActivity(activityId: number) {
+    return await this.tsdbRequest(`activities/${activityId}`);
+  }
+
+  async getActivityStreams(activityId: number) {
+    return await this.tsdbRequest(`activities/${activityId}/streams?keys=time,watts,heartrate,cadence&key_by_type=true`);
+  }
+
   async requestWithPagination(url: string, params?: any) {
     let data: any[] = [];
     let chunk = [];
@@ -61,7 +69,6 @@ export default class StravaApi {
       });
       return response.data;
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }
@@ -90,10 +97,8 @@ export default class StravaApi {
         method: 'POST',
         data: tsdbRequestData,
       });
-      console.log(response);
       return this.handleTsdbResponse(response);
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }
@@ -120,7 +125,6 @@ export default class StravaApi {
       });
       return this.handleTsdbResponse(response, queryType);
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }
