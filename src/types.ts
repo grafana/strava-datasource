@@ -1,4 +1,4 @@
-import { DataQuery, SelectableValue, DataSourceJsonData } from '@grafana/data';
+import { DataQuery, DataSourceJsonData } from '@grafana/data';
 
 export interface StravaJsonData extends DataSourceJsonData {
   clientID: string;
