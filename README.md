@@ -26,3 +26,10 @@ export GF_STRAVA_DS_DATA_PATH=/var/lib/grafana/strava
 When data source is configured, you can import example dashboards from _Dashboards_ tab at the data source configuration page. That's a good starting point for your custom dashboards.
 
 Unfortunately, Strava API has some limitations and you can query only your own activities. But for multi-user dashboards you can configure multiple data sources and authorize separate user for each of them.
+
+Included dashboard "Strava Athlete Dashboad Modern" depends on Grafana's native text2 panel plugin which is still in alpha state. If you want to enable alpha plugins and avoid seeing an error message in the dashboard, set `GF_PLUGINS_ENABLE_ALPHA` environment variable to true. Example:
+
+```sh
+export GF_PLUGINS_ENABLE_ALPHA=true
+```
+
