@@ -8,10 +8,7 @@ class StravaAnnotationsQueryCtrl {
   static templateUrl = 'partials/annotations.editor.html';
 }
 
-export const plugin = new DataSourcePlugin<StravaDatasource, StravaQuery, StravaJsonData>(
-  StravaDatasource
-)
+export const plugin = new DataSourcePlugin<StravaDatasource, StravaQuery, StravaJsonData>(StravaDatasource)
   .setConfigEditor(ConfigEditor)
   .setQueryEditor(QueryEditor)
-  .setExploreQueryField(QueryEditor)
   .setAnnotationQueryCtrl(StravaAnnotationsQueryCtrl);

@@ -9,10 +9,10 @@ export default class StravaApi {
     this.datasourceId = datasourceId;
     // this.apiUrl = url;
     this.promises = {};
+    this.apiUrl = '';
   }
 
   async getAuthenticatedAthlete(params?: any) {
-    // return await this.request('athlete', params);
     return await this.tsdbRequest('athlete', params);
   }
 
@@ -21,11 +21,11 @@ export default class StravaApi {
   }
 
   async requestWithPagination(url: string, params?: any) {
-    let data = [];
+    let data: any[] = [];
     let chunk = [];
     let page = 1;
     const limit = params && params.limit;
-    const per_page = params && params.per_page || 200;
+    const per_page = (params && params.per_page) || 200;
     while (!(chunk.length === 0 && page !== 1) && !(limit && data.length >= limit)) {
       params = {
         ...params,
@@ -44,7 +44,7 @@ export default class StravaApi {
     return data;
   }
 
-  async exchangeToken(authCode) {
+  async exchangeToken(authCode: any) {
     return await this.tsdbAuthRequest({ authCode });
   }
 
@@ -73,20 +73,22 @@ export default class StravaApi {
   async _tsdbRequest(endpoint: string, params?: any) {
     try {
       const tsdbRequestData = {
-        queries: [{
-          datasourceId: this.datasourceId,
-          queryType: 'stravaAPI',
-          target: {
-            endpoint,
-            params,
+        queries: [
+          {
+            datasourceId: this.datasourceId,
+            queryType: 'stravaAPI',
+            target: {
+              endpoint,
+              params,
+            },
           },
-        }],
+        ],
       };
 
       const response = await getBackendSrv().datasourceRequest({
         url: '/api/tsdb/query',
         method: 'POST',
-        data: tsdbRequestData
+        data: tsdbRequestData,
       });
       console.log(response);
       return this.handleTsdbResponse(response);
@@ -99,20 +101,22 @@ export default class StravaApi {
   async tsdbAuthRequest(params?: any) {
     const queryType = 'stravaAuth';
     const tsdbRequestData = {
-      queries: [{
-        datasourceId: this.datasourceId,
-        queryType: 'stravaAuth',
-        target: {
-          params,
+      queries: [
+        {
+          datasourceId: this.datasourceId,
+          queryType: 'stravaAuth',
+          target: {
+            params,
+          },
         },
-      }],
+      ],
     };
 
     try {
       const response = await getBackendSrv().datasourceRequest({
         url: '/api/tsdb/query',
         method: 'POST',
-        data: tsdbRequestData
+        data: tsdbRequestData,
       });
       return this.handleTsdbResponse(response, queryType);
     } catch (error) {
@@ -121,7 +125,7 @@ export default class StravaApi {
     }
   }
 
-  handleTsdbResponse(response, queryType = 'stravaAPI') {
+  handleTsdbResponse(response: any, queryType = 'stravaAPI') {
     if (response && (response.status >= 400 || response.status < 0)) {
       throw Error(response.statusText);
     }
@@ -138,7 +142,7 @@ export default class StravaApi {
     return responseData.meta;
   }
 
-  proxyfy(func, funcName, funcScope) {
+  proxyfy(func: any, funcName: any, funcScope: any) {
     if (!this.promises[funcName]) {
       this.promises[funcName] = {};
     }
@@ -151,13 +155,12 @@ export default class StravaApi {
  * Wrap request to prevent multiple calls
  * with same params when waiting for result.
  */
-function callOnce(func, promiseKeeper, funcScope): (...args: any[]) => any {
+function callOnce(func: any, promiseKeeper: any, funcScope: any): (...args: any[]) => any {
   return function() {
     var hash = getRequestHash(arguments);
     if (!promiseKeeper[hash]) {
       promiseKeeper[hash] = Promise.resolve(
-        func.apply(funcScope, arguments)
-        .then(result => {
+        func.apply(funcScope, arguments).then((result: any) => {
           promiseKeeper[hash] = null;
           return result;
         })
@@ -167,17 +170,20 @@ function callOnce(func, promiseKeeper, funcScope): (...args: any[]) => any {
   };
 }
 
-function getRequestHash(args) {
+function getRequestHash(args: any) {
   const argsJson = JSON.stringify(args);
   return getHash(argsJson);
 }
 
 function getHash(srt: string) {
-  var hash = 0, i, chr, len;
+  var hash = 0,
+    i,
+    chr,
+    len;
   if (srt.length !== 0) {
     for (i = 0, len = srt.length; i < len; i++) {
-      chr   = srt.charCodeAt(i);
-      hash  = ((hash << 5) - hash) + chr;
+      chr = srt.charCodeAt(i);
+      hash = (hash << 5) - hash + chr;
       hash |= 0; // Convert to 32bit integer
     }
   }

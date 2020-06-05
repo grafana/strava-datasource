@@ -47,7 +47,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
     }
 
     return options;
-  }
+  };
 
   updateDatasource = async (config: any) => {
     for (const j in config.jsonData) {
@@ -65,7 +65,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
     this.props.onOptionsChange({
       ...config,
     });
-  }
+  };
 
   onResetAccessToken = () => {
     this.updateDatasource({
@@ -75,7 +75,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         accessToken: false,
       },
     });
-  }
+  };
 
   onResetClientSecret = () => {
     this.updateDatasource({
@@ -85,7 +85,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         clientSecret: false,
       },
     });
-  }
+  };
 
   onResetAuthCode = () => {
     this.updateDatasource({
@@ -95,7 +95,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         authCode: false,
       },
     });
-  }
+  };
 
   onAccessTokenChange = (accessToken: string) => {
     this.updateDatasource({
@@ -105,7 +105,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         accessToken,
       },
     });
-  }
+  };
 
   onClientIDChange = (clientID: string) => {
     this.updateDatasource({
@@ -115,7 +115,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         clientID,
       },
     });
-  }
+  };
 
   onClientSecretChange = (clientSecret: string) => {
     this.updateDatasource({
@@ -125,7 +125,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         clientSecret,
       },
     });
-  }
+  };
 
   onAuthCodeChange = (authCode: string) => {
     this.updateDatasource({
@@ -135,15 +135,15 @@ export class ConfigEditor extends PureComponent<Props, State> {
         authCode,
       },
     });
-  }
+  };
 
   isLocationContainsCode = () => {
     return AuthCodePattern.test(window.location.search);
-  }
+  };
 
   isLocationContainsError = () => {
     return /error=/.test(window.location.search);
-  }
+  };
 
   fillAuthCodeFromLocation = () => {
     const result = AuthCodePattern.exec(window.location.search);
@@ -155,7 +155,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         authCode,
       },
     });
-  }
+  };
 
   getConnectWithStravaHref = () => {
     const authUrl = 'https://www.strava.com/oauth/authorize';
@@ -163,7 +163,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
     const clientID = this.state.config.jsonData.clientID;
     const authScope = 'read_all,profile:read_all,activity:read_all';
     return `${authUrl}?client_id=${clientID}&response_type=code&redirect_uri=${currentLocation}&approval_prompt=force&scope=${authScope}`;
-  }
+  };
 
   render() {
     const { config } = this.state;
@@ -185,7 +185,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
               </div>
             </div>
           </div>
-          {config.secureJsonFields.clientSecret ? (
+          {config.secureJsonFields && config.secureJsonFields.clientSecret ? (
             <div className="gf-form-inline">
               <div className="gf-form">
                 <InlineFormLabel className="width-14">Client Secret</InlineFormLabel>
@@ -206,7 +206,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
                 <div className="width-30">
                   <LegacyForms.Input
                     className="width-30"
-                    value={config.secureJsonData.clientSecret || ''}
+                    value={config.secureJsonData ? config.secureJsonData.clientSecret : ''}
                     onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientSecretChange(event.target.value)}
                   />
                 </div>

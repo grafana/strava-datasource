@@ -1,12 +1,24 @@
 import React, { PureComponent } from 'react';
-import { SelectableValue, ExploreQueryFieldProps } from '@grafana/data';
+import { SelectableValue, QueryEditorProps } from '@grafana/data';
 import { InlineFormLabel, Select } from '@grafana/ui';
-import { StravaQuery, StravaQueryType, StravaActivityStat, StravaQueryFormat, StravaActivityType, StravaJsonData, StravaQueryInterval } from '../types';
+import {
+  StravaQuery,
+  StravaQueryType,
+  StravaActivityStat,
+  StravaQueryFormat,
+  StravaActivityType,
+  StravaJsonData,
+  StravaQueryInterval,
+} from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
 
 const stravaQueryTypeOptions: Array<SelectableValue<StravaQueryType>> = [
-  { value: StravaQueryType.Activities, label: 'Activities', description: 'Athlete Activities' }
+  {
+    value: StravaQueryType.Activities,
+    label: 'Activities',
+    description: 'Athlete Activities',
+  },
 ];
 
 const stravaActivityStatOptions: Array<SelectableValue<StravaActivityStat>> = [
@@ -49,7 +61,7 @@ export const DefaultTarget: State = {
   interval: StravaQueryInterval.Auto,
 };
 
-export type Props = ExploreQueryFieldProps<StravaDatasource, StravaQuery, StravaJsonData>;
+export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
 
 interface State extends StravaQuery {
   athlete: any;
@@ -65,10 +77,6 @@ export class QueryEditor extends PureComponent<Props, State> {
     activityStat: StravaActivityStat.Distance,
   };
 
-  constructor(props: Props) {
-    super(props);
-  }
-
   async componentDidMount() {
     const athlete = await this.props.datasource.stravaApi.getAuthenticatedAthlete();
     this.setState({ athlete });
@@ -76,48 +84,58 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   getSelectedQueryType = () => {
     return stravaQueryTypeOptions.find(v => v.value === this.props.query.queryType);
-  }
+  };
 
   getSelectedActivityStat = () => {
     return stravaActivityStatOptions.find(v => v.value === this.props.query.activityStat);
-  }
+  };
 
   getSelectedActivityType = () => {
     return stravaActivityTypeOptions.find(v => v.value === this.props.query.activityType);
-  }
+  };
 
   getFormatOption = () => {
     return FORMAT_OPTIONS.find(v => v.value === this.props.query.format);
-  }
+  };
 
   getIntervalOption = () => {
     return INTERVAL_OPTIONS.find(v => v.value === this.props.query.interval);
-  }
+  };
 
   onQueryTypeChanged = (option: SelectableValue<StravaQueryType>) => {
     const { query } = this.props;
-    this.onChange({ ...query, queryType: option.value });
-  }
+    if (option.value) {
+      this.onChange({ ...query, queryType: option.value });
+    }
+  };
 
   onActivityStatChanged = (option: SelectableValue<StravaActivityStat>) => {
     const { query } = this.props;
-    this.onChange({ ...query, activityStat: option.value });
-  }
+    if (option.value) {
+      this.onChange({ ...query, activityStat: option.value });
+    }
+  };
 
   onActivityTypeChanged = (option: SelectableValue<StravaActivityType>) => {
     const { query } = this.props;
-    this.onChange({ ...query, activityType: option.value });
-  }
+    if (option.value) {
+      this.onChange({ ...query, activityType: option.value });
+    }
+  };
 
   onFormatChange = (option: SelectableValue<StravaQueryFormat>) => {
     const { query } = this.props;
-    this.onChange({ ...query, format: option.value });
-  }
+    if (option.value) {
+      this.onChange({ ...query, format: option.value });
+    }
+  };
 
   onIntervalChange = (option: SelectableValue<StravaQueryInterval>) => {
     const { query } = this.props;
-    this.onChange({ ...query, interval: option.value });
-  }
+    if (option.value) {
+      this.onChange({ ...query, interval: option.value });
+    }
+  };
 
   onChange(query: StravaQuery) {
     const { onChange, onRunQuery } = this.props;
@@ -126,7 +144,6 @@ export class QueryEditor extends PureComponent<Props, State> {
   }
 
   render() {
-    const { query, datasource, onChange, onRunQuery, data } = this.props;
     const { athlete } = this.state;
 
     return (
@@ -163,9 +180,19 @@ export class QueryEditor extends PureComponent<Props, State> {
         </div>
         <div className="gf-form-inline">
           <InlineFormLabel>Format</InlineFormLabel>
-          <Select isSearchable={false} options={FORMAT_OPTIONS} onChange={this.onFormatChange} value={this.getFormatOption()} />
+          <Select
+            isSearchable={false}
+            options={FORMAT_OPTIONS}
+            onChange={this.onFormatChange}
+            value={this.getFormatOption()}
+          />
           <InlineFormLabel>Interval</InlineFormLabel>
-          <Select isSearchable={false} options={INTERVAL_OPTIONS} onChange={this.onIntervalChange} value={this.getIntervalOption()} />
+          <Select
+            isSearchable={false}
+            options={INTERVAL_OPTIONS}
+            onChange={this.onIntervalChange}
+            value={this.getIntervalOption()}
+          />
         </div>
       </>
     );

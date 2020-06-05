@@ -2,54 +2,56 @@ import {
   DataQueryRequest,
   DataSourceApi,
   DataSourceInstanceSettings,
-  FieldType,
-  MutableDataFrame,
   TimeSeries,
   TableData,
   dateTime,
   TimeRange,
   TimeSeriesPoints,
-  TimeSeriesValue
-} from "@grafana/data";
-import StravaApi from "./stravaApi";
+  TimeSeriesValue,
+} from '@grafana/data';
+import StravaApi from './stravaApi';
 import polyline from './polyline';
 import {
   StravaActivityStat,
   StravaJsonData,
   StravaQuery,
-  StravaQueryType,
   StravaQueryFormat,
   StravaActivityType,
-  StravaQueryInterval
-} from "./types";
-import moment from "moment";
+  StravaQueryInterval,
+} from './types';
+
+const DEFAULT_RANGE = {
+  from: dateTime(),
+  to: dateTime(),
+  raw: {
+    from: 'now',
+    to: 'now',
+  },
+};
 
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
   datasourceId: number;
   apiUrl: string;
-  datasourceName: string;
   stravaApi: StravaApi;
+  activities: any[];
 
   /** @ngInject */
-  constructor(
-    instanceSettings: DataSourceInstanceSettings<StravaJsonData>,
-    private templateSrv: any,
-    private timeSrv: any
-  ) {
+  constructor(instanceSettings: DataSourceInstanceSettings<StravaJsonData>) {
     super(instanceSettings);
-    this.type = "strava";
+    this.type = 'strava';
     this.datasourceId = instanceSettings.id;
-    this.apiUrl = instanceSettings.url;
+    this.apiUrl = instanceSettings.url!;
     this.stravaApi = new StravaApi(this.datasourceId);
+    this.activities = [];
   }
 
   async query(options: DataQueryRequest<StravaQuery>) {
-    const data = [];
+    const data: any[] = [];
 
     const activities = await this.stravaApi.getActivities({
-      before: options.range.to.unix(),
-      after: options.range.from.unix(),
+      before: options.range?.to.unix(),
+      after: options.range?.from.unix(),
     });
 
     for (const target of options.targets) {
@@ -64,7 +66,11 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
           data.push(wmData);
           break;
         default:
-          const tsData = this.transformActivitiesToTimeseries(filteredActivities, target, options.range);
+          const tsData = this.transformActivitiesToTimeseries(
+            filteredActivities,
+            target,
+            options.range || DEFAULT_RANGE
+          );
           data.push(tsData);
           break;
       }
@@ -85,10 +91,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
 
     try {
-      await this.stravaApi.getActivities({ per_page: 2, limit: 2});
-      return { status: "success", message: "Data source is working" };
+      await this.stravaApi.getActivities({ per_page: 2, limit: 2 });
+      return { status: 'success', message: 'Data source is working' };
     } catch (err) {
-      return { status: "error", message: "Cannot connect to Strava API" };
+      return { status: 'error', message: 'Cannot connect to Strava API' };
     }
   }
 
@@ -108,24 +114,23 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return activities.filter(activity => {
       if (activityType === 'Other') {
         return activity.type !== 'Run' && activity.type !== 'Ride';
-      } else {}
+      } else {
+      }
       return activity.type === activityType;
     });
   }
 
   transformActivitiesToTimeseries(data: any[], target: StravaQuery, range: TimeRange): TimeSeries {
-    let datapoints = [];
+    let datapoints: any[] = [];
     for (const activity of data) {
-      datapoints.push([
-        activity[target.activityStat],
-        dateTime(activity.start_date).valueOf(),
-      ]);
+      datapoints.push([activity[target.activityStat], dateTime(activity.start_date).valueOf()]);
     }
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
     if (target.interval !== StravaQueryInterval.No) {
-      const aggInterval = !target.interval || target.interval === StravaQueryInterval.Auto ?
-        getAggregationInterval(range) :
-        getAggregationIntervalFromTarget(target);
+      const aggInterval =
+        !target.interval || target.interval === StravaQueryInterval.Auto
+          ? getAggregationInterval(range)
+          : getAggregationIntervalFromTarget(target);
       if (aggInterval >= INTERVAL_4w) {
         datapoints = groupByMonthSum(datapoints, range);
       } else if (aggInterval === INTERVAL_1w) {
@@ -134,10 +139,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         datapoints = groupBySum(datapoints, range, aggInterval);
       }
     }
-    const alias = `${target.activityType ? target.activityType + '_' : '' }${target.activityStat}`;
+    const alias = `${target.activityType ? target.activityType + '_' : ''}${target.activityStat}`;
     return {
       target: alias,
-      datapoints
+      datapoints,
     };
   }
 
@@ -145,7 +150,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     const table: TableData = {
       type: 'table',
       columns: [
-        { text: 'Time'},
+        { text: 'Time' },
         { text: 'name' },
         { text: 'distance', unit: 'lengthm' },
         { text: 'moving_time', unit: 's' },
@@ -154,7 +159,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         { text: 'type' },
         { text: 'kilojoules', unit: 'joule' },
       ],
-      rows: []
+      rows: [],
     };
 
     for (const activity of data) {
@@ -175,29 +180,20 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
   transformActivitiesToWorldMap(data: any[], target: StravaQuery) {
     const unit =
-      target.activityStat === StravaActivityStat.Distance ||
-      target.activityStat === StravaActivityStat.ElevationGain ? 'lengthm' : 's';
+      target.activityStat === StravaActivityStat.Distance || target.activityStat === StravaActivityStat.ElevationGain
+        ? 'lengthm'
+        : 's';
     const table: TableData = {
       type: 'table',
-      columns: [
-        { text: 'value', unit },
-        { text: 'name' },
-        { text: 'latitude' },
-        { text: 'longitude' },
-      ],
-      rows: []
+      columns: [{ text: 'value', unit }, { text: 'name' }, { text: 'latitude' }, { text: 'longitude' }],
+      rows: [],
     };
 
     for (const activity of data) {
       const middlePoint = getActivityMiddlePoint(activity);
       const latitude = middlePoint ? middlePoint[0] : activity.start_latitude;
       const longitude = middlePoint ? middlePoint[1] : activity.start_longitude;
-      const row = [
-        activity[target.activityStat],
-        activity.name,
-        latitude,
-        longitude,
-      ];
+      const row = [activity[target.activityStat], activity.name, latitude, longitude];
       if (activity.start_latitude && activity.start_longitude) {
         table.rows.push(row);
       }
@@ -206,7 +202,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 }
 
-function getActivityMiddlePoint(activity: any): number[] {
+function getActivityMiddlePoint(activity: any): number[] | null {
   if (!activity.map || !activity.map.summary_polyline) {
     return null;
   }
@@ -263,7 +259,7 @@ const POINT_VALUE = 0;
 const POINT_TIMESTAMP = 1;
 
 const AGG_SUM = (values: TimeSeriesValue[]) => {
-  return values.reduce((acc, val) => acc + val);
+  return values.reduce((acc, val) => acc! + val!);
 };
 
 export function groupBySum(datapoints: TimeSeriesPoints, range: TimeRange, interval: number): TimeSeriesPoints {
@@ -278,15 +274,22 @@ export function groupByMonthSum(datapoints: TimeSeriesPoints, range: TimeRange):
   return groupByTime(datapoints, range, null, getClosestMonth, getNextMonth, AGG_SUM);
 }
 
-export function groupByTime(datapoints: any[], range: TimeRange, interval: number, intervalFn, nextIntervalFn, groupByFn): any[] {
+export function groupByTime(
+  datapoints: any[],
+  range: TimeRange,
+  interval: number | null,
+  intervalFn: any,
+  nextIntervalFn: any,
+  groupByFn: any
+): any[] {
   if (datapoints.length === 0) {
     return [];
   }
 
   const time_from = range.from.unix() * 1000;
   const time_to = range.to.unix() * 1000;
-  let grouped_series = [];
-  let frame_values = [];
+  let grouped_series: any[] = [];
+  let frame_values: any[] = [];
   let frame_value;
   let frame_ts = datapoints.length ? intervalFn(time_from, interval) : 0;
   let point_frame_ts = frame_ts;
@@ -324,25 +327,25 @@ export function groupByTime(datapoints: any[], range: TimeRange, interval: numbe
   return grouped_series;
 }
 
-function getPointTimeFrame(timestamp, ms_interval) {
+function getPointTimeFrame(timestamp: any, ms_interval: any) {
   return Math.floor(timestamp / ms_interval) * ms_interval;
 }
 
-function getNextTimeFrame(timestamp, ms_interval) {
+function getNextTimeFrame(timestamp: any, ms_interval: any) {
   return timestamp + ms_interval;
 }
 
-function getClosestMonth(timestamp): number {
-  const month_time = moment(timestamp).startOf('month');
+function getClosestMonth(timestamp: any): number {
+  const month_time = dateTime(timestamp).startOf('month');
   return month_time.unix() * 1000;
 }
 
-function getNextMonth(timestamp): number {
-  const next_month_time = moment(timestamp).add(1, 'month');
+function getNextMonth(timestamp: any): number {
+  const next_month_time = dateTime(timestamp).add(1, 'month');
   return next_month_time.unix() * 1000;
 }
 
-function getClosestWeek(timestamp): number {
+function getClosestWeek(timestamp: any): number {
   // The first Monday after the Unix Epoch begins on Jan 5, 1970, 00:00.
   // This is a UNIX timestamp of 96 hours or 345600000 ms
   const FIRST_MONDAY_MS = 345600000;
@@ -350,6 +353,6 @@ function getClosestWeek(timestamp): number {
   return Math.floor(week_ts / INTERVAL_1w) * INTERVAL_1w + FIRST_MONDAY_MS;
 }
 
-function getNextWeek(timestamp): number {
+function getNextWeek(timestamp: any): number {
   return timestamp + INTERVAL_1w;
 }
