@@ -182,7 +182,7 @@ export class QueryEditor extends PureComponent<Props, State> {
           </div>
         </div>
         <div className="gf-form-inline">
-          <InlineFormLabel width={12} >Format</InlineFormLabel>
+          <InlineFormLabel width={12}>Format</InlineFormLabel>
           <Select
             isSearchable={false}
             width={27}
