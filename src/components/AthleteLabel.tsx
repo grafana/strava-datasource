@@ -6,12 +6,14 @@ import { GrafanaTheme } from '@grafana/data';
 const getStyles = stylesFactory((theme: GrafanaTheme) => {
   return {
     athleteLabel: css`
-      height: 35px;
+      height: ${theme.spacing.formInputHeight}px;
       padding: 2px;
+      margin-right: ${theme.spacing.inlineFormMargin};
+      border-radius: ${theme.border.radius.md};
       background-color: ${theme.palette.dark4};
     `,
     athleteAvatar: css`
-      height: 32px;
+      height: 28px;
       border-radius: 50%;
     `,
   };
