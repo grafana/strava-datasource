@@ -13,6 +13,7 @@ export interface StravaQuery extends DataQuery {
   queryType: StravaQueryType;
   activityStat: StravaActivityStat;
   activityType: StravaActivityType;
+  customActivityType: string;
   format: StravaQueryFormat;
   interval: StravaQueryInterval;
 }
