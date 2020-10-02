@@ -33,7 +33,7 @@ dist-backend-%:
 	$(eval filename = strava-plugin_$*_amd64$(extension))
 	env GOOS=$* GO111MODULE=on GOARCH=amd64 go build -ldflags="-s -w" -mod=vendor -o ./dist/$(filename) ./pkg
 
-start-frontend:
+run-frontend:
 	yarn start
 
 .PHONY: test

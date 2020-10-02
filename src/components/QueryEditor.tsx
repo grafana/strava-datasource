@@ -153,15 +153,15 @@ export class QueryEditor extends PureComponent<Props, State> {
           <InlineFormLabel width={5}>Type</InlineFormLabel>
           <Select
             isSearchable={false}
-            width={15}
+            width={16}
             value={this.getSelectedQueryType()}
             options={stravaQueryTypeOptions}
             onChange={this.onQueryTypeChanged}
           />
-          <InlineFormLabel width={7}>Activity</InlineFormLabel>
+          <InlineFormLabel width={5}>Activity</InlineFormLabel>
           <Select
             isSearchable={false}
-            width={15}
+            width={16}
             value={this.getSelectedActivityType()}
             options={stravaActivityTypeOptions}
             onChange={this.onActivityTypeChanged}
@@ -169,29 +169,35 @@ export class QueryEditor extends PureComponent<Props, State> {
           <InlineFormLabel width={5}>Stat</InlineFormLabel>
           <Select
             isSearchable={false}
-            width={15}
+            width={16}
             value={this.getSelectedActivityStat()}
             options={stravaActivityStatOptions}
             onChange={this.onActivityStatChanged}
           />
+          <div className="gf-form gf-form--grow">
+            <div className="gf-form-label gf-form-label--grow" />
+          </div>
         </div>
         <div className="gf-form-inline">
-          <InlineFormLabel>Format</InlineFormLabel>
+          <InlineFormLabel width={12}>Format</InlineFormLabel>
           <Select
-            width={20}
             isSearchable={false}
+            width={27}
             options={FORMAT_OPTIONS}
             onChange={this.onFormatChange}
             value={this.getFormatOption()}
           />
-          <InlineFormLabel>Interval</InlineFormLabel>
+          <InlineFormLabel width={5}>Interval</InlineFormLabel>
           <Select
-            width={20}
             isSearchable={false}
+            width={16}
             options={INTERVAL_OPTIONS}
             onChange={this.onIntervalChange}
             value={this.getIntervalOption()}
           />
+          <div className="gf-form gf-form--grow">
+            <div className="gf-form-label gf-form-label--grow" />
+          </div>
         </div>
       </>
     );
