@@ -37,13 +37,13 @@
   "includes": [
     {
       "type": "dashboard",
-      "name": "Strava Athlete Dashboad Modern",
-      "path": "dashboards/strava_athlete_dashboad_modern.json"
+      "name": "Strava Athlete Dashboard Modern",
+      "path": "dashboards/strava_athlete_dashboard_modern.json"
     },
     {
       "type": "dashboard",
-      "name": "Strava Athlete Dashboad",
-      "path": "dashboards/strava_athlete_dashboad.json"
+      "name": "Strava Athlete Dashboard",
+      "path": "dashboards/strava_athlete_dashboard.json"
     },
     {
       "type": "dashboard",
