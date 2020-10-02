@@ -118,7 +118,7 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   onActivityTypeChanged = (option: SelectableValue<StravaActivityType>) => {
     const { query } = this.props;
-    if (option.value) {
+    if (option.value !== undefined) {
       this.onChange({ ...query, activityType: option.value });
     }
   };
