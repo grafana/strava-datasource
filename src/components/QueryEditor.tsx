@@ -1,6 +1,6 @@
-import React, { PureComponent } from 'react';
+import React, { ChangeEvent, PureComponent } from 'react';
 import { SelectableValue, QueryEditorProps } from '@grafana/data';
-import { InlineFormLabel, Select } from '@grafana/ui';
+import { InlineFormLabel, Input, Select } from '@grafana/ui';
 import {
   StravaQuery,
   StravaQueryType,
@@ -34,6 +34,7 @@ const stravaActivityTypeOptions: Array<SelectableValue<StravaActivityType>> = [
   { value: 'Run', label: 'Run' },
   { value: 'Ride', label: 'Ride' },
   { value: 'Other', label: 'Other' },
+  { value: 'Custom', label: 'Custom' },
 ];
 
 const FORMAT_OPTIONS: Array<SelectableValue<StravaQueryFormat>> = [
@@ -56,6 +57,7 @@ export const DefaultTarget: State = {
   athlete: {},
   queryType: StravaQueryType.Activities,
   activityType: null,
+  customActivityType: '',
   activityStat: StravaActivityStat.Distance,
   format: StravaQueryFormat.TimeSeries,
   interval: StravaQueryInterval.Auto,
@@ -74,6 +76,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     format: StravaQueryFormat.TimeSeries,
     queryType: StravaQueryType.Activities,
     activityType: null,
+    customActivityType: '',
     activityStat: StravaActivityStat.Distance,
   };
 
@@ -123,6 +126,13 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
   };
 
+  onCustomActivityTypeChanged = (event: ChangeEvent<HTMLInputElement>) => {
+    const { query } = this.props;
+    if (event.target.value) {
+      this.onChange({ ...query, customActivityType: event.target.value })
+    }
+  }
+
   onFormatChange = (option: SelectableValue<StravaQueryFormat>) => {
     const { query } = this.props;
     if (option.value) {
@@ -145,6 +155,7 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   render() {
     const { athlete } = this.state;
+    const { query } = this.props;
 
     return (
       <>
@@ -159,7 +170,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onQueryTypeChanged}
             className="gf-form-select"
           />
-          <InlineFormLabel width={7}>Activity</InlineFormLabel>
+          <InlineFormLabel width={7} tooltip="The Custom option allows you to type a comma-separated list of activity types or a variable name.">Activity</InlineFormLabel>
           <Select
             isSearchable={false}
             width={10}
@@ -168,6 +179,14 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onActivityTypeChanged}
             className="gf-form-select"
           />
+          {
+            this.getSelectedActivityType()?.value == 'Custom' &&
+            (<Input
+                width={15}
+                value={query.customActivityType || ''}
+                onChange={this.onCustomActivityTypeChanged}
+              />)
+          }
           <InlineFormLabel width={5}>Stat</InlineFormLabel>
           <Select
             isSearchable={false}

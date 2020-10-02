@@ -9,6 +9,7 @@ import {
   TimeSeriesPoints,
   TimeSeriesValue,
 } from '@grafana/data';
+import { getTemplateSrv } from '@grafana/runtime';
 import StravaApi from './stravaApi';
 import polyline from './polyline';
 import {
@@ -55,7 +56,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     });
 
     for (const target of options.targets) {
-      const filteredActivities = this.filterActivities(activities, target.activityType);
+      const filteredActivities = this.filterActivities(activities, target.activityType, target.customActivityType);
       switch (target.format) {
         case StravaQueryFormat.Table:
           const tableData = this.transformActivitiesToTable(filteredActivities, target);
@@ -105,18 +106,25 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return authCode;
   }
 
-  filterActivities(activities: any[], activityType: StravaActivityType): any[] {
+  filterActivities(allActivities: any[], activityType: StravaActivityType, customActivityType: string): any[] {
+    let activities = [activityType]
     if (!activityType) {
       // No filter, return all
-      return activities;
+      return allActivities;
+    } else if (activityType === 'Custom' && customActivityType) {
+      // Handle template variables if any
+      if (customActivityType.indexOf('$') != -1) {
+        customActivityType = getTemplateSrv().replace(customActivityType, undefined, 'csv')
+      }
+      activities = customActivityType.split(',').map(activity => activity.trim())
     }
 
-    return activities.filter(activity => {
+    return allActivities.filter(activity => {
       if (activityType === 'Other') {
         return activity.type !== 'Run' && activity.type !== 'Ride';
-      } else {
-      }
-      return activity.type === activityType;
+      } 
+      
+      return activities.indexOf(activity.type) != -1
     });
   }
 
