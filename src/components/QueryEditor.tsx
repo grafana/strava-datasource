@@ -153,34 +153,32 @@ export class QueryEditor extends PureComponent<Props, State> {
           <InlineFormLabel width={5}>Type</InlineFormLabel>
           <Select
             isSearchable={false}
-            width={10}
+            width={15}
             value={this.getSelectedQueryType()}
             options={stravaQueryTypeOptions}
             onChange={this.onQueryTypeChanged}
-            className="gf-form-select"
           />
           <InlineFormLabel width={7}>Activity</InlineFormLabel>
           <Select
             isSearchable={false}
-            width={10}
+            width={15}
             value={this.getSelectedActivityType()}
             options={stravaActivityTypeOptions}
             onChange={this.onActivityTypeChanged}
-            className="gf-form-select"
           />
           <InlineFormLabel width={5}>Stat</InlineFormLabel>
           <Select
             isSearchable={false}
-            width={10}
+            width={15}
             value={this.getSelectedActivityStat()}
             options={stravaActivityStatOptions}
             onChange={this.onActivityStatChanged}
-            className="gf-form-select"
           />
         </div>
         <div className="gf-form-inline">
           <InlineFormLabel>Format</InlineFormLabel>
           <Select
+            width={20}
             isSearchable={false}
             options={FORMAT_OPTIONS}
             onChange={this.onFormatChange}
@@ -188,6 +186,7 @@ export class QueryEditor extends PureComponent<Props, State> {
           />
           <InlineFormLabel>Interval</InlineFormLabel>
           <Select
+            width={20}
             isSearchable={false}
             options={INTERVAL_OPTIONS}
             onChange={this.onIntervalChange}
