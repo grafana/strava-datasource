@@ -170,7 +170,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onQueryTypeChanged}
             className="gf-form-select"
           />
-          <InlineFormLabel width={7}>Activity</InlineFormLabel>
+          <InlineFormLabel width={7} tooltip="The Custom option allows you to type a comma-separated list of activity types or a variable name.">Activity</InlineFormLabel>
           <Select
             isSearchable={false}
             width={10}
