@@ -118,7 +118,7 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   onActivityTypeChanged = (option: SelectableValue<StravaActivityType>) => {
     const { query } = this.props;
-    if (option.value) {
+    if (option.value !== undefined) {
       this.onChange({ ...query, activityType: option.value });
     }
   };
@@ -157,7 +157,6 @@ export class QueryEditor extends PureComponent<Props, State> {
             value={this.getSelectedQueryType()}
             options={stravaQueryTypeOptions}
             onChange={this.onQueryTypeChanged}
-            className="gf-form-select"
           />
           <InlineFormLabel width={5}>Activity</InlineFormLabel>
           <Select
@@ -166,7 +165,6 @@ export class QueryEditor extends PureComponent<Props, State> {
             value={this.getSelectedActivityType()}
             options={stravaActivityTypeOptions}
             onChange={this.onActivityTypeChanged}
-            className="gf-form-select"
           />
           <InlineFormLabel width={5}>Stat</InlineFormLabel>
           <Select
@@ -175,7 +173,6 @@ export class QueryEditor extends PureComponent<Props, State> {
             value={this.getSelectedActivityStat()}
             options={stravaActivityStatOptions}
             onChange={this.onActivityStatChanged}
-            className="gf-form-select"
           />
           <div className="gf-form gf-form--grow">
             <div className="gf-form-label gf-form-label--grow" />
