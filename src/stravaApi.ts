@@ -113,7 +113,6 @@ export default class StravaApi {
   }
 
   handleTsdbResponse(response: any, queryType = 'stravaAPI') {
-    console.log(response);
     if (response && (response.status >= 400 || response.status < 0)) {
       throw Error(response.statusText);
     }
