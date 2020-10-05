@@ -173,7 +173,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         activity.type,
         activity.kilojoules,
       ];
-      table.rows.push(row);
+      table.rows.unshift(row);
     }
     return table;
   }
