@@ -22,7 +22,7 @@ export function decode(value: any) {
 }
 
 export function sign(value: any) {
-  return value & 1 ? ~(value >>> 1) : value >>> 1 ;
+  return value & 1 ? ~(value >>> 1) : value >>> 1;
 }
 
 export function integers(value: any, callback: any) {

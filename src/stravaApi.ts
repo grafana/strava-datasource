@@ -81,7 +81,7 @@ export default class StravaApi {
         url: this.backendAPIUrl,
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         data: {
           datasourceId: this.datasourceId,
