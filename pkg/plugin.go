@@ -31,7 +31,7 @@ func main() {
 		CheckHealthHandler:  ds,
 	})
 	if err != nil {
-		pluginLogger.Error("Error starting Zabbix datasource", "error", err.Error())
+		pluginLogger.Error("Error starting Strava datasource", "error", err.Error())
 	}
 }
 

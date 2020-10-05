@@ -34,8 +34,8 @@ type StravaDatasource struct {
 	logger  log.Logger
 }
 
-// ZabbixDatasourceInstance stores state about a specific datasource
-// and provides methods to make requests to the Zabbix API
+// StravaDatasourceInstance stores state about a specific datasource
+// and provides methods to make requests to the Strava API
 type StravaDatasourceInstance struct {
 	dsInfo       *backend.DataSourceInstanceSettings
 	refreshToken string
@@ -59,7 +59,7 @@ func newInstanceWithDataDir(dataDir string) func(backend.DataSourceInstanceSetti
 	}
 }
 
-// newStravaDatasourceInstance returns an initialized zabbix datasource instance
+// newStravaDatasourceInstance returns an initialized datasource instance
 func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, dataDir string) (instancemgmt.Instance, error) {
 	logger := log.New()
 	logger.Debug("Initializing new data source instance")
