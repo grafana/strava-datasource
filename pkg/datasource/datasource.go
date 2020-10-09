@@ -295,14 +295,12 @@ func (ds *StravaDatasourceInstance) RefreshAccessToken(refreshToken string) (*To
 	}, nil
 }
 
-func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, tsdbReq *StravaAPIRequest) (*StravaApiResourceResponse, error) {
+func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *StravaAPIRequest) (*StravaApiResourceResponse, error) {
 	accessToken, err := ds.GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: cleanup
-	query := tsdbReq
 	endpoint := query.Endpoint
 	params := query.Params
 
