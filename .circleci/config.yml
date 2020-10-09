@@ -1,3 +1,5 @@
+version: 2.1
+
 aliases:
   # Workflow filters
   - &filter-not-release-or-master
@@ -15,14 +17,43 @@ aliases:
       ignore: /.*/
     tags:
       only: /^v[0-9]+(\.[0-9]+){2}(-.+|[^-.]*)$/
+  - &filter-test-release
+    branches:
+      only: /^test-ci-release.*/
 
 defaults: &defaults
   working_directory: ~/grafana-strava-datasource
   docker:
     - image: circleci/node:12
 
-version: 2
+executors:
+  default_exec:
+    docker:
+      - image: srclosson/grafana-plugin-ci-alpine:latest
+  e2e_exec:
+    docker:
+      - image: srclosson/grafana-plugin-ci-e2e:latest
+
 jobs:
+  yarn_install:
+    executor: default_exec
+    steps:
+      - checkout
+      - restore_cache:
+          name: restore node_modules
+          keys:
+            - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install dependencies
+          command: |
+            mkdir ci
+            [ -f ~/project/node_modules/.bin/grafana-toolkit ] || yarn install --frozen-lockfile
+      - save_cache:
+          name: save node_modules
+          paths:
+            - ~/project/node_modules
+          key: build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
+
   build-frontend:
     <<: *defaults
     steps:
@@ -132,12 +163,37 @@ jobs:
 
   codespell:
     docker:
-    - image: circleci/python
-
+      - image: circleci/python
     steps:
-    - checkout
-    - run: sudo pip install codespell
-    - run: codespell -S './.git*,./src/img*','./yarn.lock' -L que --ignore-words=./.codespell_ignore
+      - checkout
+      - run: sudo pip install codespell
+      - run: codespell -S './.git*,./src/img*','./yarn.lock' -L que --ignore-words=./.codespell_ignore
+
+  package-plugin:
+    executor: e2e_exec
+    working_directory: ~/grafana-strava-datasource
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build plugin for all platforms
+          command: 'make dist'
+          no_output_timeout: 15m
+      - run:
+          name: Prepare plugin for packaging
+          command: |
+            mkdir -p ci/jobs/build_plugin
+            mv dist/ ci/jobs/build_plugin
+      - run:
+          name: Package and sign plugin
+          command: yarn grafana-toolkit plugin:ci-package
+          no_output_timeout: 15m
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./
+      - store_artifacts:
+          path: ci/packages
 
 workflows:
   version: 2
@@ -193,3 +249,26 @@ workflows:
             - lint-backend
             - test
           filters: *filter-only-release
+
+  test-release:
+    jobs:
+      - build-frontend:
+          filters: *filter-test-release
+      - build-backend:
+          requires:
+            - build-frontend
+          filters: *filter-test-release
+      - codespell:
+          filters: *filter-test-release
+      - lint-backend:
+          filters: *filter-test-release
+      - test:
+          filters: *filter-test-release
+      - package-plugin:
+          requires:
+            - build-frontend
+            - build-backend
+            - codespell
+            - lint-backend
+            - test
+          filters: *filter-test-release

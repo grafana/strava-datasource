@@ -39,6 +39,7 @@ vendor
 
 # Dist folder
 dist/
+ci/
 
 # Editor junk
 *.sublime-workspace
