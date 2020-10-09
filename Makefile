@@ -30,7 +30,7 @@ dist: dist-frontend dist-backend
 dist-frontend:
 	yarn build
 dist-backend: dist-backend-linux_amd64 dist-backend-linux_arm dist-backend-darwin_amd64 dist-backend-windows_amd64
-dist-backend-windows: extension = .exe
+dist-backend-windows_amd64: extension = .exe
 dist-backend-linux_arm:
 	env GOOS=linux GOARCH=arm GOARM=6 go build -ldflags="-s -w" -mod=vendor -o ./dist/strava-plugin_linux_arm ./pkg
 dist-backend-%:
