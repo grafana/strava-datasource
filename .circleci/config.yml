@@ -22,7 +22,7 @@ aliases:
       only: /^test-ci-release.*/
 
 defaults: &defaults
-  working_directory: ~/grafana-strava-datasource
+  working_directory: /grafana-strava-datasource
   docker:
     - image: circleci/node:12
 
@@ -35,25 +35,6 @@ executors:
       - image: srclosson/grafana-plugin-ci-e2e:latest
 
 jobs:
-  yarn_install:
-    executor: default_exec
-    steps:
-      - checkout
-      - restore_cache:
-          name: restore node_modules
-          keys:
-            - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
-      - run:
-          name: Install dependencies
-          command: |
-            mkdir ci
-            [ -f ~/project/node_modules/.bin/grafana-toolkit ] || yarn install --frozen-lockfile
-      - save_cache:
-          name: save node_modules
-          paths:
-            - ~/project/node_modules
-          key: build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
-
   build-frontend:
     <<: *defaults
     steps:
@@ -76,7 +57,7 @@ jobs:
             - dist/*
 
   build-backend:
-    working_directory: ~/grafana-strava-datasource
+    working_directory: /grafana-strava-datasource
     docker:
       - image: circleci/golang:1.13.7
     environment:
@@ -104,7 +85,7 @@ jobs:
       - run: ls -lh dist/
 
   lint-backend:
-    working_directory: ~/grafana-strava-datasource
+    working_directory: /grafana-strava-datasource
     docker:
     - image: circleci/golang:1.13.7
     environment:
@@ -171,7 +152,7 @@ jobs:
 
   package-plugin:
     executor: e2e_exec
-    working_directory: ~/grafana-strava-datasource
+    working_directory: /grafana-strava-datasource
     steps:
       - checkout
       - restore_cache:
