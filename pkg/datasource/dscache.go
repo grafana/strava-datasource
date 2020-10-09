@@ -1,4 +1,4 @@
-package main
+package datasource
 
 import (
 	"crypto/sha1"
@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	hclog "github.com/hashicorp/go-hclog"
 	cache "github.com/patrickmn/go-cache"
 )
@@ -20,13 +20,13 @@ var cacheLogger = hclog.New(&hclog.LoggerOptions{
 
 // DSCache is a abstraction over go-cache.
 type DSCache struct {
-	dsInfo  *datasource.DatasourceInfo
+	dsInfo  *backend.DataSourceInstanceSettings
 	gocache *cache.Cache
 	dataDir string
 }
 
 // NewDSCache creates a go-cache with expiration(ttl) time and cleanupInterval.
-func NewDSCache(dsInfo *datasource.DatasourceInfo, ttl time.Duration, cleanupInterval time.Duration, dataDir string) *DSCache {
+func NewDSCache(dsInfo *backend.DataSourceInstanceSettings, ttl time.Duration, cleanupInterval time.Duration, dataDir string) *DSCache {
 	return &DSCache{
 		dsInfo,
 		cache.New(ttl, cleanupInterval),
@@ -70,7 +70,7 @@ func (c *DSCache) Load(request string) (string, error) {
 }
 
 func (c *DSCache) BuildDSCacheKey(request string) string {
-	return fmt.Sprintf("%v-%s", c.dsInfo.GetId(), request)
+	return fmt.Sprintf("%v-%s", c.dsInfo.ID, request)
 }
 
 // HashString converts the given text string to hash string
@@ -81,11 +81,11 @@ func HashString(text string) string {
 }
 
 // HashDatasourceInfo converts the given datasource info to hash string
-func HashDatasourceInfo(dsInfo *datasource.DatasourceInfo) string {
+func HashDatasourceInfo(dsInfo *backend.DataSourceInstanceSettings) string {
 	digester := sha1.New()
 	dsInfoUniq := map[string]interface{}{
-		"Id":    dsInfo.GetId(),
-		"OrgId": dsInfo.GetOrgId(),
+		"Id": dsInfo.ID,
+		// "OrgId": dsInfo.,
 	}
 	if err := json.NewEncoder(digester).Encode(dsInfoUniq); err != nil {
 		panic(err) // This shouldn't be possible but just in case DatasourceInfo changes

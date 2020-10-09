@@ -1,48 +1,53 @@
 package main
 
 import (
+	"net/http"
 	"os"
-	"path/filepath"
-	"time"
 
-	"github.com/grafana/grafana-plugin-model/go/datasource"
-	hclog "github.com/hashicorp/go-hclog"
-	plugin "github.com/hashicorp/go-plugin"
-	cache "github.com/patrickmn/go-cache"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/resource/httpadapter"
+	"github.com/grafana/strava-datasource/pkg/datasource"
 )
 
-const DATA_PATH_VARIABLE = "GF_STRAVA_DS_DATA_PATH"
-
-var pluginLogger = hclog.New(&hclog.LoggerOptions{
-	Name:  "strava-datasource",
-	Level: hclog.LevelFromString("DEBUG"),
-})
+const (
+	STRAVA_PLUGIN_ID   = "strava-backend-datasource"
+	DATA_PATH_VARIABLE = "GF_STRAVA_DS_DATA_PATH"
+)
 
 func main() {
-	pluginLogger.Debug("Running Strava backend datasource")
+	backend.SetupPluginEnvironment(STRAVA_PLUGIN_ID)
 
-	var dataDir string
-	dataDir, exist := os.LookupEnv(DATA_PATH_VARIABLE)
-	if !exist {
-		dataDir, _ = filepath.Abs(filepath.Dir(os.Args[0]))
-	}
-	pluginLogger.Debug("Plugin data dir", "path", dataDir)
+	pluginLogger := log.New()
+	mux := http.NewServeMux()
+	ds := Init(pluginLogger, mux)
+	httpResourceHandler := httpadapter.New(mux)
 
-	plugin.Serve(&plugin.ServeConfig{
-		HandshakeConfig: plugin.HandshakeConfig{
-			ProtocolVersion:  1,
-			MagicCookieKey:   "grafana_plugin_type",
-			MagicCookieValue: "datasource",
-		},
-		Plugins: map[string]plugin.Plugin{
-			"strava-backend-datasource": &datasource.DatasourcePluginImpl{Plugin: &StravaPlugin{
-				datasourceCache: cache.New(10*time.Minute, 10*time.Minute),
-				logger:          pluginLogger,
-				dataDir:         dataDir,
-			}},
-		},
+	pluginLogger.Debug("Starting Strava datasource")
 
-		// A non-nil value here enables gRPC serving for this plugin...
-		GRPCServer: plugin.DefaultGRPCServer,
+	err := backend.Serve(backend.ServeOpts{
+		CallResourceHandler: httpResourceHandler,
+		QueryDataHandler:    ds,
+		CheckHealthHandler:  ds,
 	})
+	if err != nil {
+		pluginLogger.Error("Error starting Strava datasource", "error", err.Error())
+	}
+}
+
+func Init(logger log.Logger, mux *http.ServeMux) *datasource.StravaDatasource {
+	path, exist := os.LookupEnv(DATA_PATH_VARIABLE)
+	if !exist {
+		logger.Debug("Could not read environment variable", DATA_PATH_VARIABLE)
+	} else {
+		logger.Debug("Environment variable for storage path found", "variable", DATA_PATH_VARIABLE, "value", path)
+	}
+
+	ds := datasource.NewStravaDatasource(path)
+
+	mux.HandleFunc("/", ds.RootHandler)
+	mux.HandleFunc("/auth", ds.StravaAuthHandler)
+	mux.HandleFunc("/strava-api", ds.StravaAPIHandler)
+
+	return ds
 }

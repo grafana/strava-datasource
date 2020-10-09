@@ -1,9 +1,8 @@
-package main
+package datasource
 
 import (
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -13,7 +12,10 @@ import (
 	"time"
 
 	simplejson "github.com/bitly/go-simplejson"
-	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 	cache "github.com/patrickmn/go-cache"
 	"golang.org/x/net/context/ctxhttp"
 )
@@ -24,11 +26,48 @@ const StravaAPITokenUrl = "https://www.strava.com/api/v3/oauth/token"
 const StravaApiQueryType = "stravaAPI"
 const StravaAuthQueryType = "stravaAuth"
 
-// newStravaDatasource returns an initialized StravaDatasource instance
-func newStravaDatasource(dsInfo *datasource.DatasourceInfo, dataDir string) (*StravaDatasource, error) {
+var ErrAlertingNotSupported = errors.New("alerting not supported")
+
+type StravaDatasource struct {
+	im      instancemgmt.InstanceManager
+	dataDir string
+	logger  log.Logger
+}
+
+// StravaDatasourceInstance stores state about a specific datasource
+// and provides methods to make requests to the Strava API
+type StravaDatasourceInstance struct {
+	dsInfo       *backend.DataSourceInstanceSettings
+	refreshToken string
+	cache        *DSCache
+	logger       log.Logger
+	httpClient   *http.Client
+}
+
+func NewStravaDatasource(dataDir string) *StravaDatasource {
+	im := datasource.NewInstanceManager(newInstanceWithDataDir(dataDir))
 	return &StravaDatasource{
-		dsInfo: dsInfo,
-		cache:  NewDSCache(dsInfo, 10*time.Minute, 10*time.Minute, dataDir),
+		im:      im,
+		dataDir: dataDir,
+		logger:  log.New(),
+	}
+}
+
+func newInstanceWithDataDir(dataDir string) func(backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
+	return func(settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
+		return newStravaDatasourceInstance(settings, dataDir)
+	}
+}
+
+// newStravaDatasourceInstance returns an initialized datasource instance
+func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, dataDir string) (instancemgmt.Instance, error) {
+	logger := log.New()
+	logger.Debug("Initializing new data source instance")
+
+	return &StravaDatasourceInstance{
+		dsInfo: &settings,
+		logger: logger,
+		cache:  NewDSCache(&settings, 10*time.Minute, 10*time.Minute, dataDir),
 		httpClient: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
@@ -49,71 +88,64 @@ func newStravaDatasource(dsInfo *datasource.DatasourceInfo, dataDir string) (*St
 	}, nil
 }
 
-func (p *StravaPlugin) NewStravaDatasource(dsInfo *datasource.DatasourceInfo) (*StravaDatasource, error) {
-	ds, err := newStravaDatasource(dsInfo, p.dataDir)
+// getDSInstance Returns cached datasource or creates new one
+func (ds *StravaDatasource) getDSInstance(pluginContext backend.PluginContext) (*StravaDatasourceInstance, error) {
+	instance, err := ds.im.Get(pluginContext)
 	if err != nil {
 		return nil, err
 	}
-
-	ds.logger = p.logger
-	return ds, nil
+	return instance.(*StravaDatasourceInstance), nil
 }
 
-// Query receives requests from the Grafana backend. Requests are filtered by query type and sent to the
-// applicable StravaDatasource.
-func (p *StravaPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRequest) (resp *datasource.DatasourceResponse, err error) {
-	StravaDS, err := p.GetDatasource(tsdbReq)
-	if err != nil {
-		return nil, err
+func (ds *StravaDatasource) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
+	qdr := backend.NewQueryDataResponse()
+
+	for _, q := range req.Queries {
+		res := backend.DataResponse{}
+		res.Error = ErrAlertingNotSupported
+		qdr.Responses[q.RefID] = res
 	}
 
-	queryType, err := getQueryType(tsdbReq)
-	if err != nil {
-		return nil, err
-	}
-
-	switch queryType {
-	case StravaApiQueryType:
-		resp, err = StravaDS.StravaAPIQuery(ctx, tsdbReq)
-	case StravaAuthQueryType:
-		resp, err = StravaDS.StravaAuthQuery(ctx, tsdbReq)
-	default:
-		err = errors.New("Query not implemented")
-		return buildErrorResponse(err, nil), nil
-	}
-
-	return
+	return qdr, nil
 }
 
-func (ds *StravaDatasource) StravaAuthQuery(ctx context.Context, tsdbReq *datasource.DatasourceRequest) (*datasource.DatasourceResponse, error) {
-	ds.logger.Debug(tsdbReq.Queries[0].ModelJson)
-	authQuery := tsdbReq.Queries[0]
-	queryJSON, err := simplejson.NewJson([]byte(authQuery.ModelJson))
+// CheckHealth checks if the plugin is running properly
+func (ds *StravaDatasource) CheckHealth(ctx context.Context, req *backend.CheckHealthRequest) (*backend.CheckHealthResult, error) {
+	res := &backend.CheckHealthResult{}
+
+	_, err := ds.getDSInstance(req.PluginContext)
 	if err != nil {
-		return nil, err
+		res.Status = backend.HealthStatusError
+		res.Message = "Error getting datasource instance"
+		ds.logger.Error("Error getting datasource instance", "err", err)
+		return res, nil
 	}
-	authCode := queryJSON.Get("target").Get("params").Get("authCode").MustString()
-	_, err = ds.ExchangeToken(tsdbReq, authCode)
+
+	// TODO: implement real API health check
+	res.Status = backend.HealthStatusOk
+	res.Message = "Plugin up and running"
+	return res, nil
+}
+
+func (ds *StravaDatasourceInstance) StravaAuthQuery(ctx context.Context, req *StravaAuthRequest) (*StravaAuthResourceResponse, error) {
+	ds.logger.Debug("Auth request", "req", req)
+	authCode := req.AuthCode
+	_, err := ds.ExchangeToken(authCode)
 	if err != nil {
 		return nil, err
 	}
 
-	tokenExchangeRespJson, err := json.Marshal(map[string]string{
+	tokenExchangeResp := map[string]string{
 		"message": "Authorization code successfully exchanged for refresh token",
-	})
+	}
 
-	response := &datasource.DatasourceResponse{
-		Results: []*datasource.QueryResult{
-			&datasource.QueryResult{
-				RefId:    StravaAuthQueryType,
-				MetaJson: string(tokenExchangeRespJson),
-			},
-		},
+	response := &StravaAuthResourceResponse{
+		Result: tokenExchangeResp,
 	}
 	return response, nil
 }
 
-func (ds *StravaDatasource) GetAccessToken() (string, error) {
+func (ds *StravaDatasourceInstance) GetAccessToken() (string, error) {
 	accessToken, expTime, found := ds.cache.gocache.GetWithExpiration("accessToken")
 	accessTokenExpired := time.Now().After(expTime)
 	if found && !accessTokenExpired {
@@ -149,15 +181,15 @@ func (ds *StravaDatasource) GetAccessToken() (string, error) {
 // ExchangeToken invokes first time when authentication required and exchange authorization code for the
 // access and refresh tokens
 // https://developers.strava.com/docs/authentication/#tokenexchange
-func (ds *StravaDatasource) ExchangeToken(tsdbReq *datasource.DatasourceRequest, authCode string) (*TokenExchangeResponse, error) {
-	jsonDataStr := ds.dsInfo.GetJsonData()
+func (ds *StravaDatasourceInstance) ExchangeToken(authCode string) (*TokenExchangeResponse, error) {
+	jsonDataStr := ds.dsInfo.JSONData
 	jsonData, err := simplejson.NewJson([]byte(jsonDataStr))
 	if err != nil {
 		return nil, err
 	}
 	clientId := jsonData.Get("clientID").MustString()
 
-	secureJsonData := ds.dsInfo.GetDecryptedSecureJsonData()
+	secureJsonData := ds.dsInfo.DecryptedSecureJSONData
 	clientSecret := secureJsonData["clientSecret"]
 
 	authParams := map[string][]string{
@@ -206,15 +238,15 @@ func (ds *StravaDatasource) ExchangeToken(tsdbReq *datasource.DatasourceRequest,
 
 // RefreshAccessToken refreshes expired Access token using refresh token
 // https://developers.strava.com/docs/authentication/#refreshingexpiredaccesstokens
-func (ds *StravaDatasource) RefreshAccessToken(refreshToken string) (*TokenExchangeResponse, error) {
-	jsonDataStr := ds.dsInfo.GetJsonData()
+func (ds *StravaDatasourceInstance) RefreshAccessToken(refreshToken string) (*TokenExchangeResponse, error) {
+	jsonDataStr := ds.dsInfo.JSONData
 	jsonData, err := simplejson.NewJson([]byte(jsonDataStr))
 	if err != nil {
 		return nil, err
 	}
 	clientId := jsonData.Get("clientID").MustString()
 
-	secureJsonData := ds.dsInfo.GetDecryptedSecureJsonData()
+	secureJsonData := ds.dsInfo.DecryptedSecureJSONData
 	clientSecret := secureJsonData["clientSecret"]
 
 	authParams := map[string][]string{
@@ -263,26 +295,21 @@ func (ds *StravaDatasource) RefreshAccessToken(refreshToken string) (*TokenExcha
 	}, nil
 }
 
-func (ds *StravaDatasource) StravaAPIQuery(ctx context.Context, tsdbReq *datasource.DatasourceRequest) (*datasource.DatasourceResponse, error) {
+func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *StravaAPIRequest) (*StravaApiResourceResponse, error) {
 	accessToken, err := ds.GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	query := tsdbReq.Queries[0]
-	queryJSON, err := simplejson.NewJson([]byte(query.ModelJson))
-	if err != nil {
-		return nil, err
-	}
-	endpoint := queryJSON.Get("target").Get("endpoint").MustString()
-	params := queryJSON.Get("target").Get("params").MustMap()
+	endpoint := query.Endpoint
+	params := query.Params
 
 	requestUrlStr := fmt.Sprintf("%s/%s", StravaAPIUrl, endpoint)
 	requestUrl, err := url.Parse(requestUrlStr)
 
 	q := requestUrl.Query()
 	for param, value := range params {
-		q.Add(param, fmt.Sprint(value))
+		q.Add(param, string(value))
 	}
 	requestUrl.RawQuery = q.Encode()
 	ds.logger.Debug("Strava API query", "url", requestUrl.String())
@@ -297,47 +324,22 @@ func (ds *StravaDatasource) StravaAPIQuery(ctx context.Context, tsdbReq *datasou
 
 	apiResponse, err := makeHTTPRequest(ctx, ds.httpClient, req)
 	if err != nil {
-		return buildErrorResponse(err, &apiResponse), err
+		return nil, err
 	}
-	return buildResponse(apiResponse)
+
+	return BuildAPIResponse(apiResponse)
 }
 
-// GetDatasource Returns cached datasource or creates new one
-func (p *StravaPlugin) GetDatasource(tsdbReq *datasource.DatasourceRequest) (*StravaDatasource, error) {
-	dsInfoHash := HashDatasourceInfo(tsdbReq.GetDatasource())
-
-	if cachedData, ok := p.datasourceCache.Get(dsInfoHash); ok {
-		if cachedDS, ok := cachedData.(*StravaDatasource); ok {
-			return cachedDS, nil
-		}
-	}
-
-	dsInfo := tsdbReq.GetDatasource()
-	if p.logger.IsDebug() {
-		p.logger.Debug("Datasource cache miss", "Org", dsInfo.GetOrgId(), "Id", dsInfo.GetId(), "Name", dsInfo.GetName(), "Hash", dsInfoHash)
-	}
-
-	ds, err := p.NewStravaDatasource(dsInfo)
+func BuildAPIResponse(apiResponse []byte) (*StravaApiResourceResponse, error) {
+	resultJson, err := simplejson.NewJson(apiResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	p.datasourceCache.SetDefault(dsInfoHash, ds)
-	return ds, nil
-}
-
-// getQueryType determines the query type from a query or list of queries
-func getQueryType(tsdbReq *datasource.DatasourceRequest) (string, error) {
-	queryType := "query"
-	if len(tsdbReq.Queries) > 0 {
-		firstQuery := tsdbReq.Queries[0]
-		queryJSON, err := simplejson.NewJson([]byte(firstQuery.ModelJson))
-		if err != nil {
-			return "", err
-		}
-		queryType = queryJSON.Get("queryType").MustString("query")
-	}
-	return queryType, nil
+	result := resultJson.Interface()
+	return &StravaApiResourceResponse{
+		Result: result,
+	}, nil
 }
 
 func makeHTTPRequest(ctx context.Context, httpClient *http.Client, req *http.Request) ([]byte, error) {
@@ -356,33 +358,4 @@ func makeHTTPRequest(ctx context.Context, httpClient *http.Client, req *http.Req
 		return nil, err
 	}
 	return body, nil
-}
-
-// buildResponse transforms a Strava API response to a DatasourceResponse
-func buildResponse(responseData []byte) (*datasource.DatasourceResponse, error) {
-	return &datasource.DatasourceResponse{
-		Results: []*datasource.QueryResult{
-			&datasource.QueryResult{
-				RefId:    StravaApiQueryType,
-				MetaJson: string(responseData),
-			},
-		},
-	}, nil
-}
-
-// buildErrorResponse creates a QueryResult that forwards an error to the front-end
-func buildErrorResponse(err error, responseData *[]byte) *datasource.DatasourceResponse {
-	metaJson := ""
-	if responseData != nil {
-		metaJson = string(*responseData)
-	}
-	return &datasource.DatasourceResponse{
-		Results: []*datasource.QueryResult{
-			&datasource.QueryResult{
-				RefId:    StravaApiQueryType,
-				Error:    err.Error(),
-				MetaJson: metaJson,
-			},
-		},
-	}
 }
