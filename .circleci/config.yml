@@ -22,7 +22,7 @@ aliases:
       only: /^test-ci-release.*/
 
 defaults: &defaults
-  working_directory: /grafana-strava-datasource
+  working_directory: ~/grafana-strava-datasource
   docker:
     - image: circleci/node:12
 
@@ -57,7 +57,7 @@ jobs:
             - dist/*
 
   build-backend:
-    working_directory: /grafana-strava-datasource
+    working_directory: ~/grafana-strava-datasource
     docker:
       - image: circleci/golang:1.13.7
     environment:
@@ -85,7 +85,7 @@ jobs:
       - run: ls -lh dist/
 
   lint-backend:
-    working_directory: /grafana-strava-datasource
+    working_directory: ~/grafana-strava-datasource
     docker:
     - image: circleci/golang:1.13.7
     environment:
@@ -152,15 +152,17 @@ jobs:
 
   package-plugin:
     executor: e2e_exec
-    working_directory: /grafana-strava-datasource
+    working_directory: ~/grafana-strava-datasource
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - go-vendor-cache-{{ checksum "go.sum" }}
-      - restore_cache:
-          keys:
-            - dependency-cache-{{ checksum "yarn.lock" }}
+      - run:
+          name: install backend
+          command: 'make install-backend'
+          no_output_timeout: 5m
+      - run:
+          name: yarn install
+          command: 'yarn install --pure-lockfile --no-progress'
+          no_output_timeout: 15m
       - run:
           name: Build plugin for all platforms
           command: 'make dist'
