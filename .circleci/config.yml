@@ -173,8 +173,13 @@ jobs:
     executor: e2e_exec
     working_directory: ~/grafana-strava-datasource
     steps:
-      - attach_workspace:
-          at: .
+      - checkout
+      - restore_cache:
+          keys:
+            - go-vendor-cache-{{ checksum "go.sum" }}
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "yarn.lock" }}
       - run:
           name: Build plugin for all platforms
           command: 'make dist'
@@ -255,8 +260,6 @@ workflows:
       - build-frontend:
           filters: *filter-test-release
       - build-backend:
-          requires:
-            - build-frontend
           filters: *filter-test-release
       - codespell:
           filters: *filter-test-release
