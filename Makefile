@@ -14,7 +14,7 @@ install-backend:
 
 build: build-frontend build-backend
 build-frontend:
-	yarn dev
+	yarn build
 
 build-backend:
 	env GOOS=linux go build -mod=vendor -o ./dist/strava-plugin_linux_amd64 ./pkg

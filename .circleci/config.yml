@@ -35,8 +35,12 @@ executors:
       - image: srclosson/grafana-plugin-ci-e2e:latest
 
 jobs:
-  build-frontend:
-    <<: *defaults
+  get-plugin:
+    working_directory: ~/grafana-strava-datasource
+    docker:
+      - image: circleci/golang:1.13.7
+    environment:
+      GOPATH: /go
     steps:
       - checkout
       - restore_cache:
@@ -50,22 +54,6 @@ jobs:
           key: dependency-cache-{{ checksum "yarn.lock" }}
           paths:
           - ./node_modules
-      - run: yarn build
-      - persist_to_workspace:
-          root: .
-          paths:
-            - dist/*
-
-  build-backend:
-    working_directory: ~/grafana-strava-datasource
-    docker:
-      - image: circleci/golang:1.13.7
-    environment:
-      GOPATH: /go
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
       - restore_cache:
           keys:
             - go-vendor-cache-{{ checksum "go.sum" }}
@@ -77,12 +65,50 @@ jobs:
           key: go-vendor-cache-{{ checksum "go.sum" }}
           paths:
           - ./vendor
-      - run: make dist-backend
       - persist_to_workspace:
           root: .
           paths:
-            - dist/*
-      - run: ls -lh dist/
+            - ./*
+
+  build-frontend:
+    working_directory: ~/grafana-strava-datasource
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "yarn.lock" }}
+      - run:
+          name: yarn install
+          command: 'yarn install --pure-lockfile --no-progress'
+          no_output_timeout: 15m
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+          - ./node_modules
+      - run: make build-frontend
+
+  build-backend:
+    working_directory: ~/grafana-strava-datasource
+    docker:
+      - image: circleci/golang:1.13.7
+    environment:
+      GOPATH: /go
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-vendor-cache-{{ checksum "go.sum" }}
+      - run:
+          name: install backend
+          command: 'make install-backend'
+          no_output_timeout: 5m
+      - save_cache:
+          key: go-vendor-cache-{{ checksum "go.sum" }}
+          paths:
+            - ./vendor
+      - run: make build-backend
 
   lint-backend:
     working_directory: ~/grafana-strava-datasource
