@@ -33,6 +33,9 @@ executors:
   e2e_exec:
     docker:
       - image: srclosson/grafana-plugin-ci-e2e:latest
+  cloud_sdk_exec:
+    docker:
+      - image: google/cloud-sdk
 
 jobs:
   get-plugin:
@@ -202,12 +205,64 @@ jobs:
           name: Package and sign plugin
           command: yarn grafana-toolkit plugin:ci-package
           no_output_timeout: 15m
+      - run:
+          name: Copy package
+          command: |
+            mkdir -p tmp/packages/any
+            mv ci/packages/* tmp/packages/any
+            mv tmp/packages/any ci/packages
       - persist_to_workspace:
           root: .
           paths:
-            - ./
+            - ci/dist
+            - ci/jobs/package
+            - ci/jobs/build_backend/dist
+            - ci/grafana-test-env
+            - ci/packages
       - store_artifacts:
           path: ci/packages
+
+  publish_gcs_release:
+    executor: cloud_sdk_exec
+    working_directory: ~/grafana-strava-datasource
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: ls -lha
+      - run:
+          name: "Copy Artifacts to GCP Release Bucket"
+          command: |
+            apt update
+            apt install -y jq git-lfs
+            ls -l ci/dist/plugin.json
+            echo "Contents of ci/jobs/build_frontend/dist/plugin.json"
+            cat ci/dist/plugin.json
+            ls -lR ci/packages
+            PLUGIN_NAME=`cat ci/dist/plugin.json|jq '.id'| sed s/\"//g`
+            echo "Plugin Name: ${PLUGIN_NAME}"
+            VERSION=`cat ci/dist/plugin.json|jq '.info.version'| sed s/\"//g`
+            echo "Plugin Version: ${VERSION}"
+            # copy
+            if [ -z "${GCLOUD_SERVICE_KEY}" ]; then
+              echo "Missing GCS Publish Key"
+              exit -1
+            fi
+            echo ${GCLOUD_SERVICE_KEY} | gcloud auth activate-service-account --key-file=-
+            echo "Contents of artifacts"
+            echo "Copying artifacts to ${PLUGIN_NAME}/${VERSION}/${CIRCLE_BRANCH}/${CIRCLE_SHA1}"
+            if [ -d ci/packages/linux ]; then
+              gsutil -m cp -r ci/packages/linux/** gs://integration-artifacts/${PLUGIN_NAME}/release/${VERSION}/linux
+            fi
+            if [ -d ci/packages/windows ]; then
+              gsutil -m cp -r ci/packages/windows/** gs://integration-artifacts/${PLUGIN_NAME}/release/${VERSION}/windows
+            fi
+            if [ -d ci/packages/darwin ]; then
+              gsutil -m cp -r ci/packages/darwin/** gs://integration-artifacts/${PLUGIN_NAME}/release/${VERSION}/darwin
+            fi
+            if [ -d ci/packages/any ]; then
+              gsutil -m cp -r ci/packages/any/** gs://integration-artifacts/${PLUGIN_NAME}/release/${VERSION}/any
+            fi
 
 workflows:
   version: 2
@@ -277,10 +332,14 @@ workflows:
       - test:
           filters: *filter-test-release
       - package-plugin:
+          # requires:
+          #   - build-frontend
+          #   - build-backend
+          #   - codespell
+          #   - lint-backend
+          #   - test
+          filters: *filter-test-release
+      - publish_gcs_release:
           requires:
-            - build-frontend
-            - build-backend
-            - codespell
-            - lint-backend
-            - test
+            - package-plugin
           filters: *filter-test-release
