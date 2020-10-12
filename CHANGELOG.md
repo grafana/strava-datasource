@@ -1,7 +1,15 @@
 # Change Log
 
-## [1.1.1] - 2020-03-05
+## [1.2.0] - 2020-10-12
+### Added
+- ARM build
 
+### Fixed
+- Fix compatibility with Grafana 7.x
+- Sign plugin
+- Fix dashboards
+
+## [1.1.1] - 2020-03-05
 ### Fixed
 - Don't use git LFS for plugin binaries
 
