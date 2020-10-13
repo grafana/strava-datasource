@@ -294,7 +294,12 @@ workflows:
             - lint-backend
             - test
           filters: *filter-only-release
-      - publish_gcs_release:
+      - approve_release:
+          type: approval
           requires:
             - package-plugin
+          filters: *filter-only-release
+      - publish_gcs_release:
+          requires:
+            - approve_release
           filters: *filter-only-release
