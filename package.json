@@ -19,26 +19,30 @@
     "ci-test": "jest --config jest.config.js"
   },
   "devDependencies": {
+    "@babel/core": "^7.0.0",
+    "@babel/preset-env": "^7.8.7",
     "@grafana/data": "next",
     "@grafana/runtime": "next",
+    "@grafana/toolkit": "canary",
     "@grafana/ui": "next",
-    "@grafana/toolkit": "next",
     "@types/angular": "^1.6.54",
     "@types/jest": "^24.0.15",
     "@types/jquery": "^3.3.29",
     "@types/lodash": "^4.14.134",
     "@types/react": "^16.8.21",
+    "babel-loader": "^8.1.0",
+    "jest": "^26.5.3",
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "ng-annotate-webpack-plugin": "^0.3.0",
     "node-sass": "^4.12.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "typescript": "^3.5.2",
-    "ts-loader": "^6.2.2"
+    "ts-jest": "^26.4.1",
+    "ts-loader": "^6.2.2",
+    "typescript": "^4.0.3"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "resolutions": {
     "@babel/preset-env": "^7.8.7"
   }
