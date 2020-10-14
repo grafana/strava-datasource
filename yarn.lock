@@ -1341,7 +1341,7 @@
   resolved "https://registry.yarnpkg.com/@emotion/weak-memoize/-/weak-memoize-0.2.5.tgz#8eed982e2ee6f7f4e44c253e12962980791efd46"
   integrity sha512-6U71C2Wp7r5XtFtQzYrW5iKFT67OixrSxjI4MptCHzdSVlgabczzqLe0ZSgnub/5Kp4hSbpDB1tMytZY9pwxxA==
 
-"@grafana/data@7.2.1", "@grafana/data@next":
+"@grafana/data@7.2.1", "@grafana/data@^7.2.1", "@grafana/data@next":
   version "7.2.1"
   resolved "https://registry.yarnpkg.com/@grafana/data/-/data-7.2.1.tgz#a9f79f5a7d8909a9a6eaa0a67cf2b8774936768a"
   integrity sha512-A8Fx1yAwPigFc+57SLlvYVDL5Jq5t0MJtldJiRlOxsjm/gL8zAM63eB69Rm1TdrmhBUb+py7CEFxRKGKOc5jlQ==
@@ -1378,7 +1378,7 @@
     prettier "1.19.1"
     typescript "4.0.2"
 
-"@grafana/runtime@next":
+"@grafana/runtime@^7.2.1":
   version "7.2.1"
   resolved "https://registry.yarnpkg.com/@grafana/runtime/-/runtime-7.2.1.tgz#3b026092ee0f527c5c7bd9c3047fc84c69b5e01c"
   integrity sha512-DdlgFI7MDRBKOZBcqTGM0XXOQ3rT9E6t46ODMXoNCq9mZViPSCp7OLF2LTXpyfUl+1N7XknzSu+n93Nc9oLR9w==
@@ -1503,7 +1503,7 @@
   resolved "https://registry.yarnpkg.com/@grafana/tsconfig/-/tsconfig-1.0.0-rc1.tgz#d07ea16755a50cae21000113f30546b61647a200"
   integrity sha512-nucKPGyzlSKYSiJk5RA8GzMdVWhdYNdF+Hh65AXxjD9PlY69JKr5wANj8bVdQboag6dgg0BFKqgKPyY+YtV4Iw==
 
-"@grafana/ui@7.2.1", "@grafana/ui@next":
+"@grafana/ui@7.2.1", "@grafana/ui@^7.2.1", "@grafana/ui@next":
   version "7.2.1"
   resolved "https://registry.yarnpkg.com/@grafana/ui/-/ui-7.2.1.tgz#39ae8fa0af9992d0620872f0b5201ab856d6568d"
   integrity sha512-Abk09IAlghuZ+l86ozuOBV83FdxHGx5/PSxr9t9wGhZ+QozsnB7MAkpZ/Jhe47uKOUkPB8rgPYgA/4G4Eu7fuA==

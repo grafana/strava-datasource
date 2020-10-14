@@ -21,10 +21,10 @@
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.8.7",
-    "@grafana/data": "next",
-    "@grafana/runtime": "next",
+    "@grafana/data": "^7.2.1",
+    "@grafana/runtime": "^7.2.1",
     "@grafana/toolkit": "canary",
-    "@grafana/ui": "next",
+    "@grafana/ui": "^7.2.1",
     "@types/angular": "^1.6.54",
     "@types/jest": "^24.0.15",
     "@types/jquery": "^3.3.29",
