@@ -22,7 +22,7 @@
     "@grafana/data": "^7.1",
     "@grafana/runtime": "^7.1",
     "@grafana/ui": "^7.1",
-    "@grafana/toolkit": "^7.1",
+    "@grafana/toolkit": "canary",
     "@types/angular": "^1.6.54",
     "@types/jest": "^24.0.15",
     "@types/jquery": "^3.3.29",
