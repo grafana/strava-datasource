@@ -179,6 +179,7 @@ jobs:
           command: |
             mkdir -p ci/jobs/build_plugin
             mv dist/ ci/jobs/build_plugin
+            cp CHANGELOG.md ci/jobs/build_plugin/dist
       - run:
           name: Package and sign plugin
           command: yarn grafana-toolkit plugin:ci-package
