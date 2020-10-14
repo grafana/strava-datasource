@@ -19,10 +19,10 @@
     "ci-test": "jest --config jest.config.js"
   },
   "devDependencies": {
-    "@grafana/data": "^7.1",
-    "@grafana/runtime": "^7.1",
-    "@grafana/ui": "^7.1",
-    "@grafana/toolkit": "canary",
+    "@grafana/data": "next",
+    "@grafana/runtime": "next",
+    "@grafana/ui": "next",
+    "@grafana/toolkit": "next",
     "@types/angular": "^1.6.54",
     "@types/jest": "^24.0.15",
     "@types/jquery": "^3.3.29",
