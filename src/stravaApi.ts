@@ -25,12 +25,34 @@ export default class StravaApi {
     return await this.requestWithPagination('athlete/activities', params);
   }
 
+  async getActivity(params?: any) {
+    const { id, include_all_efforts } = params;
+    return await this.tsdbRequest(`/activities/${id}`, { include_all_efforts });
+  }
+
+  async getActivityStreams(params?: any) {
+    const { id, streamType } = params;
+    // const streamTypes = [
+    //   'heartrate', 'altitude', 'distance', 'cadence', 'velocity_smooth',
+    //   'watts', 'watts_calc', 'temp', 'moving', 'grade_smooth', 'grade_adjusted_distance'
+    // ];
+    // const streamsParams = streamTypes.join('&keys=');
+    return await this.tsdbRequest(`/activities/${id}/streams?keys=${streamType},time&key_by_type=true`, {
+      // key_by_type: true,
+      // keys: "heartrate",
+    });
+  }
+
   async requestWithPagination(url: string, params?: any) {
     let data: any[] = [];
     let chunk = [];
     let page = 1;
     const limit = params && params.limit;
-    const per_page = (params && params.per_page) || 200;
+    let per_page = (params && params.per_page) || 200;
+    if (limit) {
+      per_page = Math.min(per_page, limit);
+    }
+
     while (!(chunk.length === 0 && page !== 1) && !(limit && data.length >= limit)) {
       params = {
         ...params,

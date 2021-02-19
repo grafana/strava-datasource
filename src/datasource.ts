@@ -18,6 +18,7 @@ import {
   StravaQueryFormat,
   StravaActivityType,
   StravaQueryInterval,
+  StravaQueryType,
 } from './types';
 
 const DEFAULT_RANGE = {
@@ -48,35 +49,76 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
   async query(options: DataQueryRequest<StravaQuery>) {
     const data: any[] = [];
+    let activities = [];
 
-    const activities = await this.stravaApi.getActivities({
-      before: options.range?.to.unix(),
-      after: options.range?.from.unix(),
-    });
+    let queryActivities = options.targets.some(t => t.queryType === StravaQueryType.Activities);
+
+    if (queryActivities) {
+      activities = await this.stravaApi.getActivities({
+        before: options.range?.to.unix(),
+        after: options.range?.from.unix(),
+      });
+    }
 
     for (const target of options.targets) {
-      const filteredActivities = this.filterActivities(activities, target.activityType);
-      switch (target.format) {
-        case StravaQueryFormat.Table:
-          const tableData = this.transformActivitiesToTable(filteredActivities, target);
-          data.push(tableData);
-          break;
-        case StravaQueryFormat.WorldMap:
-          const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
-          data.push(wmData);
-          break;
-        default:
-          const tsData = this.transformActivitiesToTimeseries(
-            filteredActivities,
-            target,
-            options.range || DEFAULT_RANGE
-          );
-          data.push(tsData);
-          break;
+      if (target.queryType === StravaQueryType.Activities) {
+        const filteredActivities = this.filterActivities(activities, target.activityType);
+        switch (target.format) {
+          case StravaQueryFormat.Table:
+            const tableData = this.transformActivitiesToTable(filteredActivities, target);
+            data.push(tableData);
+            break;
+          case StravaQueryFormat.WorldMap:
+            const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
+            data.push(wmData);
+            break;
+          default:
+            const tsData = this.transformActivitiesToTimeseries(
+              filteredActivities,
+              target,
+              options.range || DEFAULT_RANGE
+            );
+            data.push(tsData);
+            break;
+        }
+      } else if (target.queryType === StravaQueryType.Activity) {
+        const activityData = await this.queryActivity(options, target);
+        data.push(activityData);
       }
     }
 
     return { data };
+  }
+
+  async queryActivity(options: DataQueryRequest<StravaQuery>, target: StravaQuery) {
+    const activity = await this.stravaApi.getActivity({
+      id: target.activityId,
+      include_all_efforts: true,
+    });
+
+    if (!target.activityGraph) {
+      return null;
+    }
+    const streams = await this.stravaApi.getActivityStreams({
+      id: target.activityId,
+      streamType: target.activityGraph,
+    });
+    console.log(activity);
+    console.log(streams);
+
+    let datapoints: any[] = [];
+    let ts = options.range.from.unix()
+    const stream = streams[target.activityGraph];
+    console.log(stream);
+    for(let i = 0; i < stream.data.length; i++) {
+      datapoints.push([ stream.data[i], ts * 1000 ]);
+      ts++;
+    }
+
+    return {
+      target: target.activityGraph,
+      datapoints,
+    };
   }
 
   async testDatasource() {

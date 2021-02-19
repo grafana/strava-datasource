@@ -1,4 +1,4 @@
-import { DataQuery, DataSourceJsonData } from '@grafana/data';
+import { DataQuery, DataSourceJsonData, SelectableValue } from '@grafana/data';
 
 export interface StravaJsonData extends DataSourceJsonData {
   clientID: string;
@@ -15,6 +15,9 @@ export interface StravaQuery extends DataQuery {
   activityType: StravaActivityType;
   format: StravaQueryFormat;
   interval: StravaQueryInterval;
+  selectedActivity?: SelectableValue<number>;
+  activityId?: number;
+  activityGraph?: StravaActivityStream;
 }
 
 export enum StravaQueryFormat {
@@ -34,6 +37,7 @@ export enum StravaQueryInterval {
 
 export enum StravaQueryType {
   Activities = 'Activities',
+  Activity = 'Activity',
 }
 
 export enum StravaActivityStat {
@@ -45,3 +49,17 @@ export enum StravaActivityStat {
 }
 
 export type StravaActivityType = string | null;
+
+export enum StravaActivityStream {
+  Distance = 'distance',
+  HeartRate = 'heartrate',
+  Altitude = 'altitude',
+  Cadence = 'cadence',
+  Velocity = 'velocity_smooth',
+  Watts = 'watts',
+  WattsCalc = 'watts_calc',
+  Temp = 'temp',
+  Moving = 'moving',
+  GradeSmooth = 'grade_smooth',
+  GradeAdjustedDistance = 'grade_adjusted_distance',
+}
