@@ -43,12 +43,17 @@ const stravaActivityTypeOptions: Array<SelectableValue<StravaActivityType>> = [
 ];
 
 const stravaActivityGraphOptions: Array<SelectableValue<StravaActivityStream>> = [
-  { value: StravaActivityStream.Distance, label: 'Distance' },
-  { value: StravaActivityStream.HeartRate, label: 'Heart rate' },
-  { value: StravaActivityStream.Velocity, label: 'Velocity' },
+  // { value: StravaActivityStream.Distance, label: 'Distance' },
+  { value: StravaActivityStream.HeartRate, label: 'Heart Rate' },
+  { value: StravaActivityStream.Velocity, label: 'Speed' },
+  { value: StravaActivityStream.Pace, label: 'Pace' },
+  { value: StravaActivityStream.WattsCalc, label: 'Est Power' },
+  { value: StravaActivityStream.Watts, label: 'Watts' },
   { value: StravaActivityStream.Cadence, label: 'Cadence' },
   { value: StravaActivityStream.Altitude, label: 'Altitude' },
-  { value: StravaActivityStream.Temp, label: 'Temp' },
+  { value: StravaActivityStream.GradeSmooth, label: 'Gradient' },
+  // { value: StravaActivityStream.GradeAdjustedDistance, label: 'Gradient (adjusted)' },
+  // { value: StravaActivityStream.Temp, label: 'Temp' },
 ];
 
 const FORMAT_OPTIONS: Array<SelectableValue<StravaQueryFormat>> = [

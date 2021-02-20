@@ -56,6 +56,8 @@ export enum StravaActivityStream {
   Altitude = 'altitude',
   Cadence = 'cadence',
   Velocity = 'velocity_smooth',
+  // Special type for pace which actually calculated from velocity
+  Pace = 'pace',
   Watts = 'watts',
   WattsCalc = 'watts_calc',
   Temp = 'temp',

@@ -8,6 +8,11 @@ import {
   TimeRange,
   TimeSeriesPoints,
   TimeSeriesValue,
+  TIME_SERIES_TIME_FIELD_NAME,
+  FieldType,
+  MutableField,
+  ArrayVector,
+  MutableDataFrame,
 } from '@grafana/data';
 import StravaApi from './stravaApi';
 import polyline from './polyline';
@@ -19,7 +24,9 @@ import {
   StravaActivityType,
   StravaQueryInterval,
   StravaQueryType,
+  StravaActivityStream,
 } from './types';
+import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed } from 'utils';
 
 const DEFAULT_RANGE = {
   from: dateTime(),
@@ -96,29 +103,84 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       include_all_efforts: true,
     });
 
-    if (!target.activityGraph) {
+    let activityStream = target.activityGraph;
+    if (activityStream === StravaActivityStream.Pace) {
+      activityStream = StravaActivityStream.Velocity;
+    }
+
+    if (!activityStream) {
       return null;
     }
     const streams = await this.stravaApi.getActivityStreams({
       id: target.activityId,
-      streamType: target.activityGraph,
+      streamType: activityStream,
     });
-    console.log(activity);
-    console.log(streams);
+    // console.log(activity);
+    // console.log(streams);
 
-    let datapoints: any[] = [];
+    const timeFiled: MutableField<number> = {
+      name: TIME_SERIES_TIME_FIELD_NAME,
+      type: FieldType.time,
+      config: {
+        custom: {}
+      },
+      values: new ArrayVector()
+    };
+
+    const valueFiled: MutableField<number> = {
+      name: activityStream,
+      type: FieldType.number,
+      config: {
+        custom: {}
+      },
+      values: new ArrayVector()
+    };
+
+    const frame = new MutableDataFrame({
+      name: activity.name,
+      refId: target.refId,
+      fields: [],
+    });
+
+    const stream = streams[activityStream];
+    if (!stream) {
+      return frame;
+    }
+
+    let streamValues: number[] = [];
     let ts = options.range.from.unix()
-    const stream = streams[target.activityGraph];
-    console.log(stream);
     for(let i = 0; i < stream.data.length; i++) {
-      datapoints.push([ stream.data[i], ts * 1000 ]);
+      timeFiled.values.add(ts * 1000)
+      streamValues.push(stream.data[i]);
       ts++;
     }
 
-    return {
-      target: target.activityGraph,
-      datapoints,
-    };
+    if (activity.type === 'Run') {
+      if (target.activityGraph === StravaActivityStream.Pace) {
+        valueFiled.name = 'pace';
+        streamValues = velocityDataToPace(streamValues);
+      }
+    } else {
+      if (target.activityGraph === StravaActivityStream.Velocity) {
+        streamValues = velocityDataToSpeed(streamValues);
+      }
+    }
+
+    // Smooth data
+    if (activityStream === StravaActivityStream.Velocity
+      || activityStream === StravaActivityStream.HeartRate
+      || activityStream === StravaActivityStream.GradeSmooth
+      || activityStream === StravaActivityStream.WattsCalc
+      || activityStream === StravaActivityStream.Watts
+      ) {
+      streamValues = smoothVelocityData(streamValues);
+    }
+
+    valueFiled.values = new ArrayVector(streamValues);
+    frame.addField(timeFiled);
+    frame.addField(valueFiled);
+
+    return frame;
   }
 
   async testDatasource() {
