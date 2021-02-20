@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { SelectableValue, QueryEditorProps } from '@grafana/data';
-import { AsyncSelect, InlineFormLabel, Select } from '@grafana/ui';
+import { AsyncSelect, InlineFormLabel, InlineSwitch, Select } from '@grafana/ui';
 import {
   StravaQuery,
   StravaQueryType,
@@ -201,6 +201,11 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
   };
 
+  onFitToRangeChanged = (event: React.FormEvent<HTMLInputElement>) => {
+    const { query } = this.props;
+    this.onChange({ ...query, fitToTimeRange: !query.fitToTimeRange });
+  };
+
   onFormatChange = (option: SelectableValue<StravaQueryFormat>) => {
     const { query } = this.props;
     if (option.value) {
@@ -280,6 +285,7 @@ export class QueryEditor extends PureComponent<Props, State> {
   }
 
   renderActivityEditor() {
+    const { query } = this.props;
     return (
       <>
         <div className="gf-form-inline">
@@ -303,22 +309,36 @@ export class QueryEditor extends PureComponent<Props, State> {
             options={stravaActivityDataOptions}
             onChange={this.onActivityDataChanged}
           />
-          <InlineFormLabel width={5}>Split</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            width={16}
-            value={this.getSelectedActivitySplit()}
-            options={stravaActivitySplitOptions}
-            onChange={this.onActivitySplitChanged}
-          />
-          <InlineFormLabel width={5}>Graph</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            width={16}
-            value={this.getSelectedActivityGraph()}
-            options={stravaActivityGraphOptions}
-            onChange={this.onActivityGraphChanged}
-          />
+          {query.activityData === StravaActivityData.Graph &&
+            <>
+              <InlineFormLabel width={5}>Graph</InlineFormLabel>
+              <Select
+                isSearchable={false}
+                width={16}
+                value={this.getSelectedActivityGraph()}
+                options={stravaActivityGraphOptions}
+                onChange={this.onActivityGraphChanged}
+              />
+            </>
+          }
+          {query.activityData === StravaActivityData.Splits &&
+            <>
+              <InlineFormLabel width={5}>Split</InlineFormLabel>
+              <Select
+                isSearchable={false}
+                width={16}
+                value={this.getSelectedActivitySplit()}
+                options={stravaActivitySplitOptions}
+                onChange={this.onActivitySplitChanged}
+              />
+            </>
+          }
+          <InlineFormLabel width={5}>Fit to range</InlineFormLabel>
+          <InlineSwitch css=''
+            value={query.fitToTimeRange || false}
+            onChange={this.onFitToRangeChanged}
+            >
+          </InlineSwitch>
           <div className="gf-form gf-form--grow">
             <div className="gf-form-label gf-form-label--grow" />
           </div>

@@ -159,8 +159,12 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       return frame;
     }
 
+    let ts = dateTime(activity.start_date).unix();
+    if (target.fitToTimeRange) {
+      ts = options.range.from.unix();
+    }
+
     let streamValues: number[] = [];
-    let ts = options.range.from.unix()
     for(let i = 0; i < stream.data.length; i++) {
       timeFiled.values.add(ts * 1000)
       streamValues.push(stream.data[i]);
@@ -223,8 +227,12 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       fields: [],
     });
 
+    let ts = dateTime(activity.start_date).unix();
+    if (target.fitToTimeRange) {
+      ts = options.range.from.unix();
+    }
+
     const splits: any[] = activity.splits_metric;
-    let ts = options.range.from.unix()
     for(let i = 0; i < splits.length; i++) {
       const split = splits[i];
       timeFiled.values.add(ts * 1000);
