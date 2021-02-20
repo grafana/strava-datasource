@@ -6,6 +6,10 @@ export function velocityToPace(mps: number): number {
   return Math.min(10, pace);
 }
 
+export function velocityToSpeed(mps: number): number {
+  return mps * 3.6;
+}
+
 export function velocityDataToPace(data: number[]): number[] {
   for (let i = 0; i < data.length; i++) {
     // m/s to min/km

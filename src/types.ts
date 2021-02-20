@@ -18,6 +18,8 @@ export interface StravaQuery extends DataQuery {
   selectedActivity?: SelectableValue<number>;
   activityId?: number;
   activityGraph?: StravaActivityStream;
+  activityData?: string;
+  splitStat?: StravaSplitStat;
 }
 
 export enum StravaQueryFormat {
@@ -49,6 +51,18 @@ export enum StravaActivityStat {
 }
 
 export type StravaActivityType = string | null;
+
+export enum StravaActivityData {
+  Graph = 'graph',
+  Splits = 'splits',
+}
+
+export enum StravaSplitStat {
+  HeartRate = 'average_heartrate',
+  Speed = 'average_speed',
+  MovingTime = 'moving_time',
+  ElapsedTime = 'elapsed_time',
+}
 
 export enum StravaActivityStream {
   Distance = 'distance',

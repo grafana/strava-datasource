@@ -13,6 +13,7 @@ import {
   MutableField,
   ArrayVector,
   MutableDataFrame,
+  TIME_SERIES_VALUE_FIELD_NAME,
 } from '@grafana/data';
 import StravaApi from './stravaApi';
 import polyline from './polyline';
@@ -25,8 +26,10 @@ import {
   StravaQueryInterval,
   StravaQueryType,
   StravaActivityStream,
+  StravaActivityData,
+  StravaSplitStat,
 } from './types';
-import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed } from 'utils';
+import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToSpeed } from 'utils';
 
 const DEFAULT_RANGE = {
   from: dateTime(),
@@ -68,6 +71,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
 
     for (const target of options.targets) {
+      if (target.hide) {
+        continue;
+      }
+
       if (target.queryType === StravaQueryType.Activities) {
         const filteredActivities = this.filterActivities(activities, target.activityType);
         switch (target.format) {
@@ -111,12 +118,17 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     if (!activityStream) {
       return null;
     }
+
+    if (target.activityData === StravaActivityData.Splits) {
+      return this.queryActivitySplits(options, target, activity);
+    }
+
     const streams = await this.stravaApi.getActivityStreams({
       id: target.activityId,
       streamType: activityStream,
     });
-    // console.log(activity);
-    // console.log(streams);
+    console.log(activity);
+    console.log(streams);
 
     const timeFiled: MutableField<number> = {
       name: TIME_SERIES_TIME_FIELD_NAME,
@@ -162,6 +174,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       }
     } else {
       if (target.activityGraph === StravaActivityStream.Velocity) {
+        valueFiled.name = 'speed';
         streamValues = velocityDataToSpeed(streamValues);
       }
     }
@@ -177,6 +190,52 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
 
     valueFiled.values = new ArrayVector(streamValues);
+    frame.addField(timeFiled);
+    frame.addField(valueFiled);
+
+    return frame;
+  }
+
+  queryActivitySplits(options: DataQueryRequest<StravaQuery>, target: StravaQuery, activity: any) {
+    const timeFiled: MutableField<number> = {
+      name: TIME_SERIES_TIME_FIELD_NAME,
+      type: FieldType.time,
+      config: {
+        custom: {}
+      },
+      values: new ArrayVector()
+    };
+
+    const splitStat =target.splitStat || '';
+
+    const valueFiled: MutableField<number> = {
+      name: splitStat || TIME_SERIES_VALUE_FIELD_NAME,
+      type: FieldType.number,
+      config: {
+        custom: {}
+      },
+      values: new ArrayVector()
+    };
+
+    const frame = new MutableDataFrame({
+      name: activity.name,
+      refId: target.refId,
+      fields: [],
+    });
+
+    const splits: any[] = activity.splits_metric;
+    let ts = options.range.from.unix()
+    for(let i = 0; i < splits.length; i++) {
+      const split = splits[i];
+      timeFiled.values.add(ts * 1000);
+      let value = split[splitStat];
+      if (splitStat === StravaSplitStat.Speed) {
+        value = velocityToSpeed(value);
+      }
+      valueFiled.values.add(value);
+      ts += split.moving_time;
+    }
+
     frame.addField(timeFiled);
     frame.addField(valueFiled);
 
