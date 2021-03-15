@@ -9,6 +9,7 @@ import {
   StravaActivityType,
   StravaJsonData,
   StravaQueryInterval,
+  StravaAthlete,
 } from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
@@ -53,7 +54,7 @@ const INTERVAL_OPTIONS: Array<SelectableValue<StravaQueryInterval>> = [
 
 export const DefaultTarget: State = {
   refId: '',
-  athlete: {},
+  athlete: {} as StravaAthlete,
   queryType: StravaQueryType.Activities,
   activityType: null,
   activityStat: StravaActivityStat.Distance,
@@ -64,7 +65,7 @@ export const DefaultTarget: State = {
 export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
 
 interface State extends StravaQuery {
-  athlete: any;
+  athlete: StravaAthlete;
 }
 
 export class QueryEditor extends PureComponent<Props, State> {
