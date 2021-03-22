@@ -330,13 +330,15 @@ func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *S
 	return BuildAPIResponse(apiResponse)
 }
 
+// BuildAPIResponse organizes the response into a dataframe and sends off the response
 func BuildAPIResponse(apiResponse []byte) (*StravaApiResourceResponse, error) {
-	resultJson, err := simplejson.NewJson(apiResponse)
+	resultJSON, err := simplejson.NewJson(apiResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	result := resultJson.Interface()
+	result := resultJSON.Interface()
+	backend.Logger.Debug("The strava api response is", "data", result)
 	return &StravaApiResourceResponse{
 		Result: result,
 	}, nil
