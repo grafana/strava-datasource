@@ -4,6 +4,12 @@ export interface StravaJsonData extends DataSourceJsonData {
   clientID: string;
 }
 
+export interface StravaAthlete {
+  profile_medium: string;
+  firstname: string;
+  lastname: string;
+}
+
 export interface StravaSecureJsonData {
   clientSecret: string;
   authCode: string;

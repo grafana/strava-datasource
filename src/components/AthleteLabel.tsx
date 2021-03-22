@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 import { css, cx } from 'emotion';
 import { InlineFormLabel, stylesFactory, useTheme } from '@grafana/ui';
 import { GrafanaTheme } from '@grafana/data';
+import { StravaAthlete } from '../types';
 
 const getStyles = stylesFactory((theme: GrafanaTheme) => {
   return {
@@ -20,10 +21,11 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
 });
 
 interface Props {
-  athlete: any;
+  athlete: StravaAthlete;
 }
 
-export const AthleteLabel: FC<Props> = ({ athlete }) => {
+export const AthleteLabel: FC<Props> = (props: Props) => {
+  const { athlete } = props;
   const styles = getStyles(useTheme());
   const imgClass = cx('filter-table__avatar', styles.athleteAvatar);
   return (
