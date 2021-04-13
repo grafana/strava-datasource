@@ -28,7 +28,7 @@ const stravaActivityStatOptions: Array<SelectableValue<StravaActivityStat>> = [
   { value: StravaActivityStat.MovingTime, label: 'Moving Time' },
   { value: StravaActivityStat.ElevationGain, label: 'Elevation Gain' },
   { value: StravaActivityStat.AveragePower, label: 'Average Power' },
-  { value: StravaActivityStat.AverageHeartRate, label: 'Average Heart Rate' }
+  { value: StravaActivityStat.AverageHeartRate, label: 'Average Heart Rate' },
 ];
 
 const stravaActivityTypeOptions: Array<SelectableValue<StravaActivityType>> = [
