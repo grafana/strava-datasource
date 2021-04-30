@@ -8,7 +8,7 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
     athleteLabel: css`
       height: ${theme.spacing.formInputHeight}px;
       padding: 2px;
-      margin-right: ${theme.spacing.inlineFormMargin};
+      margin-right: 0px;
       border-radius: ${theme.border.radius.md};
       background-color: ${theme.palette.dark4};
     `,

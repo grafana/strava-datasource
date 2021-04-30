@@ -255,16 +255,10 @@ export class QueryEditor extends PureComponent<Props, State> {
             options={stravaActivityStatOptions}
             onChange={this.onActivityStatChanged}
           />
-          <div className="gf-form gf-form--grow">
-            <div className="gf-form-label gf-form-label--grow" />
-          </div>
-        </div>
-        <div className="gf-form-inline">
-          <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
-          <InlineFormLabel width={12}>Format</InlineFormLabel>
+          <InlineFormLabel width={8}>Format</InlineFormLabel>
           <Select
             isSearchable={false}
-            width={27}
+            width={16}
             options={FORMAT_OPTIONS}
             onChange={this.onFormatChange}
             value={this.getFormatOption()}
