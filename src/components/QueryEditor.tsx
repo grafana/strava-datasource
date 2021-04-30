@@ -16,6 +16,7 @@ import {
 } from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
+import { getTemplateSrv } from '@grafana/runtime';
 
 const ACTIVITY_DATE_FORMAT = 'YYYY-MM-DD HH:mm';
 
@@ -159,11 +160,21 @@ export class QueryEditor extends PureComponent<Props, State> {
     const { datasource } = this.props;
     let activities = await datasource.stravaApi.getActivities({ limit: 100 });
     activities = datasource.filterActivities(activities, activityType);
-    const options: Array<SelectableValue<number>> = activities.map((a) => ({
+    let options: Array<SelectableValue<number>> = activities.map((a) => ({
       value: a.id,
       label: a.name,
       description: `${dateTime(a.start_date_local).format(ACTIVITY_DATE_FORMAT)} (${a.type})`,
     }));
+
+    const variables: SelectableValue[] = getTemplateSrv()
+      .getVariables()
+      .map((v) => ({
+        value: `$${v.name}`,
+        label: `$${v.name}`,
+        description: 'Variable',
+      }));
+    options = variables.concat(options);
+
     return options;
   };
 
