@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
-import { SelectableValue, QueryEditorProps } from '@grafana/data';
-import { AsyncSelect, InlineFormLabel, InlineSwitch, Select } from '@grafana/ui';
+import { SelectableValue, QueryEditorProps, dateTime } from '@grafana/data';
+import { InlineFormLabel, InlineSwitch, Select } from '@grafana/ui';
 import {
   StravaQuery,
   StravaQueryType,
@@ -15,6 +15,8 @@ import {
 } from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
+
+const ACTIVITY_DATE_FORMAT = 'YYYY-MM-DD HH:mm';
 
 const stravaQueryTypeOptions: Array<SelectableValue<StravaQueryType>> = [
   {
@@ -90,6 +92,7 @@ export const DefaultTarget: State = {
   athlete: {},
   queryType: StravaQueryType.Activities,
   activityType: null,
+  activitiesOptions: [],
   activityStat: StravaActivityStat.Distance,
   format: StravaQueryFormat.TimeSeries,
   interval: StravaQueryInterval.Auto,
@@ -102,6 +105,7 @@ export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, S
 interface State extends StravaQuery {
   athlete: any;
   selectedActivity?: SelectableValue<number>;
+  activitiesOptions: SelectableValue<number>[];
 }
 
 export class QueryEditor extends PureComponent<Props, State> {
@@ -109,7 +113,8 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   async componentDidMount() {
     const athlete = await this.props.datasource.stravaApi.getAuthenticatedAthlete();
-    this.setState({ athlete });
+    const activitiesOptions = await this.getActivitiesOptions(this.props.query.activityType);
+    this.setState({ athlete, activitiesOptions });
   }
 
   getSelectedQueryType = () => {
@@ -148,13 +153,14 @@ export class QueryEditor extends PureComponent<Props, State> {
     return this.props.query.selectedActivity;
   };
 
-  getActivitiesOptions = async (query: string): Promise<Array<SelectableValue<number>>> => {
-    let activities = await this.props.datasource.stravaApi.getActivities({ limit: 100 });
-    activities = activities.filter(a => a.name.includes(query));
+  getActivitiesOptions = async (activityType: StravaActivityType): Promise<Array<SelectableValue<number>>> => {
+    const { datasource } = this.props;
+    let activities = await datasource.stravaApi.getActivities({ limit: 100 });
+    activities = datasource.filterActivities(activities, activityType);
     const options:Array<SelectableValue<number>> = activities.map(a => ({
       value: a.id,
       label: a.name,
-      description: a.start_date_local,
+      description: `${dateTime(a.start_date_local).format(ACTIVITY_DATE_FORMAT)} (${a.type})`,
     }));
     return options;
   }
@@ -194,10 +200,13 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
   };
 
-  onActivityTypeChanged = (option: SelectableValue<StravaActivityType>) => {
+  onActivityTypeChanged = async (option: SelectableValue<StravaActivityType>) => {
     const { query } = this.props;
     if (option.value !== undefined) {
       this.onChange({ ...query, activityType: option.value });
+
+      const activitiesOptions = await this.getActivitiesOptions(option.value);
+      this.setState({ activitiesOptions });
     }
   };
 
@@ -238,14 +247,6 @@ export class QueryEditor extends PureComponent<Props, State> {
       <>
         <div className="gf-form-inline">
           <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
-          <InlineFormLabel width={5}>Activity type</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            width={16}
-            value={this.getSelectedActivityType()}
-            options={stravaActivityTypeOptions}
-            onChange={this.onActivityTypeChanged}
-          />
           <InlineFormLabel width={5}>Stat</InlineFormLabel>
           <Select
             isSearchable={false}
@@ -286,19 +287,18 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   renderActivityEditor() {
     const { query } = this.props;
+    const { activitiesOptions } = this.state;
+
     return (
       <>
         <div className="gf-form-inline">
           <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
           <InlineFormLabel width={5}>Activity</InlineFormLabel>
-          <AsyncSelect
+          <Select
             isSearchable={true}
-            cacheOptions={true}
-            showAllSelectedWhenOpen={true}
-            width={20}
+            width={33}
             value={this.getSelectedActivityOption()}
-            defaultOptions={true}
-            loadOptions={this.getActivitiesOptions}
+            options={activitiesOptions}
             onChange={this.onActivityChanged}
           />
           <InlineFormLabel width={5}>Data</InlineFormLabel>
@@ -355,13 +355,22 @@ export class QueryEditor extends PureComponent<Props, State> {
       <>
         <div className="gf-form-inline">
           <AthleteLabel athlete={athlete} />
-          <InlineFormLabel width={5}>Type</InlineFormLabel>
+          <InlineFormLabel width={5}>Query</InlineFormLabel>
           <Select
             isSearchable={false}
             width={16}
             value={this.getSelectedQueryType()}
             options={stravaQueryTypeOptions}
             onChange={this.onQueryTypeChanged}
+          />
+          <InlineFormLabel width={8}>Activity type
+          </InlineFormLabel>
+          <Select
+            isSearchable={false}
+            width={16}
+            value={this.getSelectedActivityType()}
+            options={stravaActivityTypeOptions}
+            onChange={this.onActivityTypeChanged}
           />
           <div className="gf-form gf-form--grow">
             <div className="gf-form-label gf-form-label--grow" />

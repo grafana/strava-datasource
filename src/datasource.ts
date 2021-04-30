@@ -127,8 +127,6 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       id: target.activityId,
       streamType: activityStream,
     });
-    console.log(activity);
-    console.log(streams);
 
     const timeFiled: MutableField<number> = {
       name: TIME_SERIES_TIME_FIELD_NAME,
