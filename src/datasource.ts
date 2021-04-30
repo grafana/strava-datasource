@@ -32,6 +32,7 @@ import {
   VariableQuery,
 } from './types';
 import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToSpeed } from 'utils';
+import { getTemplateSrv } from '@grafana/runtime';
 
 const DEFAULT_RANGE = {
   from: dateTime(),
@@ -107,8 +108,9 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   async queryActivity(options: DataQueryRequest<StravaQuery>, target: StravaQuery) {
+    const activityId = getTemplateSrv().replace(target.activityId?.toString());
     const activity = await this.stravaApi.getActivity({
-      id: target.activityId,
+      id: activityId,
       include_all_efforts: true,
     });
 
@@ -126,7 +128,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
 
     const streams = await this.stravaApi.getActivityStreams({
-      id: target.activityId,
+      id: activityId,
       streamType: activityStream,
     });
 
