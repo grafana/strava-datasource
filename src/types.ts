@@ -48,6 +48,7 @@ export enum StravaActivityStat {
   ElapsedTime = 'elapsed_time',
   ElevationGain = 'total_elevation_gain',
   AveragePower = 'average_watts',
+  AverageHeartRate = 'average_heartrate',
 }
 
 export type StravaActivityType = string | null;
