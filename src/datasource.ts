@@ -14,6 +14,7 @@ import {
   ArrayVector,
   MutableDataFrame,
   TIME_SERIES_VALUE_FIELD_NAME,
+  MetricFindValue,
 } from '@grafana/data';
 import StravaApi from './stravaApi';
 import polyline from './polyline';
@@ -28,6 +29,7 @@ import {
   StravaActivityStream,
   StravaActivityData,
   StravaSplitStat,
+  VariableQuery,
 } from './types';
 import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToSpeed } from 'utils';
 
@@ -247,6 +249,16 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     frame.addField(valueFiled);
 
     return frame;
+  }
+
+  async metricFindQuery(query: VariableQuery, options?: any): Promise<MetricFindValue[]> {
+    let activities = await this.stravaApi.getActivities({ limit: 100 });
+    activities = this.filterActivities(activities, query.activityType);
+    const variableOptions: MetricFindValue[] = activities.map((a) => ({
+      value: a.id,
+      text: a.name,
+    }));
+    return variableOptions;
   }
 
   async testDatasource() {

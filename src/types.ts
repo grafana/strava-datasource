@@ -87,3 +87,12 @@ export enum StravaActivityStream {
   GradeSmooth = 'grade_smooth',
   GradeAdjustedDistance = 'grade_adjusted_distance',
 }
+
+export interface VariableQuery {
+  queryType: VariableQueryTypes;
+  activityType: string;
+}
+
+export enum VariableQueryTypes {
+  Activity = 'activity',
+}
