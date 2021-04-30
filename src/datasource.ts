@@ -8,6 +8,12 @@ import {
   TimeRange,
   TimeSeriesPoints,
   TimeSeriesValue,
+  TIME_SERIES_TIME_FIELD_NAME,
+  FieldType,
+  MutableField,
+  ArrayVector,
+  MutableDataFrame,
+  TIME_SERIES_VALUE_FIELD_NAME,
 } from '@grafana/data';
 import StravaApi from './stravaApi';
 import polyline from './polyline';
@@ -18,7 +24,12 @@ import {
   StravaQueryFormat,
   StravaActivityType,
   StravaQueryInterval,
+  StravaQueryType,
+  StravaActivityStream,
+  StravaActivityData,
+  StravaSplitStat,
 } from './types';
+import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToSpeed } from 'utils';
 
 const DEFAULT_RANGE = {
   from: dateTime(),
@@ -48,35 +59,194 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
   async query(options: DataQueryRequest<StravaQuery>) {
     const data: any[] = [];
+    let activities = [];
 
-    const activities = await this.stravaApi.getActivities({
-      before: options.range?.to.unix(),
-      after: options.range?.from.unix(),
-    });
+    let queryActivities = options.targets.some((t) => t.queryType === StravaQueryType.Activities);
+
+    if (queryActivities) {
+      activities = await this.stravaApi.getActivities({
+        before: options.range?.to.unix(),
+        after: options.range?.from.unix(),
+      });
+    }
 
     for (const target of options.targets) {
-      const filteredActivities = this.filterActivities(activities, target.activityType);
-      switch (target.format) {
-        case StravaQueryFormat.Table:
-          const tableData = this.transformActivitiesToTable(filteredActivities, target);
-          data.push(tableData);
-          break;
-        case StravaQueryFormat.WorldMap:
-          const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
-          data.push(wmData);
-          break;
-        default:
-          const tsData = this.transformActivitiesToTimeseries(
-            filteredActivities,
-            target,
-            options.range || DEFAULT_RANGE
-          );
-          data.push(tsData);
-          break;
+      if (target.hide) {
+        continue;
+      }
+
+      if (target.queryType === StravaQueryType.Activities) {
+        const filteredActivities = this.filterActivities(activities, target.activityType);
+        switch (target.format) {
+          case StravaQueryFormat.Table:
+            const tableData = this.transformActivitiesToTable(filteredActivities, target);
+            data.push(tableData);
+            break;
+          case StravaQueryFormat.WorldMap:
+            const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
+            data.push(wmData);
+            break;
+          default:
+            const tsData = this.transformActivitiesToTimeseries(
+              filteredActivities,
+              target,
+              options.range || DEFAULT_RANGE
+            );
+            data.push(tsData);
+            break;
+        }
+      } else if (target.queryType === StravaQueryType.Activity) {
+        const activityData = await this.queryActivity(options, target);
+        data.push(activityData);
       }
     }
 
     return { data };
+  }
+
+  async queryActivity(options: DataQueryRequest<StravaQuery>, target: StravaQuery) {
+    const activity = await this.stravaApi.getActivity({
+      id: target.activityId,
+      include_all_efforts: true,
+    });
+
+    let activityStream = target.activityGraph;
+    if (activityStream === StravaActivityStream.Pace) {
+      activityStream = StravaActivityStream.Velocity;
+    }
+
+    if (!activityStream) {
+      return null;
+    }
+
+    if (target.activityData === StravaActivityData.Splits) {
+      return this.queryActivitySplits(options, target, activity);
+    }
+
+    const streams = await this.stravaApi.getActivityStreams({
+      id: target.activityId,
+      streamType: activityStream,
+    });
+
+    const timeFiled: MutableField<number> = {
+      name: TIME_SERIES_TIME_FIELD_NAME,
+      type: FieldType.time,
+      config: {
+        custom: {},
+      },
+      values: new ArrayVector(),
+    };
+
+    const valueFiled: MutableField<number> = {
+      name: activityStream,
+      type: FieldType.number,
+      config: {
+        custom: {},
+      },
+      values: new ArrayVector(),
+    };
+
+    const frame = new MutableDataFrame({
+      name: activity.name,
+      refId: target.refId,
+      fields: [],
+    });
+
+    const stream = streams[activityStream];
+    if (!stream) {
+      return frame;
+    }
+
+    let ts = dateTime(activity.start_date).unix();
+    if (target.fitToTimeRange) {
+      ts = options.range.from.unix();
+    }
+
+    let streamValues: number[] = [];
+    for (let i = 0; i < stream.data.length; i++) {
+      timeFiled.values.add(ts * 1000);
+      streamValues.push(stream.data[i]);
+      ts++;
+    }
+
+    if (activity.type === 'Run') {
+      if (target.activityGraph === StravaActivityStream.Pace) {
+        valueFiled.name = 'pace';
+        streamValues = velocityDataToPace(streamValues);
+      }
+    } else {
+      if (target.activityGraph === StravaActivityStream.Velocity) {
+        valueFiled.name = 'speed';
+        streamValues = velocityDataToSpeed(streamValues);
+      }
+    }
+
+    // Smooth data
+    if (
+      activityStream === StravaActivityStream.Velocity ||
+      activityStream === StravaActivityStream.HeartRate ||
+      activityStream === StravaActivityStream.GradeSmooth ||
+      activityStream === StravaActivityStream.WattsCalc ||
+      activityStream === StravaActivityStream.Watts
+    ) {
+      streamValues = smoothVelocityData(streamValues);
+    }
+
+    valueFiled.values = new ArrayVector(streamValues);
+    frame.addField(timeFiled);
+    frame.addField(valueFiled);
+
+    return frame;
+  }
+
+  queryActivitySplits(options: DataQueryRequest<StravaQuery>, target: StravaQuery, activity: any) {
+    const timeFiled: MutableField<number> = {
+      name: TIME_SERIES_TIME_FIELD_NAME,
+      type: FieldType.time,
+      config: {
+        custom: {},
+      },
+      values: new ArrayVector(),
+    };
+
+    const splitStat = target.splitStat || '';
+
+    const valueFiled: MutableField<number> = {
+      name: splitStat || TIME_SERIES_VALUE_FIELD_NAME,
+      type: FieldType.number,
+      config: {
+        custom: {},
+      },
+      values: new ArrayVector(),
+    };
+
+    const frame = new MutableDataFrame({
+      name: activity.name,
+      refId: target.refId,
+      fields: [],
+    });
+
+    let ts = dateTime(activity.start_date).unix();
+    if (target.fitToTimeRange) {
+      ts = options.range.from.unix();
+    }
+
+    const splits: any[] = activity.splits_metric;
+    for (let i = 0; i < splits.length; i++) {
+      const split = splits[i];
+      timeFiled.values.add(ts * 1000);
+      let value = split[splitStat];
+      if (splitStat === StravaSplitStat.Speed) {
+        value = velocityToSpeed(value);
+      }
+      valueFiled.values.add(value);
+      ts += split.moving_time;
+    }
+
+    frame.addField(timeFiled);
+    frame.addField(valueFiled);
+
+    return frame;
   }
 
   async testDatasource() {
@@ -111,7 +281,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       return activities;
     }
 
-    return activities.filter(activity => {
+    return activities.filter((activity) => {
       if (activityType === 'Other') {
         return activity.type !== 'Run' && activity.type !== 'Ride';
       } else {

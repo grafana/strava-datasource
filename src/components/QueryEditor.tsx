@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
-import { SelectableValue, QueryEditorProps } from '@grafana/data';
-import { InlineFormLabel, Select } from '@grafana/ui';
+import { SelectableValue, QueryEditorProps, dateTime } from '@grafana/data';
+import { InlineFormLabel, InlineSwitch, Select } from '@grafana/ui';
 import {
   StravaQuery,
   StravaQueryType,
@@ -9,16 +9,26 @@ import {
   StravaActivityType,
   StravaJsonData,
   StravaQueryInterval,
+  StravaActivityStream,
+  StravaActivityData,
+  StravaSplitStat,
   StravaAthlete,
 } from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
+
+const ACTIVITY_DATE_FORMAT = 'YYYY-MM-DD HH:mm';
 
 const stravaQueryTypeOptions: Array<SelectableValue<StravaQueryType>> = [
   {
     value: StravaQueryType.Activities,
     label: 'Activities',
     description: 'Athlete Activities',
+  },
+  {
+    value: StravaQueryType.Activity,
+    label: 'Activity',
+    description: 'Individual activity',
   },
 ];
 
@@ -36,6 +46,32 @@ const stravaActivityTypeOptions: Array<SelectableValue<StravaActivityType>> = [
   { value: 'Run', label: 'Run' },
   { value: 'Ride', label: 'Ride' },
   { value: 'Other', label: 'Other' },
+];
+
+const stravaActivityDataOptions: Array<SelectableValue<StravaActivityData>> = [
+  { value: StravaActivityData.Graph, label: 'Graph' },
+  { value: StravaActivityData.Splits, label: 'Splits' },
+];
+
+const stravaActivityGraphOptions: Array<SelectableValue<StravaActivityStream>> = [
+  // { value: StravaActivityStream.Distance, label: 'Distance' },
+  { value: StravaActivityStream.HeartRate, label: 'Heart Rate' },
+  { value: StravaActivityStream.Velocity, label: 'Speed' },
+  { value: StravaActivityStream.Pace, label: 'Pace' },
+  { value: StravaActivityStream.WattsCalc, label: 'Est Power' },
+  { value: StravaActivityStream.Watts, label: 'Watts' },
+  { value: StravaActivityStream.Cadence, label: 'Cadence' },
+  { value: StravaActivityStream.Altitude, label: 'Altitude' },
+  { value: StravaActivityStream.GradeSmooth, label: 'Gradient' },
+  // { value: StravaActivityStream.GradeAdjustedDistance, label: 'Gradient (adjusted)' },
+  // { value: StravaActivityStream.Temp, label: 'Temp' },
+];
+
+const stravaActivitySplitOptions: Array<SelectableValue<StravaSplitStat>> = [
+  { value: StravaSplitStat.HeartRate, label: 'Heart Rate' },
+  { value: StravaSplitStat.Speed, label: 'Speed' },
+  { value: StravaSplitStat.ElapsedTime, label: 'Elapsed Time' },
+  { value: StravaSplitStat.MovingTime, label: 'Moving Time' },
 ];
 
 const FORMAT_OPTIONS: Array<SelectableValue<StravaQueryFormat>> = [
@@ -58,50 +94,77 @@ export const DefaultTarget: State = {
   athlete: {} as StravaAthlete,
   queryType: StravaQueryType.Activities,
   activityType: null,
+  activitiesOptions: [],
   activityStat: StravaActivityStat.Distance,
   format: StravaQueryFormat.TimeSeries,
   interval: StravaQueryInterval.Auto,
+  activityData: StravaActivityData.Graph,
+  activityGraph: StravaActivityStream.HeartRate,
 };
 
 export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
 
 interface State extends StravaQuery {
   athlete: StravaAthlete;
+  selectedActivity?: SelectableValue<number>;
+  activitiesOptions: Array<SelectableValue<number>>;
 }
 
 export class QueryEditor extends PureComponent<Props, State> {
   state: State = DefaultTarget;
 
-  queryDefaults: Partial<StravaQuery> = {
-    format: StravaQueryFormat.TimeSeries,
-    queryType: StravaQueryType.Activities,
-    activityType: null,
-    activityStat: StravaActivityStat.Distance,
-  };
-
   async componentDidMount() {
     const athlete = await this.props.datasource.stravaApi.getAuthenticatedAthlete();
-    this.setState({ athlete });
+    const activitiesOptions = await this.getActivitiesOptions(this.props.query.activityType);
+    this.setState({ athlete, activitiesOptions });
   }
 
   getSelectedQueryType = () => {
-    return stravaQueryTypeOptions.find(v => v.value === this.props.query.queryType);
+    return stravaQueryTypeOptions.find((v) => v.value === this.props.query.queryType);
   };
 
   getSelectedActivityStat = () => {
-    return stravaActivityStatOptions.find(v => v.value === this.props.query.activityStat);
+    return stravaActivityStatOptions.find((v) => v.value === this.props.query.activityStat);
   };
 
   getSelectedActivityType = () => {
-    return stravaActivityTypeOptions.find(v => v.value === this.props.query.activityType);
+    return stravaActivityTypeOptions.find((v) => v.value === this.props.query.activityType);
+  };
+
+  getSelectedActivityData = () => {
+    return stravaActivityDataOptions.find((v) => v.value === this.props.query.activityData);
+  };
+
+  getSelectedActivityGraph = () => {
+    return stravaActivityGraphOptions.find((v) => v.value === this.props.query.activityGraph);
+  };
+
+  getSelectedActivitySplit = () => {
+    return stravaActivitySplitOptions.find((v) => v.value === this.props.query.splitStat);
   };
 
   getFormatOption = () => {
-    return FORMAT_OPTIONS.find(v => v.value === this.props.query.format);
+    return FORMAT_OPTIONS.find((v) => v.value === this.props.query.format);
   };
 
   getIntervalOption = () => {
-    return INTERVAL_OPTIONS.find(v => v.value === this.props.query.interval);
+    return INTERVAL_OPTIONS.find((v) => v.value === this.props.query.interval);
+  };
+
+  getSelectedActivityOption = () => {
+    return this.props.query.selectedActivity;
+  };
+
+  getActivitiesOptions = async (activityType: StravaActivityType): Promise<Array<SelectableValue<number>>> => {
+    const { datasource } = this.props;
+    let activities = await datasource.stravaApi.getActivities({ limit: 100 });
+    activities = datasource.filterActivities(activities, activityType);
+    const options: Array<SelectableValue<number>> = activities.map((a) => ({
+      value: a.id,
+      label: a.name,
+      description: `${dateTime(a.start_date_local).format(ACTIVITY_DATE_FORMAT)} (${a.type})`,
+    }));
+    return options;
   };
 
   onQueryTypeChanged = (option: SelectableValue<StravaQueryType>) => {
@@ -118,11 +181,40 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
   };
 
-  onActivityTypeChanged = (option: SelectableValue<StravaActivityType>) => {
+  onActivityDataChanged = (option: SelectableValue<StravaActivityData>) => {
+    const { query } = this.props;
+    if (option.value) {
+      this.onChange({ ...query, activityData: option.value });
+    }
+  };
+
+  onActivityGraphChanged = (option: SelectableValue<StravaActivityStream>) => {
+    const { query } = this.props;
+    if (option.value) {
+      this.onChange({ ...query, activityGraph: option.value });
+    }
+  };
+
+  onActivitySplitChanged = (option: SelectableValue<StravaSplitStat>) => {
+    const { query } = this.props;
+    if (option.value) {
+      this.onChange({ ...query, splitStat: option.value });
+    }
+  };
+
+  onActivityTypeChanged = async (option: SelectableValue<StravaActivityType>) => {
     const { query } = this.props;
     if (option.value !== undefined) {
       this.onChange({ ...query, activityType: option.value });
+
+      const activitiesOptions = await this.getActivitiesOptions(option.value);
+      this.setState({ activitiesOptions });
     }
+  };
+
+  onFitToRangeChanged = (event: React.FormEvent<HTMLInputElement>) => {
+    const { query } = this.props;
+    this.onChange({ ...query, fitToTimeRange: !query.fitToTimeRange });
   };
 
   onFormatChange = (option: SelectableValue<StravaQueryFormat>) => {
@@ -139,35 +231,24 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
   };
 
+  onActivityChanged = (option: SelectableValue<number>) => {
+    const { query } = this.props;
+    if (option.value !== undefined) {
+      this.onChange({ ...query, activityId: option.value, selectedActivity: option });
+    }
+  };
+
   onChange(query: StravaQuery) {
     const { onChange, onRunQuery } = this.props;
     onChange(query);
     onRunQuery();
   }
 
-  render() {
-    const { athlete } = this.state;
-
+  renderActivitiesEditor() {
     return (
       <>
         <div className="gf-form-inline">
-          <AthleteLabel athlete={athlete} />
-          <InlineFormLabel width={5}>Type</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            width={16}
-            value={this.getSelectedQueryType()}
-            options={stravaQueryTypeOptions}
-            onChange={this.onQueryTypeChanged}
-          />
-          <InlineFormLabel width={5}>Activity</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            width={16}
-            value={this.getSelectedActivityType()}
-            options={stravaActivityTypeOptions}
-            onChange={this.onActivityTypeChanged}
-          />
+          <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
           <InlineFormLabel width={5}>Stat</InlineFormLabel>
           <Select
             isSearchable={false}
@@ -176,15 +257,10 @@ export class QueryEditor extends PureComponent<Props, State> {
             options={stravaActivityStatOptions}
             onChange={this.onActivityStatChanged}
           />
-          <div className="gf-form gf-form--grow">
-            <div className="gf-form-label gf-form-label--grow" />
-          </div>
-        </div>
-        <div className="gf-form-inline">
-          <InlineFormLabel width={12}>Format</InlineFormLabel>
+          <InlineFormLabel width={8}>Format</InlineFormLabel>
           <Select
             isSearchable={false}
-            width={27}
+            width={16}
             options={FORMAT_OPTIONS}
             onChange={this.onFormatChange}
             value={this.getFormatOption()}
@@ -201,6 +277,98 @@ export class QueryEditor extends PureComponent<Props, State> {
             <div className="gf-form-label gf-form-label--grow" />
           </div>
         </div>
+      </>
+    );
+  }
+
+  renderActivityEditor() {
+    const { query } = this.props;
+    const { activitiesOptions } = this.state;
+
+    return (
+      <>
+        <div className="gf-form-inline">
+          <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
+          <InlineFormLabel width={5}>Activity</InlineFormLabel>
+          <Select
+            isSearchable={true}
+            width={33}
+            value={this.getSelectedActivityOption()}
+            options={activitiesOptions}
+            onChange={this.onActivityChanged}
+          />
+          <InlineFormLabel width={5}>Data</InlineFormLabel>
+          <Select
+            isSearchable={false}
+            width={16}
+            value={this.getSelectedActivityData()}
+            options={stravaActivityDataOptions}
+            onChange={this.onActivityDataChanged}
+          />
+          {query.activityData === StravaActivityData.Graph && (
+            <>
+              <InlineFormLabel width={5}>Graph</InlineFormLabel>
+              <Select
+                isSearchable={false}
+                width={16}
+                value={this.getSelectedActivityGraph()}
+                options={stravaActivityGraphOptions}
+                onChange={this.onActivityGraphChanged}
+              />
+            </>
+          )}
+          {query.activityData === StravaActivityData.Splits && (
+            <>
+              <InlineFormLabel width={5}>Split</InlineFormLabel>
+              <Select
+                isSearchable={false}
+                width={16}
+                value={this.getSelectedActivitySplit()}
+                options={stravaActivitySplitOptions}
+                onChange={this.onActivitySplitChanged}
+              />
+            </>
+          )}
+          <InlineFormLabel width={5}>Fit to range</InlineFormLabel>
+          <InlineSwitch css="" value={query.fitToTimeRange || false} onChange={this.onFitToRangeChanged}></InlineSwitch>
+          <div className="gf-form gf-form--grow">
+            <div className="gf-form-label gf-form-label--grow" />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  render() {
+    const { athlete } = this.state;
+    const queryType = this.getSelectedQueryType();
+
+    return (
+      <>
+        <div className="gf-form-inline">
+          <AthleteLabel athlete={athlete} />
+          <InlineFormLabel width={5}>Query</InlineFormLabel>
+          <Select
+            isSearchable={false}
+            width={16}
+            value={this.getSelectedQueryType()}
+            options={stravaQueryTypeOptions}
+            onChange={this.onQueryTypeChanged}
+          />
+          <InlineFormLabel width={8}>Activity type</InlineFormLabel>
+          <Select
+            isSearchable={false}
+            width={16}
+            value={this.getSelectedActivityType()}
+            options={stravaActivityTypeOptions}
+            onChange={this.onActivityTypeChanged}
+          />
+          <div className="gf-form gf-form--grow">
+            <div className="gf-form-label gf-form-label--grow" />
+          </div>
+        </div>
+        {queryType?.value === StravaQueryType.Activities && this.renderActivitiesEditor()}
+        {queryType?.value === StravaQueryType.Activity && this.renderActivityEditor()}
       </>
     );
   }

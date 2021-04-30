@@ -48,7 +48,7 @@ jobs:
       - save_cache:
           key: dependency-cache-{{ checksum "yarn.lock" }}
           paths:
-          - ./node_modules
+            - ./node_modules
       - restore_cache:
           keys:
             - go-vendor-cache-{{ checksum "go.sum" }}
@@ -59,7 +59,7 @@ jobs:
       - save_cache:
           key: go-vendor-cache-{{ checksum "go.sum" }}
           paths:
-          - ./vendor
+            - ./vendor
       - persist_to_workspace:
           root: .
           paths:
@@ -81,7 +81,7 @@ jobs:
       - save_cache:
           key: dependency-cache-{{ checksum "yarn.lock" }}
           paths:
-          - ./node_modules
+            - ./node_modules
       - run: make build-frontend
 
   build-backend:
@@ -108,7 +108,7 @@ jobs:
   lint-backend:
     working_directory: ~/grafana-strava-datasource
     docker:
-    - image: circleci/golang:1.13.7
+      - image: circleci/golang:1.13.7
     environment:
       GOPATH: /go
     steps:
@@ -123,7 +123,7 @@ jobs:
       - save_cache:
           key: go-vendor-cache-{{ checksum "go.sum" }}
           paths:
-          - ./vendor
+            - ./vendor
       - run: make lint-backend
 
   test:
@@ -142,7 +142,7 @@ jobs:
       - save_cache:
           key: dependency-cache-{{ checksum "yarn.lock" }}
           paths:
-          - ./node_modules
+            - ./node_modules
       - run:
           name: Test
           command: yarn test
@@ -210,7 +210,7 @@ jobs:
           at: .
       - run: ls -lha
       - run:
-          name: "Copy Artifacts to GCP Release Bucket"
+          name: 'Copy Artifacts to GCP Release Bucket'
           command: |
             apt update
             apt install -y jq git-lfs

@@ -32,4 +32,3 @@ Included dashboard "Strava Athlete Dashboad Modern" depends on Grafana's native 
 ```sh
 export GF_PLUGINS_ENABLE_ALPHA=true
 ```
-
