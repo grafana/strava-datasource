@@ -87,11 +87,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "rgb(13, 53, 116)",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["rgb(13, 53, 116)", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": "${DS_STRAVA}",
       "format": "dtdurations",
       "gauge": {
@@ -175,11 +171,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#1F60C4",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#1F60C4", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": "${DS_STRAVA}",
       "format": "lengthm",
       "gauge": {
@@ -261,11 +253,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#C4162A",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#C4162A", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": "${DS_STRAVA}",
       "format": "lengthm",
       "gauge": {
@@ -498,50 +486,32 @@
         {
           "alias": "",
           "colorMode": null,
-          "colors": [
-            "#56A64B",
-            "#FA6400",
-            "#C4162A"
-          ],
+          "colors": ["#56A64B", "#FA6400", "#C4162A"],
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "decimals": 1,
           "link": false,
           "mappingType": 1,
           "pattern": "distance",
-          "thresholds": [
-            "30000",
-            "50000"
-          ],
+          "thresholds": ["30000", "50000"],
           "type": "number",
           "unit": "short"
         },
         {
           "alias": "",
           "colorMode": null,
-          "colors": [
-            "#56A64B",
-            "#FA6400",
-            "#C4162A"
-          ],
+          "colors": ["#56A64B", "#FA6400", "#C4162A"],
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "decimals": 2,
           "mappingType": 1,
           "pattern": "moving_time",
-          "thresholds": [
-            "3600",
-            "10800"
-          ],
+          "thresholds": ["3600", "10800"],
           "type": "number",
           "unit": "short"
         },
         {
           "alias": "",
           "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
+          "colors": ["rgba(245, 54, 54, 0.9)", "rgba(237, 129, 40, 0.89)", "rgba(50, 172, 45, 0.97)"],
           "decimals": 2,
           "pattern": "/.*/",
           "thresholds": [],
@@ -671,9 +641,7 @@
   "refresh": false,
   "schemaVersion": 21,
   "style": "dark",
-  "tags": [
-    "strava"
-  ],
+  "tags": ["strava"],
   "templating": {
     "list": []
   },
@@ -682,18 +650,7 @@
     "to": "now"
   },
   "timepicker": {
-    "refresh_intervals": [
-      "5s",
-      "10s",
-      "30s",
-      "1m",
-      "5m",
-      "15m",
-      "30m",
-      "1h",
-      "2h",
-      "1d"
-    ]
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
   },
   "timezone": "",
   "title": "Strava Athlete Dashboard",

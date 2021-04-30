@@ -165,7 +165,7 @@ export default class StravaApi {
  * with same params when waiting for result.
  */
 function callOnce(func: any, promiseKeeper: any, funcScope: any): (...args: any[]) => any {
-  return function() {
+  return function () {
     var hash = getRequestHash(arguments);
     if (!promiseKeeper[hash]) {
       promiseKeeper[hash] = Promise.resolve(

@@ -45,7 +45,7 @@ export function smoothVelocityData(data: number[]): number[] {
   for (let i = n; i < data.length; i++) {
     w_sum = 0;
     for (let j = 0; j < n; j++) {
-      w_sum += data[i-j];
+      w_sum += data[i - j];
     }
     sma.push(w_sum / n);
   }

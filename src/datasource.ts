@@ -61,7 +61,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     const data: any[] = [];
     let activities = [];
 
-    let queryActivities = options.targets.some(t => t.queryType === StravaQueryType.Activities);
+    let queryActivities = options.targets.some((t) => t.queryType === StravaQueryType.Activities);
 
     if (queryActivities) {
       activities = await this.stravaApi.getActivities({
@@ -132,18 +132,18 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       name: TIME_SERIES_TIME_FIELD_NAME,
       type: FieldType.time,
       config: {
-        custom: {}
+        custom: {},
       },
-      values: new ArrayVector()
+      values: new ArrayVector(),
     };
 
     const valueFiled: MutableField<number> = {
       name: activityStream,
       type: FieldType.number,
       config: {
-        custom: {}
+        custom: {},
       },
-      values: new ArrayVector()
+      values: new ArrayVector(),
     };
 
     const frame = new MutableDataFrame({
@@ -163,8 +163,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
 
     let streamValues: number[] = [];
-    for(let i = 0; i < stream.data.length; i++) {
-      timeFiled.values.add(ts * 1000)
+    for (let i = 0; i < stream.data.length; i++) {
+      timeFiled.values.add(ts * 1000);
       streamValues.push(stream.data[i]);
       ts++;
     }
@@ -182,12 +182,13 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
 
     // Smooth data
-    if (activityStream === StravaActivityStream.Velocity
-      || activityStream === StravaActivityStream.HeartRate
-      || activityStream === StravaActivityStream.GradeSmooth
-      || activityStream === StravaActivityStream.WattsCalc
-      || activityStream === StravaActivityStream.Watts
-      ) {
+    if (
+      activityStream === StravaActivityStream.Velocity ||
+      activityStream === StravaActivityStream.HeartRate ||
+      activityStream === StravaActivityStream.GradeSmooth ||
+      activityStream === StravaActivityStream.WattsCalc ||
+      activityStream === StravaActivityStream.Watts
+    ) {
       streamValues = smoothVelocityData(streamValues);
     }
 
@@ -203,20 +204,20 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       name: TIME_SERIES_TIME_FIELD_NAME,
       type: FieldType.time,
       config: {
-        custom: {}
+        custom: {},
       },
-      values: new ArrayVector()
+      values: new ArrayVector(),
     };
 
-    const splitStat =target.splitStat || '';
+    const splitStat = target.splitStat || '';
 
     const valueFiled: MutableField<number> = {
       name: splitStat || TIME_SERIES_VALUE_FIELD_NAME,
       type: FieldType.number,
       config: {
-        custom: {}
+        custom: {},
       },
-      values: new ArrayVector()
+      values: new ArrayVector(),
     };
 
     const frame = new MutableDataFrame({
@@ -231,7 +232,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
 
     const splits: any[] = activity.splits_metric;
-    for(let i = 0; i < splits.length; i++) {
+    for (let i = 0; i < splits.length; i++) {
       const split = splits[i];
       timeFiled.values.add(ts * 1000);
       let value = split[splitStat];
@@ -280,7 +281,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       return activities;
     }
 
-    return activities.filter(activity => {
+    return activities.filter((activity) => {
       if (activityType === 'Other') {
         return activity.type !== 'Run' && activity.type !== 'Ride';
       } else {
