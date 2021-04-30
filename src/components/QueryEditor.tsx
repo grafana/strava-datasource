@@ -166,11 +166,13 @@ export class QueryEditor extends PureComponent<Props, State> {
       description: `${dateTime(a.start_date_local).format(ACTIVITY_DATE_FORMAT)} (${a.type})`,
     }));
 
-    const variables: Array<SelectableValue> = getTemplateSrv().getVariables().map(v => ({
-      value: `$${v.name}`,
-      label: `$${v.name}`,
-      description: 'Variable'
-    }));
+    const variables: SelectableValue[] = getTemplateSrv()
+      .getVariables()
+      .map((v) => ({
+        value: `$${v.name}`,
+        label: `$${v.name}`,
+        description: 'Variable',
+      }));
     options = variables.concat(options);
 
     return options;
