@@ -4,6 +4,12 @@ export interface StravaJsonData extends DataSourceJsonData {
   clientID: string;
 }
 
+export interface StravaAthlete {
+  profile_medium: string;
+  firstname: string;
+  lastname: string;
+}
+
 export interface StravaSecureJsonData {
   clientSecret: string;
   authCode: string;
@@ -49,6 +55,7 @@ export enum StravaActivityStat {
   ElapsedTime = 'elapsed_time',
   ElevationGain = 'total_elevation_gain',
   AveragePower = 'average_watts',
+  AverageHeartRate = 'average_heartrate',
 }
 
 export type StravaActivityType = string | null;

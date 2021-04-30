@@ -12,6 +12,7 @@ import {
   StravaActivityStream,
   StravaActivityData,
   StravaSplitStat,
+  StravaAthlete,
 } from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
@@ -37,6 +38,7 @@ const stravaActivityStatOptions: Array<SelectableValue<StravaActivityStat>> = [
   { value: StravaActivityStat.MovingTime, label: 'Moving Time' },
   { value: StravaActivityStat.ElevationGain, label: 'Elevation Gain' },
   { value: StravaActivityStat.AveragePower, label: 'Average Power' },
+  { value: StravaActivityStat.AverageHeartRate, label: 'Average Heart Rate' },
 ];
 
 const stravaActivityTypeOptions: Array<SelectableValue<StravaActivityType>> = [
@@ -89,7 +91,7 @@ const INTERVAL_OPTIONS: Array<SelectableValue<StravaQueryInterval>> = [
 
 export const DefaultTarget: State = {
   refId: '',
-  athlete: {},
+  athlete: {} as StravaAthlete,
   queryType: StravaQueryType.Activities,
   activityType: null,
   activitiesOptions: [],
@@ -103,7 +105,7 @@ export const DefaultTarget: State = {
 export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
 
 interface State extends StravaQuery {
-  athlete: any;
+  athlete: StravaAthlete;
   selectedActivity?: SelectableValue<number>;
   activitiesOptions: SelectableValue<number>[];
 }
