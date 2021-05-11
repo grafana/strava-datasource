@@ -15,8 +15,6 @@ import {
   MutableDataFrame,
   TIME_SERIES_VALUE_FIELD_NAME,
   MetricFindValue,
-  DataLinkClickEvent,
-  ValueLinkConfig,
 } from '@grafana/data';
 import StravaApi from './stravaApi';
 import polyline from './polyline';
