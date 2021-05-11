@@ -15,6 +15,8 @@ import {
   MutableDataFrame,
   TIME_SERIES_VALUE_FIELD_NAME,
   MetricFindValue,
+  DataLinkClickEvent,
+  ValueLinkConfig,
 } from '@grafana/data';
 import StravaApi from './stravaApi';
 import polyline from './polyline';
@@ -331,32 +333,18 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   transformActivitiesToTable(data: any[], target: StravaQuery) {
-    const table: TableData = {
-      type: 'table',
-      columns: [
-        { text: 'Time' },
-        { text: 'name' },
-        { text: 'distance', unit: 'lengthm' },
-        { text: 'moving_time', unit: 's' },
-        { text: 'elapsed_time', unit: 's' },
-        { text: 'total_elevation_gain', unit: 'lengthm' },
-        { text: 'type' },
-        { text: 'kilojoules', unit: 'joule' },
-      ],
-      rows: [],
-    };
-
     const frame = new MutableDataFrame({
       refId: target.refId,
       fields: [
         { name: 'time', type: FieldType.time },
         { name: 'name', type: FieldType.string },
-        { name: 'distance', type: FieldType.number, config: { unit: 'lengthm' } },
+        { name: 'distance', type: FieldType.number, config: { unit: 'lengthm' }, },
         { name: 'moving_time', type: FieldType.number, config: { unit: 's' } },
         { name: 'elapsed_time', type: FieldType.number, config: { unit: 's' } },
         { name: 'total_elevation_gain', type: FieldType.number, config: { unit: 'lengthm' } },
         { name: 'kilojoules', type: FieldType.number, config: { unit: 'joule' } },
         { name: 'type', type: FieldType.string },
+        { name: 'id', type: FieldType.string, config: { custom: { hidden: true } } },
       ],
     });
 
@@ -371,6 +359,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         total_elevation_gain: activity.total_elevation_gain,
         kilojoules: activity.kilojoules,
         type: activity.type,
+        id: activity.id,
       });
     }
     return frame;
