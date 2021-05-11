@@ -342,7 +342,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         { name: 'total_elevation_gain', type: FieldType.number, config: { unit: 'lengthm' } },
         { name: 'kilojoules', type: FieldType.number, config: { unit: 'joule' } },
         { name: 'type', type: FieldType.string },
-        { name: 'id', type: FieldType.string, config: { custom: { hidden: true } } },
+        { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
       ],
     });
 
