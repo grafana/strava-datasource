@@ -49,6 +49,11 @@
       "type": "dashboard",
       "name": "Strava Datasource",
       "path": "dashboards/strava_datasource.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Strava Activity Analysis",
+      "path": "dashboards/strava_activity_analysis.json"
     }
   ],
 
