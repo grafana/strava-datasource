@@ -336,7 +336,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       fields: [
         { name: 'time', type: FieldType.time },
         { name: 'name', type: FieldType.string },
-        { name: 'distance', type: FieldType.number, config: { unit: 'lengthm' }, },
+        { name: 'distance', type: FieldType.number, config: { unit: 'lengthm' } },
         { name: 'moving_time', type: FieldType.number, config: { unit: 's' } },
         { name: 'elapsed_time', type: FieldType.number, config: { unit: 's' } },
         { name: 'total_elevation_gain', type: FieldType.number, config: { unit: 'lengthm' } },
