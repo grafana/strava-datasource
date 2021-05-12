@@ -50,13 +50,13 @@ export class StravaVariableQueryEditor extends PureComponent<VariableQueryProps,
   onLimitStateChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
     const limit = Number(e.currentTarget.value || '');
     this.setState({ limit });
-  }
+  };
 
   onLimitChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
     const limit = Number(e.currentTarget.value || '');
     const queryModel: VariableQuery = { ...this.props.query, limit };
     this.props.onChange(queryModel, `Strava - ${this.props.query.queryType}`);
-  }
+  };
 
   render() {
     const { query } = this.props;
@@ -81,7 +81,7 @@ export class StravaVariableQueryEditor extends PureComponent<VariableQueryProps,
               </InlineField>
               <InlineField label="Limit" labelWidth={10} tooltip="API query limit. Set to 0 for no limit.">
                 <Input
-                  type='number'
+                  type="number"
                   value={limit}
                   onChange={this.onLimitStateChange}
                   onBlur={this.onLimitChange}
