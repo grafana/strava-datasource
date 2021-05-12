@@ -14,7 +14,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.5.0-pre"
+      "version": "7.5.0"
     },
     {
       "type": "datasource",
@@ -25,7 +25,7 @@
     {
       "type": "panel",
       "id": "graph",
-      "name": "Graph (old)",
+      "name": "Graph",
       "version": ""
     }
   ],
@@ -46,7 +46,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1620756307542,
+  "iteration": 1620799866184,
   "links": [],
   "panels": [
     {
@@ -90,7 +90,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -209,7 +209,7 @@
         "alertThreshold": false
       },
       "percentage": false,
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -328,7 +328,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -449,7 +449,7 @@
         "alertThreshold": false
       },
       "percentage": false,
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -567,7 +567,7 @@
         "alertThreshold": false
       },
       "percentage": false,
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -686,7 +686,7 @@
         "alertThreshold": false
       },
       "percentage": false,
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -766,7 +766,7 @@
     }
   ],
   "refresh": false,
-  "schemaVersion": 29,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -793,6 +793,7 @@
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
+        "tags": [],
         "tagsQuery": "",
         "type": "query",
         "useTags": false
@@ -807,5 +808,5 @@
   "timezone": "",
   "title": "Strava Activity Analysis",
   "uid": "StravaActivityAnalysis-v1",
-  "version": 1
+  "version": 2
 }
