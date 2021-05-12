@@ -91,6 +91,7 @@ export enum StravaActivityStream {
 export interface VariableQuery {
   queryType: VariableQueryTypes;
   activityType: string;
+  limit: number;
 }
 
 export enum VariableQueryTypes {

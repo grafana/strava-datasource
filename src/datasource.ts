@@ -43,6 +43,8 @@ const DEFAULT_RANGE = {
   },
 };
 
+export const DEFAULT_LIMIT = 100;
+
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
   datasourceId: number;
@@ -254,7 +256,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   async metricFindQuery(query: VariableQuery, options?: any): Promise<MetricFindValue[]> {
-    let activities = await this.stravaApi.getActivities({ limit: 100 });
+    const limit = query.limit || DEFAULT_LIMIT;
+    let activities = await this.stravaApi.getActivities({ limit });
     activities = this.filterActivities(activities, query.activityType);
     const variableOptions: MetricFindValue[] = activities.map((a) => ({
       value: a.id,
