@@ -14,7 +14,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.5.0-pre"
+      "version": "7.5.0"
     },
     {
       "type": "datasource",
@@ -25,7 +25,7 @@
     {
       "type": "panel",
       "id": "graph",
-      "name": "Graph (old)",
+      "name": "Graph",
       "version": ""
     },
     {
@@ -68,6 +68,10 @@
   "panels": [
     {
       "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 2,
         "w": 24,
@@ -79,7 +83,7 @@
         "content": "# Monthly Summary",
         "mode": "markdown"
       },
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "timeFrom": null,
       "timeShift": null,
       "type": "text"
@@ -137,7 +141,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "targets": [
         {
           "activityStat": "moving_time",
@@ -206,11 +210,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "targets": [
         {
           "activityStat": "distance",
           "activityType": null,
+          "format": "time_series",
+          "interval": "no",
           "queryType": "Activities",
           "refId": "A"
         }
@@ -273,11 +279,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "targets": [
         {
           "activityStat": "moving_time",
           "activityType": null,
+          "format": "time_series",
+          "interval": "no",
           "queryType": "Activities",
           "refId": "A"
         }
@@ -339,11 +347,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "targets": [
         {
           "activityStat": "total_elevation_gain",
           "activityType": null,
+          "format": "time_series",
+          "interval": "no",
           "queryType": "Activities",
           "refId": "A"
         }
@@ -354,6 +364,10 @@
     },
     {
       "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 2,
         "w": 24,
@@ -365,7 +379,7 @@
         "content": "# Year Summary\n\n\n",
         "mode": "markdown"
       },
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "timeFrom": null,
       "timeShift": null,
       "type": "text"
@@ -414,7 +428,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -427,6 +441,7 @@
           "activityStat": "moving_time",
           "activityType": "Run",
           "format": "time_series",
+          "interval": "auto",
           "queryType": "Activities",
           "refId": "A"
         },
@@ -434,6 +449,7 @@
           "activityStat": "moving_time",
           "activityType": "Ride",
           "format": "time_series",
+          "interval": "auto",
           "queryType": "Activities",
           "refId": "B"
         },
@@ -441,6 +457,7 @@
           "activityStat": "moving_time",
           "activityType": "Other",
           "format": "time_series",
+          "interval": "auto",
           "queryType": "Activities",
           "refId": "C"
         }
@@ -496,7 +513,8 @@
           },
           "custom": {
             "align": null,
-            "displayMode": "auto"
+            "displayMode": "auto",
+            "filterable": false
           },
           "decimals": 1,
           "displayName": "",
@@ -534,11 +552,13 @@
       "options": {
         "showHeader": true
       },
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "targets": [
         {
           "activityStat": "distance",
+          "activityType": null,
           "format": "table",
+          "interval": "no",
           "queryType": "Activities",
           "refId": "A"
         }
@@ -589,7 +609,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.0-pre",
+      "pluginVersion": "7.5.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -608,13 +628,17 @@
       "targets": [
         {
           "activityStat": "distance",
+          "activityType": null,
           "format": "time_series",
+          "interval": "auto",
           "queryType": "Activities",
           "refId": "A"
         },
         {
           "activityStat": "total_elevation_gain",
+          "activityType": null,
           "format": "time_series",
+          "interval": "auto",
           "queryType": "Activities",
           "refId": "B"
         }
@@ -662,7 +686,7 @@
     }
   ],
   "refresh": false,
-  "schemaVersion": 29,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [
     "strava"
