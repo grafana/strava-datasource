@@ -1,0 +1,44 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "grafana",
+  "signedByOrg": "grafana",
+  "signedByOrgName": "Grafana Labs",
+  "plugin": "grafana-strava-datasource",
+  "version": "1.3.0",
+  "time": 1620905618201,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "strava-plugin_linux_arm": "ef1982fc2a62182a5081c4493c8539b3bc6259f74a8e25644473b9af0e326818",
+    "img/strava_logo.svg": "29170f691955a5f4cc551a6508f1f732bed397dc34c525e13390fd468e2b4ee0",
+    "img/btn_strava_connectwith_orange.svg": "ff4134491d115b57a56fb2e3ccb3e0d7c212ea8872e57e8c221f12649299289b",
+    "dashboards/strava_activity_analysis.json": "05096d14760ecbe5ec1d8bdd216abdc2331b175c09b5c848835eb0b372226300",
+    "dashboards/strava_athlete_dashboard_modern.json": "90cb90503a81c54bb85fee2cd465fd015c999d4c75ece380d5eda16372658aa5",
+    "dashboards/strava_athlete_dashboard.json": "8ddadf23dfffb8b12ae39b33220a53652e8ec486284472bd325386ad98df32e3",
+    "dashboards/strava_datasource.json": "b4fe622980080496d52f74952ba8af4009d4046e7d4d321f35e59e4eca9e9aa6",
+    "strava-plugin_linux_amd64": "0c9558d0883f591bbd1397db79dd2b43881cada241aef44340f5e9da1c0cea13",
+    "strava-plugin_windows_amd64.exe": "8639807c7cc4cb0f732675baa3e471b11a040fbb485812868c31f51cd583be15",
+    "strava-plugin_linux_arm64": "43dcfe8e21644575402cd031c575a85fd7d1ec1f502a87ceff79350532040833",
+    "strava-plugin_darwin_amd64": "9b73fb64ff01044885842e0c315bce77d450d6e0e4428117cf48f93759930a9d",
+    "module.js": "8eec952ce6f29ff91101e9712ad5df9c05ae763ea1219b674bc07f79b7f2dc96",
+    "module.js.LICENSE.txt": "0d8f66cd4afb566cb5b7e1540c68f43b939d3eba12ace290f18abc4f4cb53ed0",
+    "module.js.map": "a3cc60f2d2d0a79c10c9bef71f4d60e489f2311436684e692f85f8349ce35a17",
+    "README.md": "fd8f50b140c4ced8dee02a9e2797b8021ae3dd570a3966a7ea4aa3eac141c64f",
+    "LICENSE": "0d8c4b0c61a3e7380ef52299a88ae6a59e661b6bd8cb55b504f3bec387a6962c",
+    "plugin.json": "eaa4733ba969dd9da19fbbbb51d1d575c28fb623387624de75abcb5ebe0c1306",
+    "CHANGELOG.md": "eb4fc9ca107babc9712af75d9ada94c92fd837422fecb7784e90aedfbf705ddf"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.1
+Comment: https://openpgpjs.org
+
+wqAEARMKAAYFAmCdDpIACgkQfk0ManCIZudOxwII+KBdvR/efwn9m+huq0LO
+FlSuNVM0PHlTY4G0v3OewKuZrbgcDYK+Ci6+WkcO+0kJ0jb/8jO50cW77irx
+lp2RaOMCBiADW4IVNjV+mQKv8RkmrwWSwthzabG1NTko69pQw55Q97pWp2ur
+tcabV+z5OaPan3ay+vfUrMvfBVPBzveME1dF
+=T8fF
+-----END PGP SIGNATURE-----
