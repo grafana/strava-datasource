@@ -264,15 +264,12 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     const frame = new MutableDataFrame({
       name: activity.name,
       refId: target.refId,
-      fields: [
-        { name: 'time', type: FieldType.time },
-        { name: stats }
-      ],
+      fields: [{ name: 'time', type: FieldType.time }, { name: stats }],
     });
 
     frame.add({
       time: dateTime(activity.start_date),
-      [stats]: activity[stats]
+      [stats]: activity[stats],
     });
 
     return frame;
