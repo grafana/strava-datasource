@@ -30,8 +30,8 @@
         "url": "https://grafana.com/plugins/grafana-strava-datasource/license"
       }
     ],
-    "version": "1.2.0",
-    "updated": "2020-10-14"
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
   },
 
   "includes": [
