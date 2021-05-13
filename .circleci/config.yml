@@ -270,6 +270,7 @@ jobs:
           name: Copy package
           command: |
             mkdir -p tmp/packages/any
+            cp ci/packages/info.json ci/packages/info-any.json
             mv ci/packages/* tmp/packages/any
             mv tmp/packages/any ci/packages
       - persist_to_workspace:
