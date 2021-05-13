@@ -269,8 +269,22 @@ jobs:
       - run:
           name: Copy package
           command: |
-            mkdir -p tmp/packages/any
+            PLUGIN_NAME=`cat ci/dist/plugin.json|jq '.id'| sed s/\"//g`
+            VERSION=`cat ci/dist/plugin.json|jq '.info.version'| sed s/\"//g`
+            echo "Plugin Name: ${PLUGIN_NAME}"
+            echo "Plugin Version: ${VERSION}"
+            # 1. rename to any package
+            #
+            mv ci/packages/${PLUGIN_NAME}-${VERSION}.zip \
+              ci/packages/${PLUGIN_NAME}-${VERSION}.any.zip
+            mv ci/packages/${PLUGIN_NAME}-${VERSION}.zip.sha1 \
+              ci/packages/${PLUGIN_NAME}-${VERSION}.any.zip.sha1
+            #
+            # update info.json with new zip file name
+            #
+            sed -i 's/zip/any\.zip/g' ci/packages/info.json
             cp ci/packages/info.json ci/packages/info-any.json
+            mkdir -p tmp/packages/any
             mv ci/packages/* tmp/packages/any
             mv tmp/packages/any ci/packages
       - persist_to_workspace:
