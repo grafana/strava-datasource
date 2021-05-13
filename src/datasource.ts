@@ -340,28 +340,38 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         { name: 'time', type: FieldType.time },
         { name: 'name', type: FieldType.string },
         { name: 'distance', type: FieldType.number, config: { unit: 'lengthm' } },
-        { name: 'moving_time', type: FieldType.number, config: { unit: 's' } },
-        { name: 'elapsed_time', type: FieldType.number, config: { unit: 's' } },
-        { name: 'total_elevation_gain', type: FieldType.number, config: { unit: 'lengthm' } },
+        { name: 'moving time', type: FieldType.number, config: { unit: 's' } },
+        { name: 'elapsed time', type: FieldType.number, config: { unit: 's' } },
+        { name: 'heart rate', type: FieldType.number, config: { unit: 'none', decimals: 0 } },
+        { name: 'elevation gain', type: FieldType.number, config: { unit: 'lengthm' } },
         { name: 'kilojoules', type: FieldType.number, config: { unit: 'joule' } },
         { name: 'type', type: FieldType.string },
         { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
       ],
     });
 
+    target.extendedStats?.forEach((stat) => {
+      frame.addField({ name: stat });
+    });
+
     for (let i = 0; i < data.length; i++) {
       const activity = data[i];
-      frame.add({
+      const dataRow: any = {
         time: dateTime(activity.start_date),
         name: activity.name,
         distance: activity.distance,
-        moving_time: activity.moving_time,
-        elapsed_time: activity.elapsed_time,
-        total_elevation_gain: activity.total_elevation_gain,
+        'moving time': activity.moving_time,
+        'elapsed time': activity.elapsed_time,
+        'heart rate': activity.average_heartrate,
+        'elevation gain': activity.total_elevation_gain,
         kilojoules: activity.kilojoules,
         type: activity.type,
         id: activity.id,
+      };
+      target.extendedStats?.forEach((stat) => {
+        dataRow[stat] = activity[stat];
       });
+      frame.add(dataRow);
     }
     return frame;
   }

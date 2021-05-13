@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { SelectableValue, QueryEditorProps, dateTime } from '@grafana/data';
-import { InlineFormLabel, InlineSwitch, Select } from '@grafana/ui';
+import { InlineField, InlineFormLabel, InlineSwitch, MultiSelect, Select } from '@grafana/ui';
 import {
   StravaQuery,
   StravaQueryType,
@@ -90,6 +90,33 @@ const INTERVAL_OPTIONS: Array<SelectableValue<StravaQueryInterval>> = [
   { label: 'Month', value: StravaQueryInterval.Month },
 ];
 
+const extendedStatsOptions: Array<SelectableValue<string>> = [
+  { label: 'achievement_count', value: 'achievement_count' },
+  { label: 'average_speed', value: 'average_speed' },
+  { label: 'average_watts', value: 'average_watts' },
+  { label: 'comment_count', value: 'comment_count' },
+  { label: 'commute', value: 'commute' },
+  { label: 'device_watts', value: 'device_watts' },
+  { label: 'elev_high', value: 'elev_high' },
+  { label: 'elev_low', value: 'elev_low' },
+  { label: 'gear_id', value: 'gear_id' },
+  { label: 'has_kudoed', value: 'has_kudoed' },
+  { label: 'kudos_count', value: 'kudos_count' },
+  { label: 'location_city', value: 'location_city' },
+  { label: 'location_country', value: 'location_country' },
+  { label: 'location_state', value: 'location_state' },
+  { label: 'manual', value: 'manual' },
+  { label: 'max_heartrate', value: 'max_heartrate' },
+  { label: 'max_speed', value: 'max_speed' },
+  { label: 'pr_count', value: 'pr_count' },
+  { label: 'start_date', value: 'start_date' },
+  { label: 'start_date_local', value: 'start_date_local' },
+  { label: 'start_latitude', value: 'start_latitude' },
+  { label: 'start_longitude', value: 'start_longitude' },
+  { label: 'trainer', value: 'trainer' },
+  { label: 'workout_type', value: 'workout_type' },
+];
+
 export const DefaultTarget: State = {
   refId: '',
   athlete: {} as StravaAthlete,
@@ -101,6 +128,7 @@ export const DefaultTarget: State = {
   interval: StravaQueryInterval.Auto,
   activityData: StravaActivityData.Graph,
   activityGraph: StravaActivityStream.HeartRate,
+  extendedStats: [],
 };
 
 export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
@@ -249,6 +277,16 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
   };
 
+  onExtendedStatsChanged = (options: Array<SelectableValue<string>>) => {
+    const { query } = this.props;
+    console.log(options);
+    if (options) {
+      const values: string[] = [];
+      options.forEach((option) => option.value && values.push(option.value));
+      this.onChange({ ...query, extendedStats: values });
+    }
+  };
+
   onChange(query: StravaQuery) {
     const { onChange, onRunQuery } = this.props;
     onChange(query);
@@ -256,6 +294,7 @@ export class QueryEditor extends PureComponent<Props, State> {
   }
 
   renderActivitiesEditor() {
+    const { query } = this.props;
     return (
       <>
         <div className="gf-form-inline">
@@ -288,6 +327,23 @@ export class QueryEditor extends PureComponent<Props, State> {
             <div className="gf-form-label gf-form-label--grow" />
           </div>
         </div>
+        {query.format === StravaQueryFormat.Table && (
+          <div className="gf-form-inline">
+            <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
+            <InlineField label="Extended Stats" labelWidth={14}>
+              <MultiSelect
+                isSearchable
+                isClearable
+                value={query.extendedStats}
+                options={extendedStatsOptions}
+                onChange={this.onExtendedStatsChanged}
+              />
+            </InlineField>
+            <div className="gf-form gf-form--grow">
+              <div className="gf-form-label gf-form-label--grow" />
+            </div>
+          </div>
+        )}
       </>
     );
   }
