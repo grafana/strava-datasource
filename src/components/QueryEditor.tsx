@@ -282,7 +282,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     console.log(options);
     if (options) {
       const values: string[] = [];
-      options.forEach(option => option.value && values.push(option.value));
+      options.forEach((option) => option.value && values.push(option.value));
       this.onChange({ ...query, extendedStats: values });
     }
   };
@@ -327,7 +327,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             <div className="gf-form-label gf-form-label--grow" />
           </div>
         </div>
-        {query.format === StravaQueryFormat.Table &&
+        {query.format === StravaQueryFormat.Table && (
           <div className="gf-form-inline">
             <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
             <InlineField label="Extended Stats" labelWidth={14}>
@@ -343,7 +343,7 @@ export class QueryEditor extends PureComponent<Props, State> {
               <div className="gf-form-label gf-form-label--grow" />
             </div>
           </div>
-        }
+        )}
       </>
     );
   }

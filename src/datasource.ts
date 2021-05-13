@@ -337,7 +337,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     const frame = new MutableDataFrame({
       refId: target.refId,
       fields: [
-        { name: 'time', type: FieldType.time, },
+        { name: 'time', type: FieldType.time },
         { name: 'name', type: FieldType.string },
         { name: 'distance', type: FieldType.number, config: { unit: 'lengthm' } },
         { name: 'moving time', type: FieldType.number, config: { unit: 's' } },
@@ -350,7 +350,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       ],
     });
 
-    target.extendedStats?.forEach(stat => {
+    target.extendedStats?.forEach((stat) => {
       frame.addField({ name: stat });
     });
 
@@ -368,7 +368,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         type: activity.type,
         id: activity.id,
       };
-      target.extendedStats?.forEach(stat => {
+      target.extendedStats?.forEach((stat) => {
         dataRow[stat] = activity[stat];
       });
       frame.add(dataRow);
