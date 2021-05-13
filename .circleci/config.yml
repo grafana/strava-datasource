@@ -1,5 +1,10 @@
 version: 2.1
 
+parameters:
+  ssh-fingerprint:
+    type: string
+    default: ${GITHUB_SSH_FINGERPRINT}
+
 aliases:
   # Workflow filters
   - &filter-not-release-or-master
