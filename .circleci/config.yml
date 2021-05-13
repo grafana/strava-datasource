@@ -303,10 +303,17 @@ jobs:
           command: |
             # copy ci artifacts
             mkdir -p artifacts
-            cp ci/packages/linux/* artifacts
-            cp ci/packages/windows/* artifacts
+            if [ -d ci/packages/linux ]; then
+              cp ci/packages/linux/* artifacts
+            fi
+            if [ -d ci/packages/windows ]; then
+              cp ci/packages/windows/* artifacts
+            fi
             if [ -d ci/packages/darwin ]; then
               cp ci/packages/darwin/* artifacts
+            fi
+            if [ -d ci/packages/any ]; then
+              cp ci/packages/any/* artifacts
             fi
             apk add --update --no-cache jq git-lfs
             PLUGIN_NAME=`cat ci/dist/plugin.json|jq '.id'| sed s/\"//g`
