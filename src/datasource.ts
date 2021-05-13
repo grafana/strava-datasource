@@ -350,9 +350,13 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       ],
     });
 
+    target.extendedStats?.forEach(stat => {
+      frame.addField({ name: stat });
+    });
+
     for (let i = 0; i < data.length; i++) {
       const activity = data[i];
-      frame.add({
+      const dataRow: any = {
         time: dateTime(activity.start_date),
         name: activity.name,
         distance: activity.distance,
@@ -363,7 +367,11 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         kilojoules: activity.kilojoules,
         type: activity.type,
         id: activity.id,
+      };
+      target.extendedStats?.forEach(stat => {
+        dataRow[stat] = activity[stat];
       });
+      frame.add(dataRow);
     }
     return frame;
   }

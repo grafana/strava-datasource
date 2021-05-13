@@ -27,6 +27,7 @@ export interface StravaQuery extends DataQuery {
   activityData?: string;
   splitStat?: StravaSplitStat;
   fitToTimeRange?: boolean;
+  extendedStats: string[];
 }
 
 export enum StravaQueryFormat {
