@@ -392,48 +392,41 @@ export class QueryEditor extends PureComponent<Props, State> {
             options={activitiesOptions}
             onChange={this.onActivityChanged}
           />
-          <InlineFormLabel width={5}>Data</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            width={16}
-            value={this.getSelectedActivityData()}
-            options={stravaActivityDataOptions}
-            onChange={this.onActivityDataChanged}
-          />
+          <InlineField label="Data" labelWidth={10}>
+            <Select
+              isSearchable={false}
+              width={16}
+              value={this.getSelectedActivityData()}
+              options={stravaActivityDataOptions}
+              onChange={this.onActivityDataChanged}
+            />
+          </InlineField>
           {query.activityData === StravaActivityData.Graph && (
-            <>
-              <InlineFormLabel width={5}>Graph</InlineFormLabel>
-              <Select
-                isSearchable={false}
-                width={16}
-                value={this.getSelectedActivityGraph()}
-                options={stravaActivityGraphOptions}
-                onChange={this.onActivityGraphChanged}
-              />
-            </>
+            <Select
+              isSearchable={false}
+              width={16}
+              value={this.getSelectedActivityGraph()}
+              options={stravaActivityGraphOptions}
+              onChange={this.onActivityGraphChanged}
+            />
           )}
           {query.activityData === StravaActivityData.Splits && (
-            <>
-              <InlineFormLabel width={5}>Split</InlineFormLabel>
-              <Select
-                isSearchable={false}
-                width={16}
-                value={this.getSelectedActivitySplit()}
-                options={stravaActivitySplitOptions}
-                onChange={this.onActivitySplitChanged}
-              />
-            </>
+            <Select
+              isSearchable={false}
+              width={16}
+              value={this.getSelectedActivitySplit()}
+              options={stravaActivitySplitOptions}
+              onChange={this.onActivitySplitChanged}
+            />
           )}
           {query.activityData === StravaActivityData.Stats && (
-            <InlineField label="Stats" labelWidth={10}>
-              <Select
-                isSearchable={true}
-                width={20}
-                value={this.getSelectedSingleActivityStat()}
-                options={stravaStatsOptions}
-                onChange={this.onSingleActivityStatChanged}
-              />
-            </InlineField>
+            <Select
+              isSearchable={true}
+              width={20}
+              value={this.getSelectedSingleActivityStat()}
+              options={stravaStatsOptions}
+              onChange={this.onSingleActivityStatChanged}
+            />
           )}
           <InlineFormLabel width={5}>Fit to range</InlineFormLabel>
           <InlineSwitch css="" value={query.fitToTimeRange || false} onChange={this.onFitToRangeChanged}></InlineSwitch>
