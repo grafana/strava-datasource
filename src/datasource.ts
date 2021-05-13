@@ -116,6 +116,14 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       include_all_efforts: true,
     });
 
+    if (target.activityData === StravaActivityData.Stats) {
+      return this.queryActivityStats(options, target, activity);
+    }
+
+    if (target.activityData === StravaActivityData.Splits) {
+      return this.queryActivitySplits(options, target, activity);
+    }
+
     let activityStream = target.activityGraph;
     if (activityStream === StravaActivityStream.Pace) {
       activityStream = StravaActivityStream.Velocity;
@@ -123,10 +131,6 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     if (!activityStream) {
       return null;
-    }
-
-    if (target.activityData === StravaActivityData.Splits) {
-      return this.queryActivitySplits(options, target, activity);
     }
 
     const streams = await this.stravaApi.getActivityStreams({
@@ -251,6 +255,22 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     frame.addField(timeFiled);
     frame.addField(valueFiled);
+
+    return frame;
+  }
+
+  queryActivityStats(options: DataQueryRequest<StravaQuery>, target: StravaQuery, activity: any) {
+    const stats = target.singleActivityStat || 'name';
+    const frame = new MutableDataFrame({
+      name: activity.name,
+      refId: target.refId,
+      fields: [{ name: 'time', type: FieldType.time }, { name: stats }],
+    });
+
+    frame.add({
+      time: dateTime(activity.start_date),
+      [stats]: activity[stats],
+    });
 
     return frame;
   }

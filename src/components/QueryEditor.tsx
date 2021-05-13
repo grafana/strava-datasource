@@ -52,6 +52,7 @@ const stravaActivityTypeOptions: Array<SelectableValue<StravaActivityType>> = [
 const stravaActivityDataOptions: Array<SelectableValue<StravaActivityData>> = [
   { value: StravaActivityData.Graph, label: 'Graph' },
   { value: StravaActivityData.Splits, label: 'Splits' },
+  { value: StravaActivityData.Stats, label: 'Stats' },
 ];
 
 const stravaActivityGraphOptions: Array<SelectableValue<StravaActivityStream>> = [
@@ -117,6 +118,21 @@ const extendedStatsOptions: Array<SelectableValue<string>> = [
   { label: 'workout_type', value: 'workout_type' },
 ];
 
+const baseStatsOptions: Array<SelectableValue<string>> = [
+  { label: 'start_date', value: 'start_date' },
+  { label: 'name', value: 'name' },
+  { label: 'distance', value: 'distance' },
+  { label: 'moving_time', value: 'moving_time' },
+  { label: 'elapsed_time', value: 'elapsed_time' },
+  { label: 'average_heartrate', value: 'average_heartrate' },
+  { label: 'total_elevation_gain', value: 'total_elevation_gain' },
+  { label: 'kilojoules', value: 'kilojoules' },
+  { label: 'type', value: 'type' },
+  { label: 'id', value: 'id' },
+];
+
+const stravaStatsOptions = baseStatsOptions.concat(extendedStatsOptions);
+
 export const DefaultTarget: State = {
   refId: '',
   athlete: {} as StravaAthlete,
@@ -129,6 +145,7 @@ export const DefaultTarget: State = {
   activityData: StravaActivityData.Graph,
   activityGraph: StravaActivityStream.HeartRate,
   extendedStats: [],
+  singleActivityStat: '',
 };
 
 export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
@@ -170,6 +187,10 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   getSelectedActivitySplit = () => {
     return stravaActivitySplitOptions.find((v) => v.value === this.props.query.splitStat);
+  };
+
+  getSelectedSingleActivityStat = () => {
+    return stravaStatsOptions.find((v) => v.value === this.props.query.singleActivityStat);
   };
 
   getFormatOption = () => {
@@ -287,6 +308,13 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
   };
 
+  onSingleActivityStatChanged = (option: SelectableValue<string>) => {
+    const { query } = this.props;
+    if (option.value) {
+      this.onChange({ ...query, singleActivityStat: option.value });
+    }
+  };
+
   onChange(query: StravaQuery) {
     const { onChange, onRunQuery } = this.props;
     onChange(query);
@@ -364,37 +392,41 @@ export class QueryEditor extends PureComponent<Props, State> {
             options={activitiesOptions}
             onChange={this.onActivityChanged}
           />
-          <InlineFormLabel width={5}>Data</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            width={16}
-            value={this.getSelectedActivityData()}
-            options={stravaActivityDataOptions}
-            onChange={this.onActivityDataChanged}
-          />
+          <InlineField label="Data" labelWidth={10}>
+            <Select
+              isSearchable={false}
+              width={16}
+              value={this.getSelectedActivityData()}
+              options={stravaActivityDataOptions}
+              onChange={this.onActivityDataChanged}
+            />
+          </InlineField>
           {query.activityData === StravaActivityData.Graph && (
-            <>
-              <InlineFormLabel width={5}>Graph</InlineFormLabel>
-              <Select
-                isSearchable={false}
-                width={16}
-                value={this.getSelectedActivityGraph()}
-                options={stravaActivityGraphOptions}
-                onChange={this.onActivityGraphChanged}
-              />
-            </>
+            <Select
+              isSearchable={false}
+              width={16}
+              value={this.getSelectedActivityGraph()}
+              options={stravaActivityGraphOptions}
+              onChange={this.onActivityGraphChanged}
+            />
           )}
           {query.activityData === StravaActivityData.Splits && (
-            <>
-              <InlineFormLabel width={5}>Split</InlineFormLabel>
-              <Select
-                isSearchable={false}
-                width={16}
-                value={this.getSelectedActivitySplit()}
-                options={stravaActivitySplitOptions}
-                onChange={this.onActivitySplitChanged}
-              />
-            </>
+            <Select
+              isSearchable={false}
+              width={16}
+              value={this.getSelectedActivitySplit()}
+              options={stravaActivitySplitOptions}
+              onChange={this.onActivitySplitChanged}
+            />
+          )}
+          {query.activityData === StravaActivityData.Stats && (
+            <Select
+              isSearchable={true}
+              width={20}
+              value={this.getSelectedSingleActivityStat()}
+              options={stravaStatsOptions}
+              onChange={this.onSingleActivityStatChanged}
+            />
           )}
           <InlineFormLabel width={5}>Fit to range</InlineFormLabel>
           <InlineSwitch css="" value={query.fitToTimeRange || false} onChange={this.onFitToRangeChanged}></InlineSwitch>

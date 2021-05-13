@@ -26,6 +26,7 @@ export interface StravaQuery extends DataQuery {
   activityGraph?: StravaActivityStream;
   activityData?: string;
   splitStat?: StravaSplitStat;
+  singleActivityStat?: string;
   fitToTimeRange?: boolean;
   extendedStats: string[];
 }
@@ -64,6 +65,7 @@ export type StravaActivityType = string | null;
 export enum StravaActivityData {
   Graph = 'graph',
   Splits = 'splits',
+  Stats = 'stats',
 }
 
 export enum StravaSplitStat {
