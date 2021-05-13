@@ -43,6 +43,8 @@ const DEFAULT_RANGE = {
   },
 };
 
+export const DEFAULT_LIMIT = 100;
+
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
   datasourceId: number;
@@ -254,7 +256,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   async metricFindQuery(query: VariableQuery, options?: any): Promise<MetricFindValue[]> {
-    let activities = await this.stravaApi.getActivities({ limit: 100 });
+    const limit = query.limit || DEFAULT_LIMIT;
+    let activities = await this.stravaApi.getActivities({ limit });
     activities = this.filterActivities(activities, query.activityType);
     const variableOptions: MetricFindValue[] = activities.map((a) => ({
       value: a.id,
@@ -331,35 +334,36 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   transformActivitiesToTable(data: any[], target: StravaQuery) {
-    const table: TableData = {
-      type: 'table',
-      columns: [
-        { text: 'Time' },
-        { text: 'name' },
-        { text: 'distance', unit: 'lengthm' },
-        { text: 'moving_time', unit: 's' },
-        { text: 'elapsed_time', unit: 's' },
-        { text: 'total_elevation_gain', unit: 'lengthm' },
-        { text: 'type' },
-        { text: 'kilojoules', unit: 'joule' },
+    const frame = new MutableDataFrame({
+      refId: target.refId,
+      fields: [
+        { name: 'time', type: FieldType.time },
+        { name: 'name', type: FieldType.string },
+        { name: 'distance', type: FieldType.number, config: { unit: 'lengthm' } },
+        { name: 'moving_time', type: FieldType.number, config: { unit: 's' } },
+        { name: 'elapsed_time', type: FieldType.number, config: { unit: 's' } },
+        { name: 'total_elevation_gain', type: FieldType.number, config: { unit: 'lengthm' } },
+        { name: 'kilojoules', type: FieldType.number, config: { unit: 'joule' } },
+        { name: 'type', type: FieldType.string },
+        { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
       ],
-      rows: [],
-    };
+    });
 
-    for (const activity of data) {
-      const row = [
-        dateTime(activity.start_date),
-        activity.name,
-        activity.distance,
-        activity.moving_time,
-        activity.elapsed_time,
-        activity.total_elevation_gain,
-        activity.type,
-        activity.kilojoules,
-      ];
-      table.rows.unshift(row);
+    for (let i = 0; i < data.length; i++) {
+      const activity = data[i];
+      frame.add({
+        time: dateTime(activity.start_date),
+        name: activity.name,
+        distance: activity.distance,
+        moving_time: activity.moving_time,
+        elapsed_time: activity.elapsed_time,
+        total_elevation_gain: activity.total_elevation_gain,
+        kilojoules: activity.kilojoules,
+        type: activity.type,
+        id: activity.id,
+      });
     }
-    return table;
+    return frame;
   }
 
   transformActivitiesToWorldMap(data: any[], target: StravaQuery) {

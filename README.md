@@ -7,14 +7,16 @@ Visualize your sport activity with Grafana.
 Features:
 
 - Query activities stats and present it as a time series data.
-- Table format
-- Show activities over the world with [Worldmap Panel](https://grafana.com/grafana/plugins/grafana-worldmap-panel)
+- Table format.
+- Show activities over the world with [Worldmap Panel](https://grafana.com/grafana/plugins/grafana-worldmap-panel).
+- Visualize and analyze activity data such as heart rate, speed/pace, power, etc.
+- Template variables support.
 
-### Configuration
+## Configuration
 
 See [configuration](https://github.com/grafana/strava-datasource/blob/master/docs/configuration.md) docs.
 
-### Quick start
+## Quick start
 
 Before you start grafana server, configure plugin data directory with `GF_STRAVA_DS_DATA_PATH` environment variable. This required for storing obtained refresh tokens and make it available after plugin restart. Default path is plugin directory, but it will be removed during plugin upgrade, so for persistent storage it's better to use grafana data directory. Example:
 
@@ -27,7 +29,7 @@ When data source is configured, you can import example dashboards from _Dashboar
 
 Unfortunately, Strava API has some limitations and you can query only your own activities. But for multi-user dashboards you can configure multiple data sources and authorize separate user for each of them.
 
-Included dashboard "Strava Athlete Dashboad Modern" depends on Grafana's native text2 panel plugin which is still in alpha state. If you want to enable alpha plugins and avoid seeing an error message in the dashboard, set `GF_PLUGINS_ENABLE_ALPHA` environment variable to true. Example:
+Included dashboard "Strava Athlete Dashboad" depends on Grafana's new version of the text panel plugin which can be in alpha state in older Grafana versions. If you want to enable alpha plugins and avoid seeing an error message in the dashboard, set `GF_PLUGINS_ENABLE_ALPHA` environment variable to true. Example:
 
 ```sh
 export GF_PLUGINS_ENABLE_ALPHA=true
