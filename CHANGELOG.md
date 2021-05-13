@@ -1,5 +1,12 @@
 # Change Log
 
+## [1.3.0] - 2021-05-13
+
+### Added
+
+- Individual activity query. Now it's possible to visualize activity-specific metrics: heart rate graph, speed/pace, splits and many other metrics.
+- Template variables support (fetch list of activities and use activity it as a variable).
+
 ## [1.2.0] - 2020-10-14
 
 ### Added
