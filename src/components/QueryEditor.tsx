@@ -53,6 +53,7 @@ const stravaActivityDataOptions: Array<SelectableValue<StravaActivityData>> = [
   { value: StravaActivityData.Graph, label: 'Graph' },
   { value: StravaActivityData.Splits, label: 'Splits' },
   { value: StravaActivityData.Stats, label: 'Stats' },
+  { value: StravaActivityData.Geomap, label: 'Geomap' },
 ];
 
 const stravaActivityGraphOptions: Array<SelectableValue<StravaActivityStream>> = [

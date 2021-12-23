@@ -117,11 +117,15 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     });
 
     if (target.activityData === StravaActivityData.Stats) {
-      return this.queryActivityStats(options, target, activity);
+      return this.queryActivityStats(activity, target, options);
     }
 
     if (target.activityData === StravaActivityData.Splits) {
-      return this.queryActivitySplits(options, target, activity);
+      return this.queryActivitySplits(activity, target, options);
+    }
+
+    if (target.activityData === StravaActivityData.Geomap) {
+      return this.queryActivityGeomap(activity, target, options);
     }
 
     let activityStream = target.activityGraph;
@@ -209,7 +213,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return frame;
   }
 
-  queryActivitySplits(options: DataQueryRequest<StravaQuery>, target: StravaQuery, activity: any) {
+  queryActivitySplits(activity: any, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
     const timeFiled: MutableField<number> = {
       name: TIME_SERIES_TIME_FIELD_NAME,
       type: FieldType.time,
@@ -259,7 +263,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return frame;
   }
 
-  queryActivityStats(options: DataQueryRequest<StravaQuery>, target: StravaQuery, activity: any) {
+  queryActivityStats(activity: any, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
     const stats = target.singleActivityStat || 'name';
     const frame = new MutableDataFrame({
       name: activity.name,
@@ -271,6 +275,31 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       time: dateTime(activity.start_date),
       [stats]: activity[stats],
     });
+
+    return frame;
+  }
+
+  queryActivityGeomap(activity: any, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
+    const frame = new MutableDataFrame({
+      name: activity.name,
+      refId: target.refId,
+      fields: [
+        { name: 'latitude', type: FieldType.number },
+        { name: 'longitude', type: FieldType.number },
+        { name: 'value', type: FieldType.number }
+      ],
+    });
+
+    const summaryPolyline = activity?.map?.polyline;
+    const points = polyline.decode(summaryPolyline);
+
+    for (let i = 0; i < points.length; i++) {
+      frame.add({
+        latitude: points[i][0],
+        longitude: points[i][1],
+        value: 1,
+      });
+    }
 
     return frame;
   }

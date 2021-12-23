@@ -66,6 +66,7 @@ export enum StravaActivityData {
   Graph = 'graph',
   Splits = 'splits',
   Stats = 'stats',
+  Geomap = 'geomap',
 }
 
 export enum StravaSplitStat {
