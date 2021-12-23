@@ -2,6 +2,12 @@ import { DataQuery, DataSourceJsonData, SelectableValue } from '@grafana/data';
 
 export interface StravaJsonData extends DataSourceJsonData {
   clientID: string;
+  stravaAuthType: StravaAuthType;
+}
+
+export enum StravaAuthType {
+  OAuth = 'oauth',
+  RefreshToken = 'refresh_token',
 }
 
 export interface StravaAthlete {
@@ -13,6 +19,7 @@ export interface StravaAthlete {
 export interface StravaSecureJsonData {
   clientSecret: string;
   authCode: string;
+  refreshToken: string;
 }
 
 export interface StravaQuery extends DataQuery {

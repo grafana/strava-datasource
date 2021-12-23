@@ -75,6 +75,16 @@ export default class StravaApi {
     return await this.tsdbAuthRequest({ authCode });
   }
 
+  async resetAccessToken() {
+    try {
+      const response = await getBackendSrv().get(`/api/datasources/${this.datasourceId}/resources/reset-access-token`);
+      return this.handleTsdbResponse(response);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
   async request(url: string, params?: any) {
     return this.proxyfy(this._request, '_request', this)(url, params);
   }

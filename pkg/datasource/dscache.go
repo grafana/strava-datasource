@@ -49,6 +49,11 @@ func (c *DSCache) Get(request string) (interface{}, bool) {
 	return c.gocache.Get(request)
 }
 
+// Removed item from cache
+func (c *DSCache) Delete(request string) {
+	c.gocache.Delete(request)
+}
+
 func (c *DSCache) Save(request string, response interface{}) error {
 	cacheKey := c.BuildDSCacheKey(request)
 	filename := fmt.Sprintf("%s/%s", c.dataDir, cacheKey)

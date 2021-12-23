@@ -48,6 +48,7 @@ func Init(logger log.Logger, mux *http.ServeMux) *datasource.StravaDatasource {
 	mux.HandleFunc("/", ds.RootHandler)
 	mux.HandleFunc("/auth", ds.StravaAuthHandler)
 	mux.HandleFunc("/strava-api", ds.StravaAPIHandler)
+	mux.HandleFunc("/reset-access-token", ds.ResetAccessTokenHandler)
 
 	return ds
 }

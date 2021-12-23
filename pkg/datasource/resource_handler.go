@@ -57,6 +57,35 @@ func (ds *StravaDatasource) StravaAuthHandler(rw http.ResponseWriter, req *http.
 	writeAuthResponse(rw, result)
 }
 
+func (ds *StravaDatasource) ResetAccessTokenHandler(rw http.ResponseWriter, req *http.Request) {
+	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
+	dsInstance, err := ds.getDSInstance(pluginCxt)
+	if err != nil {
+		ds.logger.Error("Error loading datasource", "error", err)
+		writeError(rw, http.StatusInternalServerError, err)
+		return
+	}
+
+	err = dsInstance.ResetAccessToken()
+	if err != nil {
+		ds.logger.Error("Error reseting access token", "error", err)
+		writeError(rw, http.StatusInternalServerError, err)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["message"] = "Access token removed"
+	var b []byte
+	if b, err = json.Marshal(data); err != nil {
+		rw.WriteHeader(http.StatusOK)
+		return
+	}
+
+	rw.Header().Add("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
+	rw.Write(b)
+}
+
 func (ds *StravaDatasource) StravaAPIHandler(rw http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		return

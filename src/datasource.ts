@@ -30,6 +30,7 @@ import {
   StravaActivityData,
   StravaSplitStat,
   VariableQuery,
+  StravaAuthType,
 } from './types';
 import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToSpeed } from 'utils';
 import { getTemplateSrv } from '@grafana/runtime';
@@ -48,6 +49,7 @@ export const DEFAULT_LIMIT = 100;
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
   datasourceId: number;
+  stravaAuthType: StravaAuthType;
   apiUrl: string;
   stravaApi: StravaApi;
   activities: any[];
@@ -60,6 +62,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     this.apiUrl = instanceSettings.url!;
     this.stravaApi = new StravaApi(this.datasourceId);
     this.activities = [];
+    this.stravaAuthType = instanceSettings.jsonData.stravaAuthType;
   }
 
   async query(options: DataQueryRequest<StravaQuery>) {
@@ -322,21 +325,25 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   async testDatasource() {
-    const authCode = this.getAuthCode();
-    if (authCode) {
-      // Exchange auth code for new refresh token if "Connect with Strava" button clicked
-      try {
-        await this.stravaApi.exchangeToken(authCode);
-      } catch (err) {
-        console.log(err);
+    if (this.stravaAuthType !== StravaAuthType.RefreshToken) {
+      const authCode = this.getAuthCode();
+      if (authCode) {
+        // Exchange auth code for new refresh token if "Connect with Strava" button clicked
+        try {
+          await this.stravaApi.exchangeToken(authCode);
+        } catch (err) {
+          console.log(err);
+        }
       }
     }
 
     try {
+      await this.stravaApi.resetAccessToken();
       await this.stravaApi.getActivities({ per_page: 2, limit: 2 });
       return { status: 'success', message: 'Data source is working' };
-    } catch (err) {
-      return { status: 'error', message: 'Cannot connect to Strava API' };
+    } catch (err: any) {
+      const message = err?.data?.message || '';
+      return { status: 'error', message: `Cannot connect to Strava API${message ? ': ' + message : ''}` };
     }
   }
 

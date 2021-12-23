@@ -1,9 +1,14 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { InlineFormLabel, LegacyForms, Button } from '@grafana/ui';
+import { Button, RadioButtonGroup, InlineField, Input } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
-import { StravaJsonData, StravaSecureJsonData } from '../types';
+import { StravaAuthType, StravaJsonData, StravaSecureJsonData } from '../types';
 
 const AuthCodePattern = /code=([\w]+)/;
+
+const authOptions = [
+  { label: 'OAuth', value: StravaAuthType.OAuth },
+  { label: 'Refresh token', value: StravaAuthType.RefreshToken },
+];
 
 export type Props = DataSourcePluginOptionsEditorProps<StravaJsonData>;
 
@@ -46,6 +51,10 @@ export class ConfigEditor extends PureComponent<Props, State> {
       options.secureJsonFields = {};
     }
 
+    if (!options.jsonData.stravaAuthType) {
+      options.jsonData.stravaAuthType = StravaAuthType.OAuth;
+    }
+
     return options;
   };
 
@@ -67,16 +76,6 @@ export class ConfigEditor extends PureComponent<Props, State> {
     });
   };
 
-  onResetAccessToken = () => {
-    this.updateDatasource({
-      ...this.state.config,
-      secureJsonFields: {
-        ...this.state.config.secureJsonFields,
-        accessToken: false,
-      },
-    });
-  };
-
   onResetClientSecret = () => {
     this.updateDatasource({
       ...this.state.config,
@@ -87,12 +86,12 @@ export class ConfigEditor extends PureComponent<Props, State> {
     });
   };
 
-  onResetAuthCode = () => {
+  onResetRefreshToken = () => {
     this.updateDatasource({
       ...this.state.config,
       secureJsonFields: {
         ...this.state.config.secureJsonFields,
-        authCode: false,
+        refreshToken: false,
       },
     });
   };
@@ -127,6 +126,16 @@ export class ConfigEditor extends PureComponent<Props, State> {
     });
   };
 
+  onRefreshTokenChange = (refreshToken: string) => {
+    this.updateDatasource({
+      ...this.state.config,
+      secureJsonData: {
+        ...this.state.config.secureJsonData,
+        refreshToken,
+      },
+    });
+  };
+
   onAuthCodeChange = (authCode: string) => {
     this.updateDatasource({
       ...this.state.config,
@@ -137,24 +146,22 @@ export class ConfigEditor extends PureComponent<Props, State> {
     });
   };
 
+  onAuthTypeChange = (value?: StravaAuthType) => {
+    this.updateDatasource({
+      ...this.state.config,
+      jsonData: {
+        ...this.state.config.jsonData,
+        stravaAuthType: value,
+      },
+    });
+  };
+
   isLocationContainsCode = () => {
     return AuthCodePattern.test(window.location.search);
   };
 
   isLocationContainsError = () => {
     return /error=/.test(window.location.search);
-  };
-
-  fillAuthCodeFromLocation = () => {
-    const result = AuthCodePattern.exec(window.location.search);
-    const authCode = result && result.length && result[1];
-    this.updateDatasource({
-      ...this.state.config,
-      secureJsonData: {
-        ...this.state.config.secureJsonData,
-        authCode,
-      },
-    });
   };
 
   getConnectWithStravaHref = () => {
@@ -171,54 +178,71 @@ export class ConfigEditor extends PureComponent<Props, State> {
 
     return (
       <>
-        <h3 className="page-heading">Strava API Details</h3>
+        <h2 className="page-heading">Strava API Details</h2>
         <div className="gf-form-group">
-          <div className="gf-form-inline">
-            <div className="gf-form">
-              <InlineFormLabel className="width-14">Client ID</InlineFormLabel>
-              <div className="width-30">
-                <LegacyForms.Input
-                  className="width-30"
-                  value={config.jsonData.clientID || ''}
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientIDChange(event.target.value)}
-                />
-              </div>
-            </div>
-          </div>
+          <h5>Auth type</h5>
+          <RadioButtonGroup
+            options={authOptions}
+            value={config.jsonData.stravaAuthType}
+            onChange={this.onAuthTypeChange}
+          />
+        </div>
+        <div className="gf-form-group">
+          <InlineField label="Client ID" labelWidth={16}>
+            <Input
+              width={50}
+              value={config.jsonData.clientID || ''}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientIDChange(event.target.value)}
+            />
+          </InlineField>
           {config.secureJsonFields && config.secureJsonFields.clientSecret ? (
-            <div className="gf-form-inline">
-              <div className="gf-form">
-                <InlineFormLabel className="width-14">Client Secret</InlineFormLabel>
-                <LegacyForms.Input className="width-25" placeholder="Configured" disabled={true} />
-              </div>
-              <div className="gf-form">
-                <div className="max-width-30 gf-form-inline">
-                  <Button variant="secondary" type="button" onClick={this.onResetClientSecret}>
-                    Reset
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <InlineField label="Client Secret" labelWidth={16}>
+              <>
+                <Input placeholder="Configured" width={50} disabled />
+                <Button variant="secondary" type="button" onClick={this.onResetClientSecret}>
+                  Reset
+                </Button>
+              </>
+            </InlineField>
           ) : (
-            <div className="gf-form-inline">
-              <div className="gf-form">
-                <InlineFormLabel className="width-14">Client Secret</InlineFormLabel>
-                <div className="width-30">
-                  <LegacyForms.Input
-                    className="width-30"
-                    value={config.secureJsonData ? config.secureJsonData.clientSecret : ''}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientSecretChange(event.target.value)}
+            <InlineField label="Client Secret" labelWidth={16}>
+              <Input
+                width={50}
+                value={config.secureJsonData?.clientSecret || ''}
+                onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientSecretChange(event.target.value)}
+              />
+            </InlineField>
+          )}
+          {config.jsonData?.stravaAuthType === StravaAuthType.RefreshToken && (
+            <>
+              {config.secureJsonFields && config.secureJsonFields.refreshToken ? (
+                <InlineField label="Refresh Token" labelWidth={16}>
+                  <>
+                    <Input placeholder="Configured" width={50} disabled />
+                    <Button variant="secondary" type="button" onClick={this.onResetRefreshToken}>
+                      Reset
+                    </Button>
+                  </>
+                </InlineField>
+              ) : (
+                <InlineField label="Refresh Token" labelWidth={16}>
+                  <Input
+                    width={50}
+                    value={config.secureJsonData?.refreshToken || ''}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => this.onRefreshTokenChange(event.target.value)}
                   />
-                </div>
-              </div>
-            </div>
+                </InlineField>
+              )}
+            </>
           )}
         </div>
-        <div className="gf-form-group">
-          <a type="button" href={connectWithStravaHref}>
-            <img src="public/plugins/grafana-strava-datasource/img/btn_strava_connectwith_orange.svg" />
-          </a>
-        </div>
+        {config.jsonData?.stravaAuthType !== StravaAuthType.RefreshToken &&
+          <div className="gf-form-group">
+            <a type="button" href={connectWithStravaHref}>
+              <img src="public/plugins/grafana-strava-datasource/img/btn_strava_connectwith_orange.svg" />
+            </a>
+          </div>
+        }
       </>
     );
   }
