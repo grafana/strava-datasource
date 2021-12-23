@@ -271,9 +271,15 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       fields: [{ name: 'time', type: FieldType.time }, { name: stats }],
     });
 
+    let activityStats = activity[stats];
+    if (stats.startsWith('gear_')) {
+      const gearStatsName = stats.substring('gear_'.length);
+      activityStats = activity.gear[gearStatsName];
+    }
+
     frame.add({
       time: dateTime(activity.start_date),
-      [stats]: activity[stats],
+      [stats]: activityStats,
     });
 
     return frame;

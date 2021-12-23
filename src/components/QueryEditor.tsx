@@ -101,7 +101,6 @@ const extendedStatsOptions: Array<SelectableValue<string>> = [
   { label: 'device_watts', value: 'device_watts' },
   { label: 'elev_high', value: 'elev_high' },
   { label: 'elev_low', value: 'elev_low' },
-  { label: 'gear_id', value: 'gear_id' },
   { label: 'has_kudoed', value: 'has_kudoed' },
   { label: 'kudos_count', value: 'kudos_count' },
   { label: 'location_city', value: 'location_city' },
@@ -117,6 +116,11 @@ const extendedStatsOptions: Array<SelectableValue<string>> = [
   { label: 'start_longitude', value: 'start_longitude' },
   { label: 'trainer', value: 'trainer' },
   { label: 'workout_type', value: 'workout_type' },
+  { label: 'device_name', value: 'device_name' },
+  { label: 'gear_id', value: 'gear_id' },
+  { label: 'gear_name', value: 'gear_name' },
+  { label: 'gear_nickname', value: 'device_nickname' },
+  { label: 'gear_distance', value: 'gear_distance' },
 ];
 
 const baseStatsOptions: Array<SelectableValue<string>> = [
