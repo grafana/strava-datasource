@@ -236,13 +236,13 @@ export class ConfigEditor extends PureComponent<Props, State> {
             </>
           )}
         </div>
-        {config.jsonData?.stravaAuthType !== StravaAuthType.RefreshToken &&
+        {config.jsonData?.stravaAuthType !== StravaAuthType.RefreshToken && (
           <div className="gf-form-group">
             <a type="button" href={connectWithStravaHref}>
               <img src="public/plugins/grafana-strava-datasource/img/btn_strava_connectwith_orange.svg" />
             </a>
           </div>
-        }
+        )}
       </>
     );
   }
