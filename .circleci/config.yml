@@ -169,7 +169,7 @@ jobs:
   build-backend:
     working_directory: ~/grafana-strava-datasource
     docker:
-      - image: circleci/golang:1.13.7
+      - image: circleci/golang:1.17
     environment:
       GOPATH: /go
     steps:
@@ -190,7 +190,7 @@ jobs:
   lint-backend:
     working_directory: ~/grafana-strava-datasource
     docker:
-      - image: circleci/golang:1.13.7
+      - image: circleci/golang:1.17
     environment:
       GOPATH: /go
     steps:
