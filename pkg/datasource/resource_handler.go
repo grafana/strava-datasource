@@ -68,7 +68,7 @@ func (ds *StravaDatasource) ResetAccessTokenHandler(rw http.ResponseWriter, req 
 
 	err = dsInstance.ResetAccessToken()
 	if err != nil {
-		ds.logger.Error("Error reseting access token", "error", err)
+		ds.logger.Error("Error resetting access token", "error", err)
 		writeError(rw, http.StatusInternalServerError, err)
 		return
 	}
