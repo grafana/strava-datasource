@@ -42,6 +42,7 @@ export enum StravaQueryFormat {
   TimeSeries = 'time_series',
   Table = 'table',
   WorldMap = 'worldmap',
+  Heatmap = 'heatmap',
 }
 
 export enum StravaQueryInterval {

@@ -17,6 +17,9 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
       height: 28px;
       border-radius: 50%;
     `,
+    athletePlaceholder: css`
+      width: 28px;
+    `,
   };
 });
 
@@ -30,9 +33,13 @@ export const AthleteLabel: FC<Props> = (props: Props) => {
   const imgClass = cx('filter-table__avatar', styles.athleteAvatar);
   return (
     <div className="gf-form">
-      <div className={styles.athleteLabel}>
-        <img className={imgClass} src={athlete.profile_medium} />
-      </div>
+      {athlete.profile_medium ? (
+        <div className={styles.athleteLabel}>
+          <img className={imgClass} src={athlete.profile_medium} />
+        </div>
+      ) : (
+        <div className={styles.athletePlaceholder}></div>
+      )}
       <InlineFormLabel>
         {athlete.firstname} {athlete.lastname}
       </InlineFormLabel>

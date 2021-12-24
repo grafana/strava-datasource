@@ -3,7 +3,6 @@ import {
   DataSourceApi,
   DataSourceInstanceSettings,
   TimeSeries,
-  TableData,
   dateTime,
   TimeRange,
   TimeSeriesPoints,
@@ -91,8 +90,12 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
             data.push(tableData);
             break;
           case StravaQueryFormat.WorldMap:
-            const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
-            data.push(wmData);
+            const geomapData = this.transformActivitiesToGeomap(filteredActivities, target);
+            data.push(geomapData);
+            break;
+          case StravaQueryFormat.Heatmap:
+            const heatmapData = this.transformActivitiesToHeatmap(filteredActivities, target);
+            data.push(heatmapData);
             break;
           default:
             const tsData = this.transformActivitiesToTimeseries(
@@ -295,7 +298,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       fields: [
         { name: 'latitude', type: FieldType.number },
         { name: 'longitude', type: FieldType.number },
-        { name: 'value', type: FieldType.number }
+        { name: 'value', type: FieldType.number },
       ],
     });
 
@@ -438,27 +441,64 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return frame;
   }
 
-  transformActivitiesToWorldMap(data: any[], target: StravaQuery) {
+  transformActivitiesToGeomap(activities: any[], target: StravaQuery) {
     const unit =
       target.activityStat === StravaActivityStat.Distance || target.activityStat === StravaActivityStat.ElevationGain
         ? 'lengthm'
         : 's';
-    const table: TableData = {
-      type: 'table',
-      columns: [{ text: 'value', unit }, { text: 'name' }, { text: 'latitude' }, { text: 'longitude' }],
-      rows: [],
-    };
 
-    for (const activity of data) {
+    const frame = new MutableDataFrame({
+      name: 'activities',
+      refId: target.refId,
+      fields: [
+        { name: 'name', type: FieldType.string },
+        { name: 'latitude', type: FieldType.number },
+        { name: 'longitude', type: FieldType.number },
+        { name: 'value', type: FieldType.number, config: { unit } },
+      ],
+    });
+
+    for (const activity of activities) {
       const middlePoint = getActivityMiddlePoint(activity);
       const latitude = middlePoint ? middlePoint[0] : activity.start_latitude;
       const longitude = middlePoint ? middlePoint[1] : activity.start_longitude;
-      const row = [activity[target.activityStat], activity.name, latitude, longitude];
-      if (activity.start_latitude && activity.start_longitude) {
-        table.rows.push(row);
+      if (latitude && longitude) {
+        frame.add({
+          name: activity.name,
+          value: activity[target.activityStat],
+          latitude,
+          longitude,
+        });
       }
     }
-    return table;
+    return frame;
+  }
+
+  transformActivitiesToHeatmap(activities: any[], target: StravaQuery) {
+    const frame = new MutableDataFrame({
+      name: 'heatmap',
+      refId: target.refId,
+      fields: [
+        { name: 'latitude', type: FieldType.number },
+        { name: 'longitude', type: FieldType.number },
+        { name: 'value', type: FieldType.number },
+      ],
+    });
+
+    for (const activity of activities) {
+      const summaryPolyline = activity?.map?.summary_polyline;
+      if (summaryPolyline) {
+        const points = polyline.decode(summaryPolyline);
+        for (let i = 0; i < points.length; i++) {
+          frame.add({
+            latitude: points[i][0],
+            longitude: points[i][1],
+            value: 1,
+          });
+        }
+      }
+    }
+    return frame;
   }
 }
 

@@ -80,7 +80,8 @@ const stravaActivitySplitOptions: Array<SelectableValue<StravaSplitStat>> = [
 const FORMAT_OPTIONS: Array<SelectableValue<StravaQueryFormat>> = [
   { label: 'Time series', value: StravaQueryFormat.TimeSeries },
   { label: 'Table', value: StravaQueryFormat.Table },
-  { label: 'World Map', value: StravaQueryFormat.WorldMap },
+  { label: 'Geomap', value: StravaQueryFormat.WorldMap },
+  { label: 'Heatmap', value: StravaQueryFormat.Heatmap },
 ];
 
 const INTERVAL_OPTIONS: Array<SelectableValue<StravaQueryInterval>> = [
@@ -332,15 +333,7 @@ export class QueryEditor extends PureComponent<Props, State> {
       <>
         <div className="gf-form-inline">
           <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
-          <InlineFormLabel width={5}>Stat</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            width={16}
-            value={this.getSelectedActivityStat()}
-            options={stravaActivityStatOptions}
-            onChange={this.onActivityStatChanged}
-          />
-          <InlineFormLabel width={8}>Format</InlineFormLabel>
+          <InlineFormLabel width={5}>Format</InlineFormLabel>
           <Select
             isSearchable={false}
             width={16}
@@ -348,14 +341,30 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onFormatChange}
             value={this.getFormatOption()}
           />
-          <InlineFormLabel width={5}>Interval</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            width={16}
-            options={INTERVAL_OPTIONS}
-            onChange={this.onIntervalChange}
-            value={this.getIntervalOption()}
-          />
+          {query.format !== StravaQueryFormat.Heatmap && (
+            <>
+              <InlineFormLabel width={6}>Stat</InlineFormLabel>
+              <Select
+                isSearchable={false}
+                width={16}
+                value={this.getSelectedActivityStat()}
+                options={stravaActivityStatOptions}
+                onChange={this.onActivityStatChanged}
+              />
+            </>
+          )}
+          {query.format === StravaQueryFormat.TimeSeries && (
+            <>
+              <InlineFormLabel width={6}>Interval</InlineFormLabel>
+              <Select
+                isSearchable={false}
+                width={16}
+                options={INTERVAL_OPTIONS}
+                onChange={this.onIntervalChange}
+                value={this.getIntervalOption()}
+              />
+            </>
+          )}
           <div className="gf-form gf-form--grow">
             <div className="gf-form-label gf-form-label--grow" />
           </div>
@@ -459,7 +468,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             options={stravaQueryTypeOptions}
             onChange={this.onQueryTypeChanged}
           />
-          <InlineFormLabel width={8}>Activity type</InlineFormLabel>
+          <InlineFormLabel width={6}>Activity type</InlineFormLabel>
           <Select
             isSearchable={false}
             width={16}
