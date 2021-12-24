@@ -24,7 +24,7 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
 });
 
 interface Props {
-  athlete: StravaAthlete;
+  athlete?: StravaAthlete;
 }
 
 export const AthleteLabel: FC<Props> = (props: Props) => {
@@ -33,7 +33,7 @@ export const AthleteLabel: FC<Props> = (props: Props) => {
   const imgClass = cx('filter-table__avatar', styles.athleteAvatar);
   return (
     <div className="gf-form">
-      {athlete.profile_medium ? (
+      {athlete?.profile_medium ? (
         <div className={styles.athleteLabel}>
           <img className={imgClass} src={athlete.profile_medium} />
         </div>
@@ -41,7 +41,7 @@ export const AthleteLabel: FC<Props> = (props: Props) => {
         <div className={styles.athletePlaceholder}></div>
       )}
       <InlineFormLabel>
-        {athlete.firstname} {athlete.lastname}
+        {athlete?.firstname} {athlete?.lastname}
       </InlineFormLabel>
     </div>
   );

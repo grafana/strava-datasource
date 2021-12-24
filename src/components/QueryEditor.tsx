@@ -157,7 +157,7 @@ export const DefaultTarget: State = {
 export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
 
 interface State extends StravaQuery {
-  athlete: StravaAthlete;
+  athlete?: StravaAthlete;
   selectedActivity?: SelectableValue<number>;
   activitiesOptions: Array<SelectableValue<number>>;
 }
@@ -166,7 +166,10 @@ export class QueryEditor extends PureComponent<Props, State> {
   state: State = DefaultTarget;
 
   async componentDidMount() {
-    const athlete = await this.props.datasource.stravaApi.getAuthenticatedAthlete();
+    let athlete = this.props.datasource.athlete;
+    if (!athlete) {
+      athlete = await this.props.datasource.stravaApi.getAuthenticatedAthlete();
+    }
     const activitiesOptions = await this.getActivitiesOptions(this.props.query.activityType);
     this.setState({ athlete, activitiesOptions });
   }

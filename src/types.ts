@@ -14,6 +14,12 @@ export interface StravaAthlete {
   profile_medium: string;
   firstname: string;
   lastname: string;
+  measurement_preference: StravaMeasurementPreference;
+}
+
+export enum StravaMeasurementPreference {
+  Meters = 'meters',
+  Feet = 'feet',
 }
 
 export interface StravaSecureJsonData {

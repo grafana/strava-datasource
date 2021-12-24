@@ -30,6 +30,7 @@ import {
   StravaSplitStat,
   VariableQuery,
   StravaAuthType,
+  StravaAthlete,
 } from './types';
 import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToSpeed } from 'utils';
 import { getTemplateSrv } from '@grafana/runtime';
@@ -52,8 +53,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   apiUrl: string;
   stravaApi: StravaApi;
   activities: any[];
+  athlete?: StravaAthlete;
 
-  /** @ngInject */
   constructor(instanceSettings: DataSourceInstanceSettings<StravaJsonData>) {
     super(instanceSettings);
     this.type = 'strava';
@@ -67,6 +68,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   async query(options: DataQueryRequest<StravaQuery>) {
     const data: any[] = [];
     let activities = [];
+
+    if (!this.athlete) {
+      this.athlete = await this.stravaApi.getAuthenticatedAthlete();
+    }
 
     let queryActivities = options.targets.some((t) => t.queryType === StravaQueryType.Activities);
 
