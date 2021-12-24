@@ -31,6 +31,7 @@ import {
   VariableQuery,
   StravaAuthType,
   StravaAthlete,
+  StravaMeasurementPreference,
 } from './types';
 import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToSpeed } from 'utils';
 import { getTemplateSrv } from '@grafana/runtime';
@@ -404,16 +405,20 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   transformActivitiesToTable(data: any[], target: StravaQuery) {
+    const measurementPreference = this.athlete?.measurement_preference || StravaMeasurementPreference.Meters;
+    const distanceUnit = measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
+    const lenghtUnit = measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
+
     const frame = new MutableDataFrame({
       refId: target.refId,
       fields: [
         { name: 'time', type: FieldType.time },
         { name: 'name', type: FieldType.string },
-        { name: 'distance', type: FieldType.number, config: { unit: 'lengthm' } },
-        { name: 'moving time', type: FieldType.number, config: { unit: 's' } },
-        { name: 'elapsed time', type: FieldType.number, config: { unit: 's' } },
+        { name: 'distance', type: FieldType.number, config: { unit: distanceUnit } },
+        { name: 'moving time', type: FieldType.number, config: { unit: 'dthms' } },
+        { name: 'elapsed time', type: FieldType.number, config: { unit: 'dthms' } },
         { name: 'heart rate', type: FieldType.number, config: { unit: 'none', decimals: 0 } },
-        { name: 'elevation gain', type: FieldType.number, config: { unit: 'lengthm' } },
+        { name: 'elevation gain', type: FieldType.number, config: { unit: lenghtUnit, decimals: 0 } },
         { name: 'kilojoules', type: FieldType.number, config: { unit: 'joule' } },
         { name: 'type', type: FieldType.string },
         { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
@@ -429,11 +434,11 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       const dataRow: any = {
         time: dateTime(activity.start_date),
         name: activity.name,
-        distance: activity.distance,
+        distance: getPreferredDistance(activity.distance, measurementPreference),
         'moving time': activity.moving_time,
         'elapsed time': activity.elapsed_time,
         'heart rate': activity.average_heartrate,
-        'elevation gain': activity.total_elevation_gain,
+        'elevation gain': getPreferredLenght(activity.total_elevation_gain, measurementPreference),
         kilojoules: activity.kilojoules,
         type: activity.type,
         id: activity.id,
@@ -660,4 +665,20 @@ function getClosestWeek(timestamp: any): number {
 
 function getNextWeek(timestamp: any): number {
   return timestamp + INTERVAL_1w;
+}
+
+function getPreferredDistance(value: number, measurementPreference: StravaMeasurementPreference): number {
+  return measurementPreference === StravaMeasurementPreference.Feet ? metersToMiles(value) : value;
+}
+
+function getPreferredLenght(value: number, measurementPreference: StravaMeasurementPreference): number {
+  return measurementPreference === StravaMeasurementPreference.Feet ? metersToFeet(value) : value;
+}
+
+function metersToFeet(value: number): number {
+  return value / 0.3048;
+}
+
+function metersToMiles(value: number): number {
+  return value / 1609.344;
 }
