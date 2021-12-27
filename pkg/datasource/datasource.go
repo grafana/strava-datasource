@@ -272,6 +272,9 @@ func (ds *StravaDatasourceInstance) RefreshAccessToken(refreshToken string) (*To
 	}
 
 	authResp, err := ds.httpClient.PostForm(StravaAPITokenUrl, authParams)
+	if err != nil {
+		return nil, err
+	}
 	if authResp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Token exchange failed: %v", authResp.Status)
 	}
