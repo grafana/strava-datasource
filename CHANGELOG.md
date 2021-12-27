@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.4.0] - 2021-12-27
+
+### Added
+
+- Display activity route on the Geomap panel, [#49](https://github.com/grafana/strava-datasource/issues/49).
+- Heatmap format which allows to visualize activities over selected time range as a heatmap on Geomap panel.
+- Athentication by refresh token from the app config page.
+- Automatically convert units based on user's preferences, [#43](https://github.com/grafana/strava-datasource/issues/43).
+- Updates for the dashboards.
+
 ## [1.3.0] - 2021-05-13
 
 ### Added
