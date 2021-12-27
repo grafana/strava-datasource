@@ -37,13 +37,13 @@
   "includes": [
     {
       "type": "dashboard",
-      "name": "Strava Athlete Dashboard Modern",
-      "path": "dashboards/strava_athlete_dashboard_modern.json"
+      "name": "Strava Athlete Dashboard",
+      "path": "dashboards/strava_athlete_dashboard.json"
     },
     {
       "type": "dashboard",
-      "name": "Strava Athlete Dashboard",
-      "path": "dashboards/strava_athlete_dashboard.json"
+      "name": "Strava Athlete Dashboard Legacy",
+      "path": "dashboards/strava_athlete_dashboard_legacy.json"
     },
     {
       "type": "dashboard",
@@ -54,11 +54,16 @@
       "type": "dashboard",
       "name": "Strava Activity Analysis",
       "path": "dashboards/strava_activity_analysis.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Strava Activity Overview",
+      "path": "dashboards/strava_activity_overview.json"
     }
   ],
 
   "dependencies": {
-    "grafanaVersion": "7.1",
+    "grafanaVersion": "8.1",
     "plugins": []
   }
 }
