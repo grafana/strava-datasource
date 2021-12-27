@@ -91,10 +91,7 @@
       "type": "text"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "displayName": "Activities",
@@ -161,10 +158,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "decimals": 0,
@@ -230,10 +224,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "decimals": 1,
@@ -299,10 +290,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "displayName": "Elevation gain",
@@ -382,10 +370,7 @@
       "type": "text"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -559,10 +544,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -846,10 +828,7 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "color": {

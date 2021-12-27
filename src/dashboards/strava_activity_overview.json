@@ -70,10 +70,7 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -132,10 +129,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -197,10 +191,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -261,10 +252,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -324,10 +312,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -451,10 +436,7 @@
           "activityGraph": "heartrate",
           "activityId": "$Activity",
           "activityType": "Run",
-          "datasource": {
-            "type": "strava",
-            "uid": "${DS_STRAVA}"
-          },
+          "datasource": "${DS_STRAVA}",
           "fitToTimeRange": true,
           "queryType": "Activity",
           "refId": "A",
@@ -469,10 +451,7 @@
           "activityGraph": "velocity_smooth",
           "activityId": "$Activity",
           "activityType": "Run",
-          "datasource": {
-            "type": "strava",
-            "uid": "${DS_STRAVA}"
-          },
+          "datasource": "${DS_STRAVA}",
           "fitToTimeRange": true,
           "hide": false,
           "queryType": "Activity",
@@ -488,10 +467,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -595,10 +571,7 @@
         {
           "activityData": "geomap",
           "activityId": "$Activity",
-          "datasource": {
-            "type": "grafana-strava-datasource",
-            "uid": "${DS_STRAVA}"
-          },
+          "datasource": "${DS_STRAVA}",
           "queryType": "Activity",
           "refId": "A",
           "selectedActivity": {
@@ -612,10 +585,7 @@
       "type": "geomap"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -739,10 +709,7 @@
           "activityData": "splits",
           "activityGraph": "heartrate",
           "activityId": "$Activity",
-          "datasource": {
-            "type": "strava",
-            "uid": "${DS_STRAVA}"
-          },
+          "datasource": "${DS_STRAVA}",
           "fitToTimeRange": true,
           "queryType": "Activity",
           "refId": "A",
@@ -759,10 +726,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+      "datasource": "${DS_STRAVA}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -853,10 +817,7 @@
           "activityData": "splits",
           "activityGraph": "heartrate",
           "activityId": "$Activity",
-          "datasource": {
-            "type": "strava",
-            "uid": "${DS_STRAVA}"
-          },
+          "datasource": "${DS_STRAVA}",
           "fitToTimeRange": true,
           "queryType": "Activity",
           "refId": "A",
@@ -882,10 +843,7 @@
     "list": [
       {
         "current": {},
-        "datasource": {
-          "type": "grafana-strava-datasource",
-          "uid": "${DS_STRAVA}"
-        },
+        "datasource": "${DS_STRAVA}",
         "definition": "Strava - activity",
         "hide": 0,
         "includeAll": false,
