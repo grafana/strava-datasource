@@ -8,7 +8,7 @@ Features:
 
 - Query activities stats and present it as a time series data.
 - Table format.
-- Show activities over the world with [Worldmap Panel](https://grafana.com/grafana/plugins/grafana-worldmap-panel).
+- Show activities over the world with [Geomap Panel](https://grafana.com/docs/grafana/latest/visualizations/geomap/).
 - Visualize and analyze activity data such as heart rate, speed/pace, power, etc.
 - Template variables support.
 
