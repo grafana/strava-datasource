@@ -34,8 +34,6 @@
     "jest": "^26.5.3",
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
-    "ng-annotate-webpack-plugin": "^0.3.0",
-    "node-sass": "^4.12.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "ts-jest": "^26.4.1",
