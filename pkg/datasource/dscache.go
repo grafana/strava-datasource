@@ -5,7 +5,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
@@ -56,16 +57,16 @@ func (c *DSCache) Delete(request string) {
 
 func (c *DSCache) Save(request string, response interface{}) error {
 	cacheKey := c.BuildDSCacheKey(request)
-	filename := fmt.Sprintf("%s/%s", c.dataDir, cacheKey)
+	filename := filepath.Join(c.dataDir, cacheKey)
 	cacheLogger.Debug("Saving key to file", "key", request, "path", filename)
-	return ioutil.WriteFile(filename, []byte(response.(string)), 0644)
+	return os.WriteFile(filename, []byte(response.(string)), 0644)
 }
 
 func (c *DSCache) Load(request string) (string, error) {
 	cacheKey := c.BuildDSCacheKey(request)
-	filename := fmt.Sprintf("%s/%s", c.dataDir, cacheKey)
+	filename := filepath.Join(c.dataDir, cacheKey)
 	cacheLogger.Debug("Loading key from file", "key", request, "path", filename)
-	value, err := ioutil.ReadFile(filename)
+	value, err := os.ReadFile(filename)
 	if err != nil {
 		return "", err
 	}
