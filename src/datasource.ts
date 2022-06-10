@@ -163,7 +163,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       values: new ArrayVector(),
     };
 
-    const valueFiled: MutableField<number> = {
+    const valueFiled: MutableField<number | null> = {
       name: activityStream,
       type: FieldType.number,
       config: {
@@ -188,10 +188,18 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       ts = options.range.from.unix();
     }
 
-    let streamValues: number[] = [];
-    for (let i = 0; i < stream.data.length; i++) {
+    // Data comes as a kind of sparce array. Time stream contains offset of data
+    // points, for example:
+    // heartrate: [70,81,82,81,99,96,97,98,99]
+    // time:      [0, 4, 5, 6, 20,21,22,23,24]
+    // So last value of the time stream is a highest index in data array
+    const timeStream = streams.time;
+    const streamLength: number = streams.time?.data[streams.time?.data.length - 1] + 1;
+    let streamValues = new Array<number | null>(streamLength).fill(null);
+
+    for (let i = 0; i < streamLength; i++) {
       timeFiled.values.add(ts * 1000);
-      streamValues.push(stream.data[i]);
+      streamValues[timeStream.data[i]] = stream.data[i];
       ts++;
     }
 

@@ -10,44 +10,61 @@ export function velocityToSpeed(mps: number): number {
   return mps * 3.6;
 }
 
-export function velocityDataToPace(data: number[]): number[] {
+export function velocityDataToPace(data: Array<number | null>): Array<number | null> {
   for (let i = 0; i < data.length; i++) {
     // m/s to min/km
-    data[i] = velocityToPace(data[i]);
+    const point = data[i];
+    if (point != null) {
+      data[i] = velocityToPace(point);
+    }
   }
   return data;
 }
 
-export function velocityDataToSpeed(data: number[]): number[] {
+export function velocityDataToSpeed(data: Array<number | null>): Array<number | null> {
   for (let i = 0; i < data.length; i++) {
     // m/s to km/h
-    data[i] = data[i] * 3.6;
+    const point = data[i];
+    if (point != null) {
+      data[i] = point * 3.6;
+    }
   }
   return data;
 }
 
-export function smoothVelocityData(data: number[]): number[] {
+export function smoothVelocityData(data: Array<number | null>): Array<number | null> {
   // It's not possible to calculate MA if n greater than number of points
   const SMOOTH_RATIO = 20;
   const n = Math.min(SMOOTH_RATIO, data.length);
 
   const sma = [];
   let w_sum = 0;
+  let w_count = 0;
+  let point: number | null = null;
 
   // Initial window
   for (let i = n; i > 0; i--) {
-    w_sum += data[n - i];
+    point = data[n - i];
+    if (point != null) {
+      w_sum += point;
+      w_count++;
+    }
   }
   for (let i = 0; i < n; i++) {
-    sma.push(w_sum / n);
+    sma.push(w_sum / w_count);
   }
 
   for (let i = n; i < data.length; i++) {
     w_sum = 0;
+    w_count = 0;
     for (let j = 0; j < n; j++) {
-      w_sum += data[i - j];
+      point = data[i - j];
+      if (point != null) {
+        w_sum += point;
+        w_count++;
+      }
     }
-    sma.push(w_sum / n);
+    sma.push(w_sum / w_count);
   }
   return sma;
 }
