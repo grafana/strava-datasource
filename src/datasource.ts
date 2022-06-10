@@ -422,6 +422,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         { name: 'kilojoules', type: FieldType.number, config: { unit: 'joule' } },
         { name: 'type', type: FieldType.string },
         { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
+        { name: 'time_from', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
+        { name: 'time_to', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
       ],
     });
 
@@ -442,6 +444,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         kilojoules: activity.kilojoules,
         type: activity.type,
         id: activity.id,
+        time_from: dateTime(activity.start_date).unix() * 1000,
+        time_to: (dateTime(activity.start_date).unix() + activity.elapsed_time) * 1000,
       };
       target.extendedStats?.forEach((stat) => {
         dataRow[stat] = activity[stat];

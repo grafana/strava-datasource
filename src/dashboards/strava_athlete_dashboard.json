@@ -767,7 +767,7 @@
                 "value": [
                   {
                     "title": "Go to activity",
-                    "url": "d/StravaActivityOverview?var-Activity=${__data.fields.id}"
+                    "url": "d/StravaActivityOverview?var-Activity=${__data.fields.id}&from=${__data.fields.time_from}&to=${__data.fields.time_to}"
                   }
                 ]
               }
