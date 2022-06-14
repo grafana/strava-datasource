@@ -55,6 +55,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   stravaApi: StravaApi;
   activities: any[];
   athlete?: StravaAthlete;
+  measurementPreference: StravaMeasurementPreference;
 
   constructor(instanceSettings: DataSourceInstanceSettings<StravaJsonData>) {
     super(instanceSettings);
@@ -64,6 +65,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     this.stravaApi = new StravaApi(this.datasourceId);
     this.activities = [];
     this.stravaAuthType = instanceSettings.jsonData.stravaAuthType;
+    this.measurementPreference = StravaMeasurementPreference.Meters;
   }
 
   async query(options: DataQueryRequest<StravaQuery>) {
@@ -72,6 +74,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     if (!this.athlete) {
       this.athlete = await this.stravaApi.getAuthenticatedAthlete();
+      this.measurementPreference = this.athlete?.measurement_preference || StravaMeasurementPreference.Meters;
     }
 
     let queryActivities = options.targets.some((t) => t.queryType === StravaQueryType.Activities);
@@ -265,7 +268,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       ts = options.range.from.unix();
     }
 
-    const splits: any[] = activity.splits_metric;
+    const isMetric = this.measurementPreference === StravaMeasurementPreference.Meters;
+    const splits: any[] = isMetric ? activity.splits_metric : activity.splits_standard;
     for (let i = 0; i < splits.length; i++) {
       const split = splits[i];
       timeFiled.values.add(ts * 1000);
@@ -274,7 +278,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         value = velocityToSpeed(value);
       }
       valueFiled.values.add(value);
-      ts += split.moving_time;
+      ts += split.elapsed_time;
     }
 
     frame.addField(timeFiled);
@@ -413,9 +417,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   transformActivitiesToTable(data: any[], target: StravaQuery) {
-    const measurementPreference = this.athlete?.measurement_preference || StravaMeasurementPreference.Meters;
-    const distanceUnit = measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
-    const lenghtUnit = measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
+    const distanceUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
+    const lenghtUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
 
     const frame = new MutableDataFrame({
       refId: target.refId,
@@ -444,11 +447,11 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       const dataRow: any = {
         time: dateTime(activity.start_date),
         name: activity.name,
-        distance: getPreferredDistance(activity.distance, measurementPreference),
+        distance: getPreferredDistance(activity.distance, this.measurementPreference),
         'moving time': activity.moving_time,
         'elapsed time': activity.elapsed_time,
         'heart rate': activity.average_heartrate,
-        'elevation gain': getPreferredLenght(activity.total_elevation_gain, measurementPreference),
+        'elevation gain': getPreferredLenght(activity.total_elevation_gain, this.measurementPreference),
         kilojoules: activity.kilojoules,
         type: activity.type,
         id: activity.id,
