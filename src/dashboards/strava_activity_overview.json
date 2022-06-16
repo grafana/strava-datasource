@@ -559,11 +559,11 @@
           }
         ],
         "view": {
-          "id": "europe",
+          "id": "fit",
           "lat": 46,
           "lon": 14,
           "shared": false,
-          "zoom": 4
+          "zoom": 12
         }
       },
       "pluginVersion": "8.1.0",
