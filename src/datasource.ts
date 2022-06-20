@@ -2,7 +2,6 @@ import {
   DataQueryRequest,
   DataSourceApi,
   DataSourceInstanceSettings,
-  TimeSeries,
   dateTime,
   TimeRange,
   TimeSeriesPoints,
@@ -14,6 +13,7 @@ import {
   MutableDataFrame,
   TIME_SERIES_VALUE_FIELD_NAME,
   MetricFindValue,
+  DataFrame,
 } from '@grafana/data';
 import StravaApi from './stravaApi';
 import polyline from './polyline';
@@ -391,12 +391,13 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     });
   }
 
-  transformActivitiesToTimeseries(activities: StravaActivity[], target: StravaQuery, range: TimeRange): TimeSeries {
+  transformActivitiesToTimeseries(activities: StravaActivity[], target: StravaQuery, range: TimeRange): DataFrame {
     let datapoints: any[] = [];
     for (const activity of activities) {
       datapoints.push([activity[target.activityStat], dateTime(activity.start_date).valueOf()]);
     }
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
+
     if (target.interval !== StravaQueryInterval.No) {
       const aggInterval =
         !target.interval || target.interval === StravaQueryInterval.Auto
@@ -410,11 +411,37 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         datapoints = groupBySum(datapoints, range, aggInterval);
       }
     }
-    const alias = `${target.activityType ? target.activityType + '_' : ''}${target.activityStat}`;
-    return {
-      target: alias,
-      datapoints,
+
+    const timeFiled: MutableField<number> = {
+      name: TIME_SERIES_TIME_FIELD_NAME,
+      type: FieldType.time,
+      config: {
+        custom: {},
+      },
+      values: new ArrayVector(),
     };
+
+    const valueFiled: MutableField<number> = {
+      name: TIME_SERIES_VALUE_FIELD_NAME,
+      type: FieldType.number,
+      config: {
+        custom: {},
+      },
+      values: new ArrayVector(),
+    };
+
+    for (let i = 0; i < datapoints.length; i++) {
+      const dp = datapoints[i];
+      timeFiled.values.add(dp[1]);
+      valueFiled.values.add(dp[0]);
+    }
+
+    const alias = `${target.activityType ? target.activityType + '_' : ''}${target.activityStat}`;
+    return new MutableDataFrame({
+      name: alias,
+      refId: target.refId,
+      fields: [timeFiled, valueFiled],
+    });
   }
 
   transformActivitiesToTable(activities: StravaActivity[], target: StravaQuery) {
