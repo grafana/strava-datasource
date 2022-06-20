@@ -394,7 +394,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   transformActivitiesToTimeseries(activities: StravaActivity[], target: StravaQuery, range: TimeRange): DataFrame {
     let datapoints: any[] = [];
     for (const activity of activities) {
-      datapoints.push([activity[target.activityStat], dateTime(activity.start_date).valueOf()]);
+      const statValue = getActivityStat(activity, target.activityStat, this.measurementPreference);
+      datapoints.push([statValue, dateTime(activity.start_date).valueOf()]);
     }
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
 
@@ -415,9 +416,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     const timeFiled: MutableField<number> = {
       name: TIME_SERIES_TIME_FIELD_NAME,
       type: FieldType.time,
-      config: {
-        custom: {},
-      },
+      config: {},
       values: new ArrayVector(),
     };
 
@@ -425,7 +424,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       name: TIME_SERIES_VALUE_FIELD_NAME,
       type: FieldType.number,
       config: {
-        custom: {},
+        unit: getStatUnit(target.activityStat, this.measurementPreference),
       },
       values: new ArrayVector(),
     };
@@ -498,11 +497,6 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   transformActivitiesToGeomap(activities: StravaActivity[], target: StravaQuery) {
-    const unit =
-      target.activityStat === StravaActivityStat.Distance || target.activityStat === StravaActivityStat.ElevationGain
-        ? 'lengthm'
-        : 's';
-
     const frame = new MutableDataFrame({
       name: 'activities',
       refId: target.refId,
@@ -510,7 +504,13 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         { name: 'name', type: FieldType.string },
         { name: 'latitude', type: FieldType.number },
         { name: 'longitude', type: FieldType.number },
-        { name: 'value', type: FieldType.number, config: { unit } },
+        {
+          name: 'value',
+          type: FieldType.number,
+          config: {
+            unit: getStatUnit(target.activityStat, this.measurementPreference),
+          },
+        },
       ],
     });
 
@@ -521,7 +521,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       if (latitude && longitude) {
         frame.add({
           name: activity.name,
-          value: activity[target.activityStat],
+          value: getActivityStat(activity, target.activityStat, this.measurementPreference),
           latitude,
           longitude,
         });
@@ -727,4 +727,34 @@ function metersToFeet(value: number): number {
 
 function metersToMiles(value: number): number {
   return value / 1609.344;
+}
+
+function getActivityStat(
+  activity: StravaActivity,
+  activityStat: StravaActivityStat,
+  measurementPreference: StravaMeasurementPreference
+) {
+  if (activityStat === StravaActivityStat.Distance) {
+    return getPreferredDistance(activity.distance, measurementPreference);
+  } else if (activityStat === StravaActivityStat.ElevationGain) {
+    return getPreferredLenght(activity.total_elevation_gain, measurementPreference);
+  } else {
+    return activity[activityStat];
+  }
+}
+
+function getStatUnit(activityStat: StravaActivityStat, measurementPreference: StravaMeasurementPreference): string {
+  if (activityStat === StravaActivityStat.Distance) {
+    return measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
+  }
+  if (activityStat === StravaActivityStat.ElevationGain) {
+    return measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
+  }
+  if (activityStat === StravaActivityStat.ElapsedTime || activityStat === StravaActivityStat.MovingTime) {
+    return 'dthms';
+  }
+  if (activityStat === StravaActivityStat.AveragePower) {
+    return 'watt';
+  }
+  return 'none';
 }
