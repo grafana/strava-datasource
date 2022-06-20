@@ -1,4 +1,5 @@
 import { getBackendSrv } from '@grafana/runtime';
+import { StravaActivity } from 'types';
 
 export default class StravaApi {
   datasourceId: number;
@@ -21,7 +22,7 @@ export default class StravaApi {
     return await this.tsdbRequest('athlete', params);
   }
 
-  async getActivities(params?: any) {
+  async getActivities(params?: any): Promise<StravaActivity[]> {
     return await this.requestWithPagination('athlete/activities', params);
   }
 

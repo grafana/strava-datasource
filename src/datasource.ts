@@ -18,6 +18,7 @@ import {
 import StravaApi from './stravaApi';
 import polyline from './polyline';
 import {
+  StravaActivity,
   StravaActivityStat,
   StravaJsonData,
   StravaQuery,
@@ -70,7 +71,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
   async query(options: DataQueryRequest<StravaQuery>) {
     const data: any[] = [];
-    let activities = [];
+    let activities: StravaActivity[] = [];
 
     if (!this.athlete) {
       this.athlete = await this.stravaApi.getAuthenticatedAthlete();
@@ -390,9 +391,9 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     });
   }
 
-  transformActivitiesToTimeseries(data: any[], target: StravaQuery, range: TimeRange): TimeSeries {
+  transformActivitiesToTimeseries(activities: StravaActivity[], target: StravaQuery, range: TimeRange): TimeSeries {
     let datapoints: any[] = [];
-    for (const activity of data) {
+    for (const activity of activities) {
       datapoints.push([activity[target.activityStat], dateTime(activity.start_date).valueOf()]);
     }
     datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
@@ -416,7 +417,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     };
   }
 
-  transformActivitiesToTable(data: any[], target: StravaQuery) {
+  transformActivitiesToTable(activities: StravaActivity[], target: StravaQuery) {
     const distanceUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
     const lenghtUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
 
@@ -442,8 +443,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       frame.addField({ name: stat });
     });
 
-    for (let i = 0; i < data.length; i++) {
-      const activity = data[i];
+    for (let i = 0; i < activities.length; i++) {
+      const activity = activities[i];
       const dataRow: any = {
         time: dateTime(activity.start_date),
         name: activity.name,
@@ -459,14 +460,17 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         time_to: (dateTime(activity.start_date).unix() + activity.elapsed_time) * 1000,
       };
       target.extendedStats?.forEach((stat) => {
-        dataRow[stat] = activity[stat];
+        const statValue = (activity as any)[stat];
+        if (statValue) {
+          dataRow[stat] = statValue;
+        }
       });
       frame.add(dataRow);
     }
     return frame;
   }
 
-  transformActivitiesToGeomap(activities: any[], target: StravaQuery) {
+  transformActivitiesToGeomap(activities: StravaActivity[], target: StravaQuery) {
     const unit =
       target.activityStat === StravaActivityStat.Distance || target.activityStat === StravaActivityStat.ElevationGain
         ? 'lengthm'
@@ -485,8 +489,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     for (const activity of activities) {
       const middlePoint = getActivityMiddlePoint(activity);
-      const latitude = middlePoint ? middlePoint[0] : activity.start_latitude;
-      const longitude = middlePoint ? middlePoint[1] : activity.start_longitude;
+      const latitude = middlePoint ? middlePoint[0] : activity.start_latlng[0];
+      const longitude = middlePoint ? middlePoint[1] : activity.start_latlng[1];
       if (latitude && longitude) {
         frame.add({
           name: activity.name,
@@ -499,7 +503,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return frame;
   }
 
-  transformActivitiesToHeatmap(activities: any[], target: StravaQuery) {
+  transformActivitiesToHeatmap(activities: StravaActivity[], target: StravaQuery) {
     const frame = new MutableDataFrame({
       name: 'heatmap',
       refId: target.refId,
