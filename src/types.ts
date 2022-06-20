@@ -208,6 +208,7 @@ export enum StravaActivityStream {
   Moving = 'moving',
   GradeSmooth = 'grade_smooth',
   GradeAdjustedDistance = 'grade_adjusted_distance',
+  LatLng = 'latlng',
 }
 
 export interface VariableQuery {

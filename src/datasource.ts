@@ -310,7 +310,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return frame;
   }
 
-  queryActivityGeomap(activity: any, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
+  async queryActivityGeomap(activity: any, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
     const frame = new MutableDataFrame({
       name: activity.name,
       refId: target.refId,
@@ -321,8 +321,19 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       ],
     });
 
+    let points: [number, number][] = [];
     const summaryPolyline = activity?.map?.polyline;
-    const points = polyline.decode(summaryPolyline);
+    points = polyline.decode(summaryPolyline);
+
+    try {
+      const streams = await this.stravaApi.getActivityStreams({
+        id: activity.id,
+        streamType: StravaActivityStream.LatLng,
+      });
+      points = streams[StravaActivityStream.LatLng].data;
+    } catch (error) {
+      console.log('Cannot fetch geo points from activity stream, switching to polyline.');
+    }
 
     for (let i = 0; i < points.length; i++) {
       frame.add({

@@ -34,10 +34,9 @@ export default class StravaApi {
   async getActivityStreams(params?: any) {
     const { id, streamType } = params;
     // const streamTypes = [
-    //   'heartrate', 'altitude', 'distance', 'cadence', 'velocity_smooth',
+    //   'heartrate', 'altitude', 'distance', 'cadence', 'velocity_smooth', 'latlng',
     //   'watts', 'watts_calc', 'temp', 'moving', 'grade_smooth', 'grade_adjusted_distance'
     // ];
-    // const streamsParams = streamTypes.join('&keys=');
     return await this.tsdbRequest(`/activities/${id}/streams?keys=${streamType},time&key_by_type=true`, {
       // key_by_type: true,
       // keys: "heartrate",
