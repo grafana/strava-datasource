@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	simplejson "github.com/bitly/go-simplejson"
@@ -329,7 +330,7 @@ func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *S
 	endpoint := query.Endpoint
 	params := query.Params
 
-	requestUrlStr := fmt.Sprintf("%s/%s", StravaAPIUrl, endpoint)
+	requestUrlStr := fmt.Sprintf("%s/%s", StravaAPIUrl, strings.TrimLeft(endpoint, "/"))
 	requestUrl, err := url.Parse(requestUrlStr)
 
 	q := requestUrl.Query()
