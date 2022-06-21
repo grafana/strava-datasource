@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	simplejson "github.com/bitly/go-simplejson"
@@ -333,7 +334,11 @@ func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *S
 
 	q := requestUrl.Query()
 	for param, value := range params {
-		q.Add(param, string(value))
+		valueUnquoted, err := strconv.Unquote(string(value))
+		if err != nil {
+			valueUnquoted = string(value)
+		}
+		q.Add(param, valueUnquoted)
 	}
 	requestUrl.RawQuery = q.Encode()
 	ds.logger.Debug("Strava API query", "url", requestUrl.String())

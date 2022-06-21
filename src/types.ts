@@ -211,6 +211,22 @@ export enum StravaActivityStream {
   LatLng = 'latlng',
 }
 
+export type StreamType =
+  | 'heartrate'
+  | 'altitude'
+  | 'distance'
+  | 'cadence'
+  | 'velocity_smooth'
+  | 'latlng'
+  | 'watts'
+  | 'watts_calc'
+  | 'temp'
+  | 'moving'
+  | 'grade_smooth'
+  | 'grade_adjusted_distance'
+  | 'time'
+  | 'timer_time';
+
 export interface VariableQuery {
   queryType: VariableQueryTypes;
   activityType: string;
