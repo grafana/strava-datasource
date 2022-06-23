@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -319,6 +320,31 @@ func (ds *StravaDatasourceInstance) ResetAccessToken() error {
 	ds.cache.Delete("accessToken")
 	ds.logger.Debug("Access token removed from cache")
 	return nil
+}
+
+func (ds *StravaDatasourceInstance) StravaAPIQueryWithCache(requestHash string) func(context.Context, *StravaAPIRequest) (*StravaApiResourceResponse, error) {
+	cachedEndpointsPattern := regexp.MustCompile(`activities/\d+`)
+	return func(ctx context.Context, query *StravaAPIRequest) (*StravaApiResourceResponse, error) {
+		if cachedEndpointsPattern.MatchString(query.Endpoint) {
+			cachedResponse, found := ds.cache.Get(requestHash)
+			if found {
+				apiResponse, ok := cachedResponse.(*StravaApiResourceResponse)
+				if ok {
+					return apiResponse, nil
+				} else {
+					ds.logger.Error("Cannot get value from cache, type assertion failed")
+				}
+			}
+			response, err := ds.StravaAPIQuery(ctx, query)
+			if err != nil {
+				return nil, err
+			}
+			ds.cache.Set(requestHash, response)
+			return response, nil
+		} else {
+			return ds.StravaAPIQuery(ctx, query)
+		}
+	}
 }
 
 func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *StravaAPIRequest) (*StravaApiResourceResponse, error) {

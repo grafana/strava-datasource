@@ -88,8 +88,13 @@ func (c *DSCache) buildDSCacheKey(request string) string {
 
 // HashString converts the given text string to hash string
 func HashString(text string) string {
+	return HashByte([]byte(text))
+}
+
+// HashByte converts the given bytes to hash string
+func HashByte(data []byte) string {
 	hash := sha1.New()
-	hash.Write([]byte(text))
+	hash.Write(data)
 	return hex.EncodeToString(hash.Sum(nil))
 }
 
