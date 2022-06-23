@@ -35,8 +35,13 @@ func NewDSCache(dsInfo *backend.DataSourceInstanceSettings, ttl time.Duration, c
 	}
 }
 
-// Add an item to the cache, replacing any existing item.
-func (c *DSCache) Set(request string, response interface{}, d time.Duration) {
+// Add an item to the cache with default expiration time, replacing any existing item.
+func (c *DSCache) Set(request string, response interface{}) {
+	c.gocache.SetDefault(request, response)
+}
+
+// Save item to the cache with provided expiration time
+func (c *DSCache) SetWithExpiration(request string, response interface{}, d time.Duration) {
 	c.gocache.Set(request, response, d)
 }
 
@@ -55,15 +60,17 @@ func (c *DSCache) Delete(request string) {
 	c.gocache.Delete(request)
 }
 
+// Save value to disk
 func (c *DSCache) Save(request string, response interface{}) error {
-	cacheKey := c.BuildDSCacheKey(request)
+	cacheKey := c.buildDSCacheKey(request)
 	filename := filepath.Join(c.dataDir, cacheKey)
 	cacheLogger.Debug("Saving key to file", "key", request, "path", filename)
 	return os.WriteFile(filename, []byte(response.(string)), 0644)
 }
 
+// Load value from disk
 func (c *DSCache) Load(request string) (string, error) {
-	cacheKey := c.BuildDSCacheKey(request)
+	cacheKey := c.buildDSCacheKey(request)
 	filename := filepath.Join(c.dataDir, cacheKey)
 	cacheLogger.Debug("Loading key from file", "key", request, "path", filename)
 	value, err := os.ReadFile(filename)
@@ -71,11 +78,11 @@ func (c *DSCache) Load(request string) (string, error) {
 		return "", err
 	}
 	response := string(value)
-	c.Set(request, response, cache.NoExpiration)
+	c.SetWithExpiration(request, response, cache.NoExpiration)
 	return response, nil
 }
 
-func (c *DSCache) BuildDSCacheKey(request string) string {
+func (c *DSCache) buildDSCacheKey(request string) string {
 	return fmt.Sprintf("%v-%s", c.dsInfo.ID, request)
 }
 

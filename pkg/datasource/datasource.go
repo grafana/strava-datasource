@@ -238,8 +238,8 @@ func (ds *StravaDatasourceInstance) ExchangeToken(authCode string) (*TokenExchan
 	refreshToken := respJson.Get("refresh_token").MustString()
 	ds.logger.Debug("Got new refresh token")
 
-	ds.cache.Set("accessToken", accessToken, accessTokenExpIn)
-	ds.cache.Set("refreshToken", refreshToken, cache.NoExpiration)
+	ds.cache.SetWithExpiration("accessToken", accessToken, accessTokenExpIn)
+	ds.cache.SetWithExpiration("refreshToken", refreshToken, cache.NoExpiration)
 
 	err = ds.cache.Save("refreshToken", refreshToken)
 	if err != nil {
@@ -297,10 +297,10 @@ func (ds *StravaDatasourceInstance) RefreshAccessToken(refreshToken string) (*To
 	accessTokenExpIn := time.Until(time.Unix(accessTokenExpAt, 0))
 	refreshTokenNew := respJson.Get("refresh_token").MustString()
 
-	ds.cache.Set("accessToken", accessToken, accessTokenExpIn)
+	ds.cache.SetWithExpiration("accessToken", accessToken, accessTokenExpIn)
 	if refreshTokenNew != refreshToken {
 		ds.logger.Debug("Got new refresh token", "refresh token", refreshTokenNew)
-		ds.cache.Set("refreshToken", refreshTokenNew, cache.NoExpiration)
+		ds.cache.SetWithExpiration("refreshToken", refreshTokenNew, cache.NoExpiration)
 
 		err := ds.cache.Save("refreshToken", refreshTokenNew)
 		if err != nil {
