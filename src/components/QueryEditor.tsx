@@ -140,7 +140,7 @@ const baseStatsOptions: Array<SelectableValue<string>> = [
 
 const stravaStatsOptions = baseStatsOptions.concat(extendedStatsOptions);
 
-export const DefaultTarget: StravaQuery = {
+export const defaultQuery: StravaQuery = {
   refId: '',
   queryType: StravaQueryType.Activities,
   activityType: null,
@@ -148,14 +148,17 @@ export const DefaultTarget: StravaQuery = {
   format: StravaQueryFormat.TimeSeries,
   interval: StravaQueryInterval.Auto,
   activityData: StravaActivityData.Graph,
-  activityGraph: StravaActivityStream.HeartRate,
+  activityGraph: StravaActivityStream.Velocity,
+  splitStat: StravaSplitStat.Speed,
+  singleActivityStat: 'name',
   extendedStats: [],
-  singleActivityStat: '',
+  fitToTimeRange: true,
 };
 
 export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
 
 export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) => {
+  query = { ...defaultQuery, ...query };
   const [athlete, setAthlete] = useState<StravaAthlete | undefined>(datasource.athlete);
   const [{ loading: athleteLoading }, fetchAuthenticatedAthlete] = useAsyncFn(async () => {
     const result = await datasource.stravaApi.getAuthenticatedAthlete();
