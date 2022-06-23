@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAsyncFn } from 'react-use';
 import { SelectableValue, QueryEditorProps, dateTime } from '@grafana/data';
-import { InlineField, InlineFormLabel, InlineSwitch, MultiSelect, Select } from '@grafana/ui';
+import { InlineField, InlineFieldRow, InlineFormLabel, InlineSwitch, MultiSelect, Select } from '@grafana/ui';
 import {
   StravaQuery,
   StravaQueryType,
@@ -273,19 +273,19 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
   const renderActivitiesEditor = () => {
     return (
       <>
-        <div className="gf-form-inline">
+        <InlineFieldRow>
           <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
-          <InlineFormLabel width={5}>Format</InlineFormLabel>
-          <Select
-            isSearchable={false}
-            width={16}
-            options={FORMAT_OPTIONS}
-            onChange={onPropChange('format')}
-            value={getFormatOption()}
-          />
+          <InlineField label="Format" labelWidth={10}>
+            <Select
+              isSearchable={false}
+              width={16}
+              options={FORMAT_OPTIONS}
+              onChange={onPropChange('format')}
+              value={getFormatOption()}
+            />
+          </InlineField>
           {query.format !== StravaQueryFormat.Heatmap && (
-            <>
-              <InlineFormLabel width={6}>Stat</InlineFormLabel>
+            <InlineField label="Stat" labelWidth={12}>
               <Select
                 isSearchable={false}
                 width={16}
@@ -293,11 +293,10 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
                 options={stravaActivityStatOptions}
                 onChange={onPropChange('activityStat')}
               />
-            </>
+            </InlineField>
           )}
           {query.format === StravaQueryFormat.TimeSeries && (
-            <>
-              <InlineFormLabel width={6}>Interval</InlineFormLabel>
+            <InlineField label="Interval" labelWidth={12}>
               <Select
                 isSearchable={false}
                 width={16}
@@ -305,14 +304,14 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
                 onChange={onPropChange('interval')}
                 value={getIntervalOption()}
               />
-            </>
+            </InlineField>
           )}
           <div className="gf-form gf-form--grow">
             <div className="gf-form-label gf-form-label--grow" />
           </div>
-        </div>
+        </InlineFieldRow>
         {query.format === StravaQueryFormat.Table && (
-          <div className="gf-form-inline">
+          <InlineFieldRow>
             <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
             <InlineField label="Extended Stats" labelWidth={14}>
               <MultiSelect
@@ -326,7 +325,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
             <div className="gf-form gf-form--grow">
               <div className="gf-form-label gf-form-label--grow" />
             </div>
-          </div>
+          </InlineFieldRow>
         )}
       </>
     );
@@ -335,16 +334,17 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
   const renderActivityEditor = () => {
     return (
       <>
-        <div className="gf-form-inline">
+        <InlineFieldRow>
           <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
-          <InlineFormLabel width={5}>Activity</InlineFormLabel>
-          <Select
-            isSearchable={true}
-            width={33}
-            value={getSelectedActivityOption()}
-            options={activitiesOptions}
-            onChange={onActivityChanged}
-          />
+          <InlineField label="Activity" labelWidth={10}>
+            <Select
+              isSearchable={true}
+              width={30}
+              value={getSelectedActivityOption()}
+              options={activitiesOptions}
+              onChange={onActivityChanged}
+            />
+          </InlineField>
           <InlineField label="Data" labelWidth={10}>
             <Select
               isSearchable={false}
@@ -355,38 +355,45 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
             />
           </InlineField>
           {query.activityData === StravaActivityData.Graph && (
-            <Select
-              isSearchable={false}
-              width={16}
-              value={getSelectedActivityGraph()}
-              options={stravaActivityGraphOptions}
-              onChange={onPropChange('activityGraph')}
-            />
+            <InlineField>
+              <Select
+                isSearchable={false}
+                width={16}
+                value={getSelectedActivityGraph()}
+                options={stravaActivityGraphOptions}
+                onChange={onPropChange('activityGraph')}
+              />
+            </InlineField>
           )}
           {query.activityData === StravaActivityData.Splits && (
-            <Select
-              isSearchable={false}
-              width={16}
-              value={getSelectedActivitySplit()}
-              options={stravaActivitySplitOptions}
-              onChange={onPropChange('splitStat')}
-            />
+            <InlineField>
+              <Select
+                isSearchable={false}
+                width={16}
+                value={getSelectedActivitySplit()}
+                options={stravaActivitySplitOptions}
+                onChange={onPropChange('splitStat')}
+              />
+            </InlineField>
           )}
           {query.activityData === StravaActivityData.Stats && (
-            <Select
-              isSearchable={true}
-              width={20}
-              value={getSelectedSingleActivityStat()}
-              options={stravaStatsOptions}
-              onChange={onPropChange('singleActivityStat')}
-            />
+            <InlineField>
+              <Select
+                isSearchable={true}
+                width={20}
+                value={getSelectedSingleActivityStat()}
+                options={stravaStatsOptions}
+                onChange={onPropChange('singleActivityStat')}
+              />
+            </InlineField>
           )}
-          <InlineFormLabel width={5}>Fit to range</InlineFormLabel>
-          <InlineSwitch css="" value={query.fitToTimeRange || false} onChange={onFitToRangeChanged}></InlineSwitch>
+          <InlineField label="Fit to range" labelWidth={10}>
+            <InlineSwitch value={query.fitToTimeRange || false} onChange={onFitToRangeChanged} />
+          </InlineField>
           <div className="gf-form gf-form--grow">
             <div className="gf-form-label gf-form-label--grow" />
           </div>
-        </div>
+        </InlineFieldRow>
       </>
     );
   };
@@ -395,28 +402,30 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
 
   return (
     <>
-      <div className="gf-form-inline">
+      <InlineFieldRow>
         <AthleteLabel athlete={athlete} isLoading={athleteLoading} />
-        <InlineFormLabel width={5}>Query</InlineFormLabel>
-        <Select
-          isSearchable={false}
-          width={16}
-          value={queryType}
-          options={stravaQueryTypeOptions}
-          onChange={onPropChange('queryType')}
-        />
-        <InlineFormLabel width={6}>Activity type</InlineFormLabel>
-        <Select
-          isSearchable={false}
-          width={16}
-          value={getSelectedActivityType()}
-          options={stravaActivityTypeOptions}
-          onChange={onActivityTypeChanged}
-        />
+        <InlineField label="Query" labelWidth={10}>
+          <Select
+            isSearchable={false}
+            width={16}
+            value={queryType}
+            options={stravaQueryTypeOptions}
+            onChange={onPropChange('queryType')}
+          />
+        </InlineField>
+        <InlineField label="Activity type" labelWidth={12}>
+          <Select
+            isSearchable={false}
+            width={16}
+            value={getSelectedActivityType()}
+            options={stravaActivityTypeOptions}
+            onChange={onActivityTypeChanged}
+          />
+        </InlineField>
         <div className="gf-form gf-form--grow">
           <div className="gf-form-label gf-form-label--grow" />
         </div>
-      </div>
+      </InlineFieldRow>
       {queryType?.value === StravaQueryType.Activities && renderActivitiesEditor()}
       {queryType?.value === StravaQueryType.Activity && renderActivityEditor()}
     </>
