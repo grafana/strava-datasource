@@ -1,5 +1,5 @@
 import { getBackendSrv } from '@grafana/runtime';
-import { StravaActivity, StreamType } from 'types';
+import { StravaActivity, StravaAthlete, StreamType } from 'types';
 
 export default class StravaApi {
   datasourceId: number;
@@ -18,7 +18,7 @@ export default class StravaApi {
     this.apiUrl = '';
   }
 
-  async getAuthenticatedAthlete(params?: any) {
+  async getAuthenticatedAthlete(params?: any): Promise<StravaAthlete> {
     return await this.tsdbRequest('athlete', params);
   }
 

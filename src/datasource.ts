@@ -321,7 +321,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       ],
     });
 
-    let points: [number, number][] = [];
+    let points: Array<[number, number]> = [];
     const summaryPolyline = activity?.map?.polyline;
     points = polyline.decode(summaryPolyline);
 

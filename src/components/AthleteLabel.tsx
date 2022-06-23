@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { css, cx } from 'emotion';
-import { InlineFormLabel, stylesFactory, useTheme } from '@grafana/ui';
+import { InlineFormLabel, Spinner, stylesFactory, useTheme } from '@grafana/ui';
 import { GrafanaTheme } from '@grafana/data';
 import { StravaAthlete } from '../types';
 
@@ -20,18 +20,32 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
     athletePlaceholder: css`
       width: 28px;
     `,
+    spinner: css`
+      width: 28px;
+      height: ${theme.spacing.formInputHeight}px;
+      padding: 2px;
+      border-radius: ${theme.border.radius.md};
+      background-color: ${theme.palette.dark4};
+    `,
   };
 });
 
 interface Props {
   athlete?: StravaAthlete;
+  isLoading?: boolean;
 }
 
-export const AthleteLabel: FC<Props> = (props: Props) => {
-  const { athlete } = props;
+export const AthleteLabel: FC<Props> = ({ athlete, isLoading }: Props) => {
   const styles = getStyles(useTheme());
   const imgClass = cx('filter-table__avatar', styles.athleteAvatar);
-  return (
+  return isLoading ? (
+    <div className="gf-form">
+      <div className={styles.spinner}>
+        <Spinner size={20} />
+      </div>
+      <InlineFormLabel>&nbsp;</InlineFormLabel>
+    </div>
+  ) : (
     <div className="gf-form">
       {athlete?.profile_medium ? (
         <div className={styles.athleteLabel}>
