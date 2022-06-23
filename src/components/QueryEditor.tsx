@@ -140,12 +140,10 @@ const baseStatsOptions: Array<SelectableValue<string>> = [
 
 const stravaStatsOptions = baseStatsOptions.concat(extendedStatsOptions);
 
-export const DefaultTarget: State = {
+export const DefaultTarget: StravaQuery = {
   refId: '',
-  athlete: {} as StravaAthlete,
   queryType: StravaQueryType.Activities,
   activityType: null,
-  activitiesOptions: [],
   activityStat: StravaActivityStat.Distance,
   format: StravaQueryFormat.TimeSeries,
   interval: StravaQueryInterval.Auto,
@@ -156,12 +154,6 @@ export const DefaultTarget: State = {
 };
 
 export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
-
-interface State extends StravaQuery {
-  athlete?: StravaAthlete;
-  selectedActivity?: SelectableValue<number>;
-  activitiesOptions: Array<SelectableValue<number>>;
-}
 
 export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) => {
   const [athlete, setAthlete] = useState<StravaAthlete | undefined>(datasource.athlete);
@@ -248,59 +240,15 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
     };
   };
 
-  const onQueryTypeChanged = (option: SelectableValue<StravaQueryType>) => {
-    if (option.value) {
-      onChangeInternal({ ...query, queryType: option.value });
-    }
-  };
-
-  const onActivityStatChanged = (option: SelectableValue<StravaActivityStat>) => {
-    if (option.value) {
-      onChangeInternal({ ...query, activityStat: option.value });
-    }
-  };
-
-  const onActivityDataChanged = (option: SelectableValue<StravaActivityData>) => {
-    if (option.value) {
-      onChangeInternal({ ...query, activityData: option.value });
-    }
-  };
-
-  const onActivityGraphChanged = (option: SelectableValue<StravaActivityStream>) => {
-    if (option.value) {
-      onChangeInternal({ ...query, activityGraph: option.value });
-    }
-  };
-
-  const onActivitySplitChanged = (option: SelectableValue<StravaSplitStat>) => {
-    if (option.value) {
-      onChangeInternal({ ...query, splitStat: option.value });
-    }
-  };
-
   const onActivityTypeChanged = async (option: SelectableValue<StravaActivityType>) => {
     if (option.value !== undefined) {
       onChangeInternal({ ...query, activityType: option.value });
       fetchActivitiesOptions();
-      // const activitiesOptions = await this.getActivitiesOptions(option.value);
-      // this.setState({ activitiesOptions });
     }
   };
 
   const onFitToRangeChanged = (event: React.FormEvent<HTMLInputElement>) => {
     onChangeInternal({ ...query, fitToTimeRange: !query.fitToTimeRange });
-  };
-
-  const onFormatChange = (option: SelectableValue<StravaQueryFormat>) => {
-    if (option.value) {
-      onChangeInternal({ ...query, format: option.value });
-    }
-  };
-
-  const onIntervalChange = (option: SelectableValue<StravaQueryInterval>) => {
-    if (option.value) {
-      onChangeInternal({ ...query, interval: option.value });
-    }
   };
 
   const onActivityChanged = (option: SelectableValue<number>) => {
@@ -314,12 +262,6 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
       const values: string[] = [];
       options.forEach((option) => option.value && values.push(option.value));
       onChangeInternal({ ...query, extendedStats: values });
-    }
-  };
-
-  const onSingleActivityStatChanged = (option: SelectableValue<string>) => {
-    if (option.value) {
-      onChangeInternal({ ...query, singleActivityStat: option.value });
     }
   };
 
@@ -338,7 +280,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
             isSearchable={false}
             width={16}
             options={FORMAT_OPTIONS}
-            onChange={onFormatChange}
+            onChange={onPropChange('format')}
             value={getFormatOption()}
           />
           {query.format !== StravaQueryFormat.Heatmap && (
@@ -349,7 +291,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
                 width={16}
                 value={getSelectedActivityStat()}
                 options={stravaActivityStatOptions}
-                onChange={onActivityStatChanged}
+                onChange={onPropChange('activityStat')}
               />
             </>
           )}
@@ -360,7 +302,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
                 isSearchable={false}
                 width={16}
                 options={INTERVAL_OPTIONS}
-                onChange={onIntervalChange}
+                onChange={onPropChange('interval')}
                 value={getIntervalOption()}
               />
             </>
@@ -409,7 +351,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
               width={16}
               value={getSelectedActivityData()}
               options={stravaActivityDataOptions}
-              onChange={onActivityDataChanged}
+              onChange={onPropChange('activityData')}
             />
           </InlineField>
           {query.activityData === StravaActivityData.Graph && (
@@ -418,7 +360,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
               width={16}
               value={getSelectedActivityGraph()}
               options={stravaActivityGraphOptions}
-              onChange={onActivityGraphChanged}
+              onChange={onPropChange('activityGraph')}
             />
           )}
           {query.activityData === StravaActivityData.Splits && (
@@ -427,7 +369,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
               width={16}
               value={getSelectedActivitySplit()}
               options={stravaActivitySplitOptions}
-              onChange={onActivitySplitChanged}
+              onChange={onPropChange('splitStat')}
             />
           )}
           {query.activityData === StravaActivityData.Stats && (
@@ -436,7 +378,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
               width={20}
               value={getSelectedSingleActivityStat()}
               options={stravaStatsOptions}
-              onChange={onSingleActivityStatChanged}
+              onChange={onPropChange('singleActivityStat')}
             />
           )}
           <InlineFormLabel width={5}>Fit to range</InlineFormLabel>
