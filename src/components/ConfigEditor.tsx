@@ -1,5 +1,5 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { Button, RadioButtonGroup, InlineField, Input } from '@grafana/ui';
+import { Button, RadioButtonGroup, InlineField, Input, InlineFieldRow } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
 import { StravaAuthType, StravaJsonData, StravaSecureJsonData } from '../types';
 
@@ -73,6 +73,16 @@ export class ConfigEditor extends PureComponent<Props, State> {
 
     this.props.onOptionsChange({
       ...config,
+    });
+  };
+
+  onCacheTTLChange = (cacheTTL: string) => {
+    this.updateDatasource({
+      ...this.state.config,
+      jsonData: {
+        ...this.state.config.jsonData,
+        cacheTTL,
+      },
     });
   };
 
@@ -188,42 +198,50 @@ export class ConfigEditor extends PureComponent<Props, State> {
           />
         </div>
         <div className="gf-form-group">
-          <InlineField label="Client ID" labelWidth={16}>
-            <Input
-              width={50}
-              value={config.jsonData.clientID || ''}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientIDChange(event.target.value)}
-            />
-          </InlineField>
-          {config.secureJsonFields && config.secureJsonFields.clientSecret ? (
-            <InlineField label="Client Secret" labelWidth={16}>
-              <>
-                <Input placeholder="Configured" width={50} disabled />
-                <Button variant="secondary" type="button" onClick={this.onResetClientSecret}>
-                  Reset
-                </Button>
-              </>
-            </InlineField>
-          ) : (
-            <InlineField label="Client Secret" labelWidth={16}>
+          <InlineFieldRow>
+            <InlineField label="Client ID" labelWidth={16}>
               <Input
                 width={50}
-                value={config.secureJsonData?.clientSecret || ''}
-                onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientSecretChange(event.target.value)}
+                value={config.jsonData.clientID || ''}
+                onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientIDChange(event.target.value)}
               />
             </InlineField>
-          )}
+          </InlineFieldRow>
+          <InlineFieldRow>
+            {config.secureJsonFields && config.secureJsonFields.clientSecret ? (
+              <>
+                <InlineField label="Client Secret" labelWidth={16}>
+                  <Input placeholder="Configured" width={50} disabled />
+                </InlineField>
+                <InlineField>
+                  <Button variant="secondary" type="button" onClick={this.onResetClientSecret}>
+                    Reset
+                  </Button>
+                </InlineField>
+              </>
+            ) : (
+              <InlineField label="Client Secret" labelWidth={16}>
+                <Input
+                  width={50}
+                  value={config.secureJsonData?.clientSecret || ''}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => this.onClientSecretChange(event.target.value)}
+                />
+              </InlineField>
+            )}
+          </InlineFieldRow>
           {config.jsonData?.stravaAuthType === StravaAuthType.RefreshToken && (
-            <>
+            <InlineFieldRow>
               {config.secureJsonFields && config.secureJsonFields.refreshToken ? (
-                <InlineField label="Refresh Token" labelWidth={16}>
-                  <>
+                <>
+                  <InlineField label="Refresh Token" labelWidth={16}>
                     <Input placeholder="Configured" width={50} disabled />
+                  </InlineField>
+                  <InlineField>
                     <Button variant="secondary" type="button" onClick={this.onResetRefreshToken}>
                       Reset
                     </Button>
-                  </>
-                </InlineField>
+                  </InlineField>
+                </>
               ) : (
                 <InlineField label="Refresh Token" labelWidth={16}>
                   <Input
@@ -233,7 +251,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
                   />
                 </InlineField>
               )}
-            </>
+            </InlineFieldRow>
           )}
         </div>
         {config.jsonData?.stravaAuthType !== StravaAuthType.RefreshToken && (
@@ -243,6 +261,16 @@ export class ConfigEditor extends PureComponent<Props, State> {
             </a>
           </div>
         )}
+        <InlineFieldRow>
+          <InlineField label="Cache TTL" labelWidth={16}>
+            <Input
+              width={10}
+              value={config.jsonData.cacheTTL || ''}
+              placeholder="1h"
+              onChange={(event: ChangeEvent<HTMLInputElement>) => this.onCacheTTLChange(event.target.value)}
+            />
+          </InlineField>
+        </InlineFieldRow>
       </>
     );
   }

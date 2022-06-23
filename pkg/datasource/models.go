@@ -52,3 +52,9 @@ func ReadQuery(query backend.DataQuery) (QueryModel, error) {
 	model.TimeRange = query.TimeRange
 	return model, nil
 }
+
+type StravaDatasourceSettingsDTO struct {
+	StravaAuthType string `json:"stravaAuthType"`
+	ClientID       string `json:"clientID"`
+	CacheTTL       string `json:"cacheTTL"`
+}
