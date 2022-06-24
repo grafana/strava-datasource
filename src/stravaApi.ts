@@ -18,8 +18,8 @@ export default class StravaApi {
     this.apiUrl = '';
   }
 
-  async getAuthenticatedAthlete(params?: any): Promise<StravaAthlete> {
-    return await this.tsdbRequest('athlete', params);
+  async getAuthenticatedAthlete(): Promise<StravaAthlete> {
+    return await this.tsdbRequest('athlete');
   }
 
   async getActivities(params?: any): Promise<StravaActivity[]> {

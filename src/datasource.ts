@@ -359,7 +359,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
   async testDatasource() {
     if (this.stravaAuthType !== StravaAuthType.RefreshToken) {
-      const authCode = this.getAuthCode();
+      const authCode = this.getAuthCodeFromLocation();
       if (authCode) {
         // Exchange auth code for new refresh token if "Connect with Strava" button clicked
         try {
@@ -372,15 +372,21 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     try {
       await this.stravaApi.resetAccessToken();
-      await this.stravaApi.getActivities({ per_page: 2, limit: 2 });
-      return { status: 'success', message: 'Data source is working' };
+      const athlete = await this.stravaApi.getAuthenticatedAthlete();
+      if (!athlete) {
+        return { status: 'error', message: `Cannot get authenticated user.` };
+      }
+      return {
+        status: 'success',
+        message: `Data source is working. Authenticated as ${athlete.firstname} ${athlete.lastname}.`,
+      };
     } catch (err: any) {
       const message = err?.data?.message || '';
       return { status: 'error', message: `Cannot connect to Strava API${message ? ': ' + message : ''}` };
     }
   }
 
-  getAuthCode() {
+  getAuthCodeFromLocation() {
     const AuthCodePattern = /code=([\w]+)/;
     const result = AuthCodePattern.exec(window.location.search);
     const authCode = result && result.length && result[1];
