@@ -176,7 +176,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
       fetchAuthenticatedAthlete();
     }
     fetchActivitiesOptions();
-  }, [fetchAuthenticatedAthlete, fetchActivitiesOptions]);
+  }, [datasource.athlete, fetchAuthenticatedAthlete, fetchActivitiesOptions]);
 
   const getActivitiesOptions = async (activityType: StravaActivityType): Promise<Array<SelectableValue<number>>> => {
     let activities = await datasource.stravaApi.getActivities({ limit: 100 });
