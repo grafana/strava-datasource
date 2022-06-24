@@ -191,7 +191,7 @@ func (ds *StravaDatasourceInstance) GetAccessToken() (string, error) {
 			ds.logger.Debug("Loading refresh token from file")
 			refreshToken, err = ds.cache.Load("refreshToken")
 			if err != nil {
-				ds.logger.Error(err.Error())
+				ds.logger.Error("Error loading token from file", "err", err)
 				return "", errors.New("Refresh token not found, authorize datasource first")
 			}
 			ds.logger.Debug("Refresh token loaded from file")

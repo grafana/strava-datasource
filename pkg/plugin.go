@@ -35,10 +35,16 @@ func main() {
 
 func Init(mux *http.ServeMux) *datasource.StravaDatasource {
 	path, exist := os.LookupEnv(DATA_PATH_VARIABLE)
-	if !exist {
-		log.DefaultLogger.Debug("Could not read environment variable", DATA_PATH_VARIABLE)
-	} else {
+	if exist && path != "" {
 		log.DefaultLogger.Debug("Environment variable for storage path found", "variable", DATA_PATH_VARIABLE, "value", path)
+	} else {
+		log.DefaultLogger.Info("Could not read environment variable", "variable", DATA_PATH_VARIABLE)
+		var err error
+		path, err = os.UserHomeDir()
+		if err != nil {
+			log.DefaultLogger.Error("Cannot get home dir path", "error", err)
+		}
+		log.DefaultLogger.Info("Using default path", "path", path)
 	}
 
 	ds := datasource.NewStravaDatasource(path)
