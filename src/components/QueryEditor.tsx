@@ -39,8 +39,9 @@ const stravaActivityStatOptions: Array<SelectableValue<StravaActivityStat>> = [
   { value: StravaActivityStat.ElapsedTime, label: 'Elapsed Time' },
   { value: StravaActivityStat.MovingTime, label: 'Moving Time' },
   { value: StravaActivityStat.ElevationGain, label: 'Elevation Gain' },
-  { value: StravaActivityStat.AveragePower, label: 'Average Power' },
   { value: StravaActivityStat.AverageHeartRate, label: 'Average Heart Rate' },
+  { value: StravaActivityStat.AveragePower, label: 'Average Power' },
+  { value: StravaActivityStat.WeightedAveragePower, label: 'Weighted Average Power' },
 ];
 
 const stravaActivityTypeOptions: Array<SelectableValue<StravaActivityType>> = [
@@ -98,6 +99,7 @@ const extendedStatsOptions: Array<SelectableValue<string>> = [
   { label: 'achievement_count', value: 'achievement_count' },
   { label: 'average_speed', value: 'average_speed' },
   { label: 'average_watts', value: 'average_watts' },
+  { label: 'weighted_average_watts', value: 'weighted_average_watts' },
   { label: 'comment_count', value: 'comment_count' },
   { label: 'commute', value: 'commute' },
   { label: 'device_watts', value: 'device_watts' },
