@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
@@ -13,6 +14,7 @@ import (
 const (
 	STRAVA_PLUGIN_ID   = "strava-backend-datasource"
 	DATA_PATH_VARIABLE = "GF_STRAVA_DS_DATA_PATH"
+	DEFAULT_DATA_DIR   = "strava-datasource"
 )
 
 func main() {
@@ -34,20 +36,25 @@ func main() {
 }
 
 func Init(mux *http.ServeMux) *datasource.StravaDatasource {
-	path, exist := os.LookupEnv(DATA_PATH_VARIABLE)
-	if exist && path != "" {
-		log.DefaultLogger.Debug("Environment variable for storage path found", "variable", DATA_PATH_VARIABLE, "value", path)
+	dataDirPath, exist := os.LookupEnv(DATA_PATH_VARIABLE)
+	if exist && dataDirPath != "" {
+		log.DefaultLogger.Debug("Environment variable for storage path found", "variable", DATA_PATH_VARIABLE, "value", dataDirPath)
 	} else {
 		log.DefaultLogger.Info("Could not read environment variable", "variable", DATA_PATH_VARIABLE)
 		var err error
-		path, err = os.UserHomeDir()
+		dataDirPath, err = os.UserCacheDir()
 		if err != nil {
-			log.DefaultLogger.Error("Cannot get home dir path", "error", err)
+			log.DefaultLogger.Error("Cannot get OS cache directory path", "error", err)
 		}
-		log.DefaultLogger.Info("Using default path", "path", path)
+		dataDirPath = path.Join(dataDirPath, DEFAULT_DATA_DIR)
+		err = os.Mkdir(dataDirPath, os.ModePerm)
+		if err != nil {
+			log.DefaultLogger.Error("Cannot create data directory", "error", err)
+		}
+		log.DefaultLogger.Info("Using default data path", "path", dataDirPath)
 	}
 
-	ds := datasource.NewStravaDatasource(path)
+	ds := datasource.NewStravaDatasource(dataDirPath)
 
 	mux.HandleFunc("/", ds.RootHandler)
 	mux.HandleFunc("/auth", ds.StravaAuthHandler)
