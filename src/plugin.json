@@ -42,11 +42,6 @@
     },
     {
       "type": "dashboard",
-      "name": "Strava Athlete Dashboard Legacy",
-      "path": "dashboards/strava_athlete_dashboard_legacy.json"
-    },
-    {
-      "type": "dashboard",
       "name": "Strava Datasource",
       "path": "dashboards/strava_datasource.json"
     },

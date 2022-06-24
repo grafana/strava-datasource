@@ -14,7 +14,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.5.0"
+      "version": "9.0.0"
     },
     {
       "type": "datasource",
@@ -57,7 +57,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "short"
@@ -176,7 +179,10 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "short"
@@ -295,7 +301,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "velocityms"
@@ -416,7 +425,10 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "short"
@@ -534,7 +546,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "none"
@@ -653,7 +668,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "watt"
@@ -774,7 +792,10 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_STRAVA}",
+        "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
         "definition": "Strava - activity",
         "description": null,
         "error": null,

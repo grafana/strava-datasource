@@ -15,7 +15,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "8.1.0"
+      "version": "9.0.0"
     },
     {
       "type": "datasource",
@@ -91,7 +91,10 @@
       "type": "text"
     },
     {
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "displayName": "Activities",
@@ -158,7 +161,10 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "decimals": 0,
@@ -224,7 +230,10 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "decimals": 1,
@@ -290,7 +299,10 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "displayName": "Elevation gain",
@@ -370,7 +382,10 @@
       "type": "text"
     },
     {
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -544,7 +559,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -828,7 +846,10 @@
       "type": "table"
     },
     {
-      "datasource": "${DS_STRAVA}",
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
