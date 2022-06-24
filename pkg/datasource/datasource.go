@@ -346,7 +346,7 @@ func (ds *StravaDatasourceInstance) ResetAccessToken() error {
 func (ds *StravaDatasourceInstance) StravaAPIQueryWithCache(requestHash string) func(context.Context, *StravaAPIRequest) (*StravaApiResourceResponse, error) {
 	cachedEndpointsPattern := regexp.MustCompile(`activities/\d+`)
 	return func(ctx context.Context, query *StravaAPIRequest) (*StravaApiResourceResponse, error) {
-		if cachedEndpointsPattern.MatchString(query.Endpoint) {
+		if cachedEndpointsPattern.MatchString(query.Endpoint) || query.Endpoint == "athlete/activities" {
 			cachedResponse, found := ds.cache.Get(requestHash)
 			if found {
 				apiResponse, ok := cachedResponse.(*StravaApiResourceResponse)
@@ -360,7 +360,11 @@ func (ds *StravaDatasourceInstance) StravaAPIQueryWithCache(requestHash string) 
 			if err != nil {
 				return nil, err
 			}
-			ds.cache.Set(requestHash, response)
+			if query.Endpoint == "athlete/activities" {
+				ds.cache.SetWithExpiration(requestHash, response, time.Minute*5)
+			} else {
+				ds.cache.Set(requestHash, response)
+			}
 			return response, nil
 		} else {
 			return ds.StravaAPIQuery(ctx, query)
