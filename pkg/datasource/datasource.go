@@ -47,6 +47,7 @@ type StravaDatasourceInstance struct {
 	cache        *DSCache
 	logger       log.Logger
 	httpClient   *http.Client
+	prefetcher   *StravaPrefetcher
 }
 
 func NewStravaDatasource(dataDir string) *StravaDatasource {
@@ -80,7 +81,7 @@ func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, da
 	}
 	cacheTTL, err := gtime.ParseInterval(setingsDTO.CacheTTL)
 
-	return &StravaDatasourceInstance{
+	dsInstance := &StravaDatasourceInstance{
 		dsInfo: &settings,
 		logger: logger,
 		cache:  NewDSCache(&settings, cacheTTL, 10*time.Minute, dataDir),
@@ -101,7 +102,14 @@ func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, da
 			},
 			Timeout: time.Duration(time.Second * 30),
 		},
-	}, nil
+	}
+
+	// Initialize and run prefetcher
+	prefetcher := NewStravaPrefetcher(5, dsInstance)
+	dsInstance.prefetcher = prefetcher
+	dsInstance.prefetcher.Run()
+
+	return dsInstance, nil
 }
 
 // getDSInstance Returns cached datasource or creates new one

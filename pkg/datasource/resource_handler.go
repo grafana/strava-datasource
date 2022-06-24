@@ -116,6 +116,7 @@ func (ds *StravaDatasource) StravaAPIHandler(rw http.ResponseWriter, req *http.R
 
 	requestHash := HashByte(body)
 	stravaApiQueryFn := dsInstance.StravaAPIQueryWithCache(requestHash)
+	ds.logger.Debug("Request", "body", string(body), "hash", requestHash)
 	result, err := stravaApiQueryFn(req.Context(), &apiReq)
 	if err != nil {
 		ds.logger.Error("Strava API request error", "error", err)

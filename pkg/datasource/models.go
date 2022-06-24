@@ -58,3 +58,7 @@ type StravaDatasourceSettingsDTO struct {
 	ClientID       string `json:"clientID"`
 	CacheTTL       string `json:"cacheTTL"`
 }
+
+type ActivityDTO = struct {
+	Id int64 `json:"id"`
+}
