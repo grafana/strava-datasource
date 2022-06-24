@@ -17,13 +17,11 @@ const (
 
 func main() {
 	backend.SetupPluginEnvironment(STRAVA_PLUGIN_ID)
-
-	pluginLogger := log.New()
 	mux := http.NewServeMux()
-	ds := Init(pluginLogger, mux)
+	ds := Init(mux)
 	httpResourceHandler := httpadapter.New(mux)
 
-	pluginLogger.Debug("Starting Strava datasource")
+	log.DefaultLogger.Debug("Starting Strava datasource")
 
 	err := backend.Serve(backend.ServeOpts{
 		CallResourceHandler: httpResourceHandler,
@@ -31,16 +29,16 @@ func main() {
 		CheckHealthHandler:  ds,
 	})
 	if err != nil {
-		pluginLogger.Error("Error starting Strava datasource", "error", err.Error())
+		log.DefaultLogger.Error("Error starting Strava datasource", "error", err.Error())
 	}
 }
 
-func Init(logger log.Logger, mux *http.ServeMux) *datasource.StravaDatasource {
+func Init(mux *http.ServeMux) *datasource.StravaDatasource {
 	path, exist := os.LookupEnv(DATA_PATH_VARIABLE)
 	if !exist {
-		logger.Debug("Could not read environment variable", DATA_PATH_VARIABLE)
+		log.DefaultLogger.Debug("Could not read environment variable", DATA_PATH_VARIABLE)
 	} else {
-		logger.Debug("Environment variable for storage path found", "variable", DATA_PATH_VARIABLE, "value", path)
+		log.DefaultLogger.Debug("Environment variable for storage path found", "variable", DATA_PATH_VARIABLE, "value", path)
 	}
 
 	ds := datasource.NewStravaDatasource(path)
