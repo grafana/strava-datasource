@@ -66,8 +66,21 @@
   "graphTooltip": 0,
   "id": null,
   "iteration": 1640593352101,
-  "links": [],
   "liveNow": false,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "dashboard",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Return to athlete dashboard",
+      "tooltip": "",
+      "type": "link",
+      "url": "d/StravaAthleteDashboardModern-v2"
+    }
+  ],
   "panels": [
     {
       "datasource": {
@@ -915,6 +928,6 @@
   "timezone": "",
   "title": "Strava Activity Overview",
   "uid": "StravaActivityOverview",
-  "version": 11,
+  "version": 12,
   "weekStart": ""
 }
