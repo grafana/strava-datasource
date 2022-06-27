@@ -173,7 +173,6 @@ func (ds *StravaDatasourceInstance) GetAccessToken() (string, error) {
 	accessToken, expTime, found := ds.cache.gocache.GetWithExpiration("accessToken")
 	accessTokenExpired := time.Now().After(expTime)
 	if found && !accessTokenExpired {
-		ds.logger.Debug("Access token found in cache")
 		return accessToken.(string), nil
 	} else if found && accessTokenExpired {
 		ds.logger.Debug("Access token expired, obtaining new one")
