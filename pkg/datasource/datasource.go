@@ -349,7 +349,7 @@ func (ds *StravaDatasourceInstance) ResetCache() {
 }
 
 func (ds *StravaDatasourceInstance) StravaAPIQueryWithCache(requestHash string) func(context.Context, *StravaAPIRequest) (*StravaApiResourceResponse, error) {
-	cachedEndpointsPattern := regexp.MustCompile(`activities/\d+`)
+	cachedEndpointsPattern := regexp.MustCompile(`activities/\d+|athlete`)
 	return func(ctx context.Context, query *StravaAPIRequest) (*StravaApiResourceResponse, error) {
 		if cachedEndpointsPattern.MatchString(query.Endpoint) || query.Endpoint == "athlete/activities" {
 			cachedResponse, found := ds.cache.Get(requestHash)
