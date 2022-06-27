@@ -8,7 +8,7 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 )
 
-const MaxTasks = 2
+const MaxTasks = 4
 
 type StravaPrefetcher struct {
 	depth      int
@@ -74,25 +74,75 @@ func (p *StravaPrefetcher) PrefetchActivities(activities []string) {
 		activityId := activities[i]
 		queue <- 1
 		go func(activityId string) {
-			// p.ds.StravaAPIQueryWithCache()
-			payloadPattern := `{"datasourceId":%d,"endpoint":"/activities/%s","params":{"include_all_efforts":true}}`
-			payload := fmt.Sprintf(payloadPattern, p.ds.dsInfo.ID, activityId)
-			log.DefaultLogger.Debug("Prefetching", "payload", payload)
-
-			requestHash := HashString(payload)
-			stravaApiQueryFn := p.ds.StravaAPIQueryWithCache(requestHash)
-			apiReq := &StravaAPIRequest{
-				Endpoint: fmt.Sprintf("/activities/%s", activityId),
-				Params: map[string]json.RawMessage{
-					"include_all_efforts": []byte("true"),
-				},
-			}
-			_, err := stravaApiQueryFn(context.Background(), apiReq)
-			if err != nil {
-				log.DefaultLogger.Error("Error loading activity", "errror", err)
-			}
-
+			p.PrefetchActivity(activityId)
+			p.PrefetchActivityStreams(activityId)
 			<-queue
 		}(activityId)
+	}
+}
+
+func (p *StravaPrefetcher) PrefetchActivity(activityId string) {
+	payloadPattern := `{"datasourceId":%d,"endpoint":"/activities/%s","params":{"include_all_efforts":true}}`
+	payload := fmt.Sprintf(payloadPattern, p.ds.dsInfo.ID, activityId)
+	log.DefaultLogger.Debug("Prefetching", "payload", payload)
+
+	requestHash := HashString(payload)
+	stravaApiQueryFn := p.ds.StravaAPIQueryWithCache(requestHash)
+	apiReq := &StravaAPIRequest{
+		Endpoint: fmt.Sprintf("/activities/%s", activityId),
+		Params: map[string]json.RawMessage{
+			"include_all_efforts": []byte("true"),
+		},
+	}
+	_, err := stravaApiQueryFn(context.Background(), apiReq)
+	if err != nil {
+		log.DefaultLogger.Error("Error loading activity", "errror", err)
+	}
+}
+
+type PrefetchStreamTask struct {
+	pattern string
+	keys    map[string]json.RawMessage
+}
+
+func (p *StravaPrefetcher) PrefetchActivityStreams(activityId string) {
+	prefetchTasks := []PrefetchStreamTask{
+		{
+			pattern: `{"datasourceId":%d,"endpoint":"/activities/%s/streams","params":{"key_by_type":true,"keys":"velocity_smooth,time"}}`,
+			keys: map[string]json.RawMessage{
+				"key_by_type": []byte("true"),
+				"keys":        []byte("velocity_smooth,time"),
+			},
+		},
+		{
+			pattern: `{"datasourceId":%d,"endpoint":"/activities/%s/streams","params":{"key_by_type":true,"keys":"heartrate,time"}}`,
+			keys: map[string]json.RawMessage{
+				"key_by_type": []byte("true"),
+				"keys":        []byte("heartrate,time"),
+			},
+		},
+		{
+			pattern: `{"datasourceId":%d,"endpoint":"/activities/%s/streams","params":{"key_by_type":true,"keys":"latlng,time"}}`,
+			keys: map[string]json.RawMessage{
+				"key_by_type": []byte("true"),
+				"keys":        []byte("latlng,time"),
+			},
+		},
+	}
+
+	for _, task := range prefetchTasks {
+		payload := fmt.Sprintf(task.pattern, p.ds.dsInfo.ID, activityId)
+		log.DefaultLogger.Debug("Prefetching", "payload", payload)
+
+		requestHash := HashString(payload)
+		stravaApiQueryFn := p.ds.StravaAPIQueryWithCache(requestHash)
+		apiReq := &StravaAPIRequest{
+			Endpoint: fmt.Sprintf("/activities/%s/streams", activityId),
+			Params:   task.keys,
+		}
+		_, err := stravaApiQueryFn(context.Background(), apiReq)
+		if err != nil {
+			log.DefaultLogger.Error("Error loading activity", "errror", err)
+		}
 	}
 }
