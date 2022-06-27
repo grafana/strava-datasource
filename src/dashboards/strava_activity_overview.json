@@ -544,7 +544,7 @@
         "layers": [
           {
             "config": {
-              "showLegend": true,
+              "showLegend": false,
               "style": {
                 "color": {
                   "fixed": "dark-orange"
@@ -587,7 +587,7 @@
           "lat": 46,
           "lon": 14,
           "shared": false,
-          "zoom": 12
+          "zoom": 14
         }
       },
       "pluginVersion": "8.1.0",
