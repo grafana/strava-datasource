@@ -55,9 +55,14 @@ func (c *DSCache) Get(request string) (interface{}, bool) {
 	return c.gocache.Get(request)
 }
 
-// Removed item from cache
+// Remove item from cache
 func (c *DSCache) Delete(request string) {
 	c.gocache.Delete(request)
+}
+
+// Delete all items from the cache.
+func (c *DSCache) Flush() {
+	c.gocache.Flush()
 }
 
 // Save value to disk
