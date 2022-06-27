@@ -211,16 +211,21 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       ts++;
     }
 
-    if (activity.type === 'Run') {
-      if (target.activityGraph === StravaActivityStream.Pace) {
+    if (target.activityGraph === StravaActivityStream.Pace) {
+      if (activity.type === 'Run') {
         valueFiled.name = 'pace';
+        valueFiled.config.unit = '/km';
         streamValues = velocityDataToPace(streamValues);
-      }
-    } else {
-      if (target.activityGraph === StravaActivityStream.Velocity) {
+      } else {
         valueFiled.name = 'speed';
+        valueFiled.config.unit = 'velocitykmh';
         streamValues = velocityDataToSpeed(streamValues);
       }
+    }
+
+    if (target.activityGraph === StravaActivityStream.Velocity) {
+      valueFiled.name = 'speed';
+      streamValues = velocityDataToSpeed(streamValues);
     }
 
     // Smooth data
