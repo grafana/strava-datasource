@@ -47,6 +47,8 @@ const DEFAULT_RANGE = {
 };
 
 export const DEFAULT_LIMIT = 100;
+// 5 min
+export const DEFAULT_ACTIVITIES_CACHE_INTERVAL = 5 * 60;
 
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
@@ -81,10 +83,12 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     let queryActivities = options.targets.some((t) => t.queryType === StravaQueryType.Activities);
 
     if (queryActivities) {
-      activities = await this.stravaApi.getActivities({
-        before: options.range?.to.unix(),
-        after: options.range?.from.unix(),
-      });
+      let before = options.range?.to.unix();
+      let after = options.range?.from.unix();
+      // Round time to cache interval in order to hit cache
+      before = Math.floor(before / DEFAULT_ACTIVITIES_CACHE_INTERVAL) * DEFAULT_ACTIVITIES_CACHE_INTERVAL;
+      after = Math.floor(after / DEFAULT_ACTIVITIES_CACHE_INTERVAL) * DEFAULT_ACTIVITIES_CACHE_INTERVAL;
+      activities = await this.stravaApi.getActivities({ before, after });
     }
 
     for (const target of options.targets) {
