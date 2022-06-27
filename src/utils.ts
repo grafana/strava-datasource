@@ -1,3 +1,5 @@
+import { DisplayValue } from '@grafana/data';
+
 export function velocityToPace(mps: number): number {
   if (mps === 0) {
     return 0;
@@ -69,3 +71,20 @@ export function smoothVelocityData(data: Array<number | null>): Array<number | n
   }
   return sma;
 }
+
+export const paceDisplayProcessor = (value: any): DisplayValue => {
+  let text = '';
+  const displayValue: DisplayValue = {
+    numeric: value,
+    text,
+  };
+
+  if (value) {
+    const minuntes = Math.floor(value / 60);
+    const seconds = Math.round(value - minuntes * 60);
+    text = `${minuntes}:${seconds}`;
+    displayValue.text = text;
+    displayValue.suffix = ' /km';
+  }
+  return displayValue;
+};
