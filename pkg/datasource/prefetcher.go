@@ -37,6 +37,7 @@ func (p *StravaPrefetcher) Run() {
 	}
 	log.DefaultLogger.Debug("Activities", "value", activities)
 
+	p.PrefetchActivitiesVariable()
 	p.PrefetchActivities(activities)
 }
 
@@ -144,5 +145,26 @@ func (p *StravaPrefetcher) PrefetchActivityStreams(activityId string) {
 		if err != nil {
 			log.DefaultLogger.Error("Error loading activity", "errror", err)
 		}
+	}
+}
+
+func (p *StravaPrefetcher) PrefetchActivitiesVariable() {
+	payloadPattern := `{"datasourceId":%d,"endpoint":"athlete/activities","params":{"limit":100,"per_page":100,"page":1}}`
+	payload := fmt.Sprintf(payloadPattern, p.ds.dsInfo.ID)
+	log.DefaultLogger.Debug("Prefetching", "payload", payload)
+
+	requestHash := HashString(payload)
+	stravaApiQueryFn := p.ds.StravaAPIQueryWithCache(requestHash)
+	apiReq := &StravaAPIRequest{
+		Endpoint: "athlete/activities",
+		Params: map[string]json.RawMessage{
+			"limit":    []byte("100"),
+			"per_page": []byte("100"),
+			"page":     []byte("1"),
+		},
+	}
+	_, err := stravaApiQueryFn(context.Background(), apiReq)
+	if err != nil {
+		log.DefaultLogger.Error("Error loading activities", "errror", err)
 	}
 }
