@@ -214,7 +214,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     if (target.activityGraph === StravaActivityStream.Pace) {
       if (activity.type === 'Run') {
         valueFiled.name = 'pace';
-        valueFiled.config.unit = '/km';
+        valueFiled.config.unit = 'dthms';
         streamValues = velocityDataToPace(streamValues);
       } else {
         valueFiled.name = 'speed';
