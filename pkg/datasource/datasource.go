@@ -436,7 +436,7 @@ func makeHTTPRequest(ctx context.Context, httpClient *http.Client, req *http.Req
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 
-	if res.StatusCode != http.StatusOK {
+	if res.StatusCode >= 400 {
 		return body, fmt.Errorf("Error status: %v", res.Status)
 	}
 
