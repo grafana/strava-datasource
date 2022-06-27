@@ -46,7 +46,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -65,8 +68,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1640593352101,
-  "liveNow": false,
+  "iteration": 1656336739927,
   "links": [
     {
       "asDropdown": false,
@@ -81,6 +83,7 @@
       "url": "d/StravaAthleteDashboardModern-v2"
     }
   ],
+  "liveNow": false,
   "panels": [
     {
       "datasource": {
@@ -127,11 +130,15 @@
         "text": {},
         "textMode": "value"
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "9.0.0-pre",
       "targets": [
         {
           "activityData": "stats",
           "activityId": "$Activity",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "queryType": "Activity",
           "refId": "A",
           "selectedActivity": {
@@ -191,11 +198,15 @@
         "text": {},
         "textMode": "value"
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "9.0.0-pre",
       "targets": [
         {
           "activityData": "stats",
           "activityId": "$Activity",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "queryType": "Activity",
           "refId": "A",
           "selectedActivity": {
@@ -255,11 +266,15 @@
         "text": {},
         "textMode": "value"
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "9.0.0-pre",
       "targets": [
         {
           "activityData": "stats",
           "activityId": "$Activity",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "queryType": "Activity",
           "refId": "A",
           "selectedActivity": {
@@ -318,11 +333,15 @@
         "text": {},
         "textMode": "value"
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "9.0.0-pre",
       "targets": [
         {
           "activityData": "stats",
           "activityId": "$Activity",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "queryType": "Activity",
           "refId": "A",
           "selectedActivity": {
@@ -409,8 +428,8 @@
           },
           {
             "matcher": {
-              "id": "byName",
-              "options": "velocity_smooth"
+              "id": "byFrameRefID",
+              "options": "B"
             },
             "properties": [
               {
@@ -419,22 +438,10 @@
                   "fixedColor": "blue",
                   "mode": "fixed"
                 }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "velocity_smooth"
-            },
-            "properties": [
+              },
               {
                 "id": "custom.fillOpacity",
                 "value": 0
-              },
-              {
-                "id": "custom.lineWidth",
-                "value": 1
               }
             ]
           }
@@ -454,7 +461,8 @@
           "placement": "bottom"
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "multi",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.1.0",
@@ -465,10 +473,11 @@
           "activityId": "$Activity",
           "activityType": "Run",
           "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "fitToTimeRange": true,
+          "hide": false,
           "queryType": "Activity",
           "refId": "A",
           "selectedActivity": {
@@ -479,22 +488,28 @@
         },
         {
           "activityData": "graph",
-          "activityGraph": "velocity_smooth",
+          "activityGraph": "pace",
           "activityId": "$Activity",
+          "activityStat": "distance",
           "activityType": "Run",
           "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
+          "extendedStats": [],
           "fitToTimeRange": true,
+          "format": "time_series",
           "hide": false,
+          "interval": "auto",
           "queryType": "Activity",
           "refId": "B",
           "selectedActivity": {
             "description": "Variable",
             "label": "$Activity",
             "value": "$Activity"
-          }
+          },
+          "singleActivityStat": "name",
+          "splitStat": "average_speed"
         }
       ],
       "title": "Heart rate / Speed",
@@ -560,9 +575,9 @@
               "showLegend": false,
               "style": {
                 "color": {
-                  "fixed": "dark-orange"
+                  "fixed": "dark-green"
                 },
-                "opacity": 1,
+                "opacity": 0.4,
                 "rotation": {
                   "fixed": 0,
                   "max": 360,
@@ -570,12 +585,12 @@
                   "mode": "mod"
                 },
                 "size": {
-                  "fixed": 2,
+                  "fixed": 5,
                   "max": 15,
                   "min": 2
                 },
                 "symbol": {
-                  "fixed": "img/icons/marker/square.svg",
+                  "fixed": "img/icons/marker/circle.svg",
                   "mode": "fixed"
                 },
                 "textConfig": {
@@ -595,6 +610,9 @@
             "type": "markers"
           }
         ],
+        "tooltip": {
+          "mode": "details"
+        },
         "view": {
           "id": "fit",
           "lat": 46,
@@ -603,15 +621,15 @@
           "zoom": 14
         }
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "9.0.0-pre",
       "targets": [
         {
           "activityData": "geomap",
           "activityId": "$Activity",
           "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "queryType": "Activity",
           "refId": "A",
           "selectedActivity": {
@@ -743,7 +761,8 @@
           "placement": "bottom"
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "pluginVersion": "7.5.0-pre",
@@ -753,9 +772,9 @@
           "activityGraph": "heartrate",
           "activityId": "$Activity",
           "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "fitToTimeRange": true,
           "queryType": "Activity",
           "refId": "A",
@@ -857,7 +876,8 @@
           "placement": "bottom"
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.1.0",
@@ -867,9 +887,9 @@
           "activityGraph": "heartrate",
           "activityId": "$Activity",
           "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "fitToTimeRange": true,
           "queryType": "Activity",
           "refId": "A",
@@ -886,7 +906,7 @@
     }
   ],
   "refresh": false,
-  "schemaVersion": 34,
+  "schemaVersion": 36,
   "style": "dark",
   "tags": [
     "strava"
@@ -896,9 +916,9 @@
       {
         "current": {},
         "datasource": {
-        "type": "grafana-strava-datasource",
-        "uid": "${DS_STRAVA}"
-      },
+          "type": "grafana-strava-datasource",
+          "uid": "${DS_STRAVA}"
+        },
         "definition": "Strava - activity",
         "hide": 0,
         "includeAll": false,
