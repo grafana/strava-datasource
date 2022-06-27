@@ -2,8 +2,9 @@ export function velocityToPace(mps: number): number {
   if (mps === 0) {
     return 0;
   }
-  const pace = Math.fround(1000 / (mps * 60));
-  return Math.min(10, pace);
+  const pace = Math.fround(1000 / mps);
+  // Limit pace to 10 min/km to avoid spikes on graph (pace is a reversed speed)
+  return Math.min(10 * 60, pace);
 }
 
 export function velocityToSpeed(mps: number): number {
