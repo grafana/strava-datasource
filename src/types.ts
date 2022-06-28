@@ -68,6 +68,7 @@ export interface StravaActivity {
   location_city: string | null;
   location_country: string | null;
   location_state: string | null;
+  gear: any;
 }
 
 export type ActivityType =

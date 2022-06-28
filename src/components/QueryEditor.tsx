@@ -132,6 +132,7 @@ const baseStatsOptions: Array<SelectableValue<string>> = [
   { label: 'start_date', value: 'start_date' },
   { label: 'name', value: 'name' },
   { label: 'distance', value: 'distance' },
+  { label: 'pace', value: 'pace' },
   { label: 'moving_time', value: 'moving_time' },
   { label: 'elapsed_time', value: 'elapsed_time' },
   { label: 'average_heartrate', value: 'average_heartrate' },

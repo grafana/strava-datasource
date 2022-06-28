@@ -34,7 +34,7 @@ import {
   StravaAthlete,
   StravaMeasurementPreference,
 } from './types';
-import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToSpeed } from 'utils';
+import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToPace, velocityToSpeed } from 'utils';
 import { getTemplateSrv } from '@grafana/runtime';
 
 const DEFAULT_RANGE = {
@@ -297,19 +297,34 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return frame;
   }
 
-  queryActivityStats(activity: any, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
+  queryActivityStats(activity: StravaActivity, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
     const stats = target.singleActivityStat || 'name';
-    const frame = new MutableDataFrame({
-      name: activity.name,
-      refId: target.refId,
-      fields: [{ name: 'time', type: FieldType.time }, { name: stats }],
-    });
-
-    let activityStats = activity[stats];
+    const valueFiled: MutableField<number | null> = {
+      name: stats,
+      type: FieldType.other,
+      config: {},
+      values: new ArrayVector(),
+    };
+    let activityStats = (activity as any)[stats];
     if (stats.startsWith('gear_')) {
       const gearStatsName = stats.substring('gear_'.length);
       activityStats = activity.gear[gearStatsName];
     }
+    if (stats === 'pace') {
+      if (activity.type === 'Run') {
+        valueFiled.config.unit = 'dthms';
+        activityStats = velocityToPace(activity.average_speed);
+      } else {
+        valueFiled.config.unit = 'velocitykmh';
+        activityStats = velocityToSpeed(activity.average_speed);
+      }
+    }
+
+    const frame = new MutableDataFrame({
+      name: activity.name,
+      refId: target.refId,
+      fields: [{ name: TIME_SERIES_TIME_FIELD_NAME, type: FieldType.time }, valueFiled],
+    });
 
     frame.add({
       time: dateTime(activity.start_date),
