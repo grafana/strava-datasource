@@ -223,7 +223,12 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
   };
 
   const getSelectedSingleActivityStat = () => {
-    return stravaStatsOptions.find((v) => v.value === query.singleActivityStat);
+    return (
+      stravaStatsOptions.find((v) => v.value === query.singleActivityStat) || {
+        label: query.singleActivityStat,
+        value: query.singleActivityStat,
+      }
+    );
   };
 
   const getFormatOption = () => {
@@ -385,7 +390,8 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
           {query.activityData === StravaActivityData.Stats && (
             <InlineField>
               <Select
-                isSearchable={true}
+                isSearchable
+                allowCustomValue
                 width={20}
                 value={getSelectedSingleActivityStat()}
                 options={stravaStatsOptions}
