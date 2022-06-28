@@ -100,6 +100,7 @@ const extendedStatsOptions: Array<SelectableValue<string>> = [
   { label: 'average_speed', value: 'average_speed' },
   { label: 'average_watts', value: 'average_watts' },
   { label: 'weighted_average_watts', value: 'weighted_average_watts' },
+  { label: 'calories', value: 'calories' },
   { label: 'comment_count', value: 'comment_count' },
   { label: 'commute', value: 'commute' },
   { label: 'device_watts', value: 'device_watts' },
