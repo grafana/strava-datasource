@@ -324,9 +324,9 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       name: activity.name,
       refId: target.refId,
       fields: [
+        { name: TIME_SERIES_VALUE_FIELD_NAME, type: FieldType.number },
         { name: 'latitude', type: FieldType.number },
         { name: 'longitude', type: FieldType.number },
-        { name: 'value', type: FieldType.number },
       ],
     });
 
@@ -340,16 +340,29 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         streamType: StravaActivityStream.LatLng,
       });
       points = streams[StravaActivityStream.LatLng].data;
+      let startTs = dateTime(activity.start_date).unix();
+      const timeticks = streams.time?.data;
+      if (!timeticks) {
+        throw new Error('Time field not found');
+      }
+      frame.addField({ name: TIME_SERIES_TIME_FIELD_NAME, type: FieldType.time });
+      for (let i = 0; i < points.length; i++) {
+        frame.add({
+          latitude: points[i][0],
+          longitude: points[i][1],
+          [TIME_SERIES_VALUE_FIELD_NAME]: 1,
+          [TIME_SERIES_TIME_FIELD_NAME]: (startTs + timeticks[i]) * 1000,
+        });
+      }
     } catch (error) {
       console.log('Cannot fetch geo points from activity stream, switching to polyline.');
-    }
-
-    for (let i = 0; i < points.length; i++) {
-      frame.add({
-        latitude: points[i][0],
-        longitude: points[i][1],
-        value: 1,
-      });
+      for (let i = 0; i < points.length; i++) {
+        frame.add({
+          latitude: points[i][0],
+          longitude: points[i][1],
+          [TIME_SERIES_VALUE_FIELD_NAME]: 1,
+        });
+      }
     }
 
     return frame;
