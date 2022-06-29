@@ -246,7 +246,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return frame;
   }
 
-  queryActivitySplits(activity: any, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
+  queryActivitySplits(activity: StravaActivity, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
     const timeFiled: MutableField<number> = {
       name: TIME_SERIES_TIME_FIELD_NAME,
       type: FieldType.time,
@@ -261,9 +261,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     const valueFiled: MutableField<number> = {
       name: splitStat || TIME_SERIES_VALUE_FIELD_NAME,
       type: FieldType.number,
-      config: {
-        custom: {},
-      },
+      config: {},
       values: new ArrayVector(),
     };
 
@@ -286,6 +284,14 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       let value = split[splitStat];
       if (splitStat === StravaSplitStat.Speed) {
         value = velocityToSpeed(value);
+      } else if (splitStat === StravaSplitStat.Pace) {
+        if (activity.type === 'Run') {
+          valueFiled.config.unit = 'dthms';
+          value = velocityToPace(split[StravaSplitStat.Speed]);
+        } else {
+          valueFiled.config.unit = 'velocitykmh';
+          value = velocityToSpeed(split[StravaSplitStat.Speed]);
+        }
       }
       valueFiled.values.add(value);
       ts += split.elapsed_time;

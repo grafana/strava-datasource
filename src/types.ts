@@ -69,6 +69,8 @@ export interface StravaActivity {
   location_country: string | null;
   location_state: string | null;
   gear: any;
+  splits_metric: any;
+  splits_standard: any;
 }
 
 export type ActivityType =
@@ -191,6 +193,7 @@ export enum StravaActivityData {
 }
 
 export enum StravaSplitStat {
+  Pace = 'pace',
   HeartRate = 'average_heartrate',
   Speed = 'average_speed',
   MovingTime = 'moving_time',

@@ -73,6 +73,7 @@ const stravaActivityGraphOptions: Array<SelectableValue<StravaActivityStream>> =
 ];
 
 const stravaActivitySplitOptions: Array<SelectableValue<StravaSplitStat>> = [
+  { value: StravaSplitStat.Pace, label: 'Pace' },
   { value: StravaSplitStat.HeartRate, label: 'Heart Rate' },
   { value: StravaSplitStat.Speed, label: 'Speed' },
   { value: StravaSplitStat.ElapsedTime, label: 'Elapsed Time' },
