@@ -351,7 +351,6 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     const frame = new MutableDataFrame({
       refId: target.refId,
       fields: [
-        // { name: 'time', type: FieldType.time },
         { name: 'name', type: FieldType.string },
         { name: 'achievements', type: FieldType.number, config: { unit: '', decimals: 0 } },
         { name: 'time', type: FieldType.number, config: { unit: 'dthms' } },
