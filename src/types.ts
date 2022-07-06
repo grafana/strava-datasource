@@ -71,6 +71,51 @@ export interface StravaActivity {
   gear: any;
   splits_metric: any;
   splits_standard: any;
+  segment_efforts: SegmentEffort[];
+}
+
+export interface SegmentEffort {
+  id: number;
+  achievements: Achievement[];
+  average_heartrate: number;
+  average_watts: number;
+  distance: number;
+  elapsed_time: number;
+  end_index: number;
+  hidden: boolean;
+  max_heartrate: number;
+  moving_time: number;
+  name: string;
+  pr_rank?: number;
+  start_date: string;
+  start_date_local: string;
+  start_index: number;
+  segment: Segment;
+}
+
+export interface Segment {
+  id: number;
+  activity_type: ActivityType;
+  average_grade: number;
+  city: string;
+  climb_category: number;
+  country: string;
+  distance: number;
+  elevation_high: number;
+  elevation_low: number;
+  start_latlng: LatLng;
+  end_latlng: LatLng;
+  hazardous: boolean;
+  maximum_grade: number;
+  name: string;
+  private: boolean;
+  starred: boolean;
+}
+
+export interface Achievement {
+  rank: number;
+  type: string;
+  type_id: number;
 }
 
 export type ActivityType =
@@ -190,6 +235,7 @@ export enum StravaActivityData {
   Splits = 'splits',
   Stats = 'stats',
   Geomap = 'geomap',
+  Segments = 'segments',
 }
 
 export enum StravaSplitStat {

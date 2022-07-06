@@ -148,6 +148,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       return this.queryActivityGeomap(activity, target, options);
     }
 
+    if (target.activityData === StravaActivityData.Segments) {
+      return this.queryActivitySegments(activity, target, options);
+    }
+
     let activityStream = target.activityGraph;
     if (activityStream === StravaActivityStream.Pace) {
       activityStream = StravaActivityStream.Velocity;
@@ -336,6 +340,69 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       time: dateTime(activity.start_date),
       [stats]: activityStats,
     });
+
+    return frame;
+  }
+
+  queryActivitySegments(activity: StravaActivity, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
+    const distanceUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
+    const lenghtUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
+
+    const frame = new MutableDataFrame({
+      refId: target.refId,
+      fields: [
+        // { name: 'time', type: FieldType.time },
+        { name: 'name', type: FieldType.string },
+        { name: 'achievements', type: FieldType.number, config: { unit: '', decimals: 0 } },
+        { name: 'time', type: FieldType.number, config: { unit: 'dthms' } },
+        { name: 'pace', type: FieldType.number, config: { unit: '' } },
+        { name: 'heart rate', type: FieldType.number, config: { unit: 'bpm', decimals: 0 } },
+        { name: 'power', type: FieldType.number, config: { unit: 'watt' } },
+        { name: 'distance', type: FieldType.number, config: { unit: distanceUnit } },
+        { name: 'elevation gain', type: FieldType.number, config: { unit: lenghtUnit, decimals: 0 } },
+        { name: 'grade', type: FieldType.number, config: { unit: 'percent', decimals: 1 } },
+        { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
+        { name: 'time_from', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
+        { name: 'time_to', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
+      ],
+    });
+
+    const segments = activity.segment_efforts;
+    if (segments?.length > 0) {
+      for (let i = 0; i < segments.length; i++) {
+        const effort = segments[i];
+
+        const paceFieldIdx = frame.fields.findIndex((field) => field.name === 'pace');
+        let pace: number;
+        if (effort.segment.activity_type === 'Run') {
+          frame.fields[paceFieldIdx].config.unit = 'dthms';
+          pace = velocityToPace(effort.distance / effort.moving_time);
+        } else {
+          frame.fields[paceFieldIdx].config.unit = 'velocitykmh';
+          pace = velocityToSpeed(effort.distance / effort.moving_time);
+        }
+
+        const dataRow: any = {
+          name: effort.name,
+          achievements: effort.pr_rank,
+          time: effort.moving_time,
+          pace: pace,
+          'heart rate': effort.average_heartrate,
+          power: effort.average_watts,
+          distance: getPreferredDistance(effort.distance, this.measurementPreference),
+          'elevation gain': getPreferredLenght(
+            effort.segment.elevation_high - effort.segment.elevation_low,
+            this.measurementPreference
+          ),
+          grade: effort.segment.average_grade,
+          id: effort.segment.id,
+          time_from: dateTime(effort.start_date).unix() * 1000,
+          time_to: (dateTime(effort.start_date).unix() + effort.elapsed_time) * 1000,
+        };
+
+        frame.add(dataRow);
+      }
+    }
 
     return frame;
   }
