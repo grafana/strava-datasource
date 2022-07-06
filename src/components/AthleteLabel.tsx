@@ -11,7 +11,7 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
       padding: 2px;
       margin-right: 0px;
       border-radius: ${theme.border.radius.md};
-      background-color: ${theme.palette.dark4};
+      background-color: ${theme.colors.bg2};
     `,
     athleteAvatar: css`
       height: 28px;
