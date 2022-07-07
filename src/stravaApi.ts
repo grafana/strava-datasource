@@ -1,5 +1,5 @@
 import { getBackendSrv } from '@grafana/runtime';
-import { StravaActivity, StravaAthlete, StreamType } from 'types';
+import { Segment, StravaActivity, StravaAthlete, StreamType } from 'types';
 
 export default class StravaApi {
   datasourceId: number;
@@ -37,6 +37,10 @@ export default class StravaApi {
       key_by_type: true,
       keys: `${streamType},time`,
     });
+  }
+
+  async getSegment(id: number): Promise<Segment> {
+    return await this.tsdbRequest(`/segments/${id}`);
   }
 
   async requestWithPagination(url: string, params?: any) {

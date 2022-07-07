@@ -344,7 +344,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return frame;
   }
 
-  queryActivitySegments(activity: StravaActivity, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
+  async queryActivitySegments(activity: StravaActivity, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
     const distanceUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
     const lenghtUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
 
@@ -360,6 +360,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         { name: 'distance', type: FieldType.number, config: { unit: distanceUnit } },
         { name: 'elevation gain', type: FieldType.number, config: { unit: lenghtUnit, decimals: 0 } },
         { name: 'grade', type: FieldType.number, config: { unit: 'percent', decimals: 1 } },
+        { name: 'PR', type: FieldType.string },
         { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
         { name: 'time_from', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
         { name: 'time_to', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
@@ -370,6 +371,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     if (segments?.length > 0) {
       for (let i = 0; i < segments.length; i++) {
         const effort = segments[i];
+        const segment = await this.stravaApi.getSegment(effort.segment.id);
 
         const paceFieldIdx = frame.fields.findIndex((field) => field.name === 'pace');
         let pace: number;
@@ -394,6 +396,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
             this.measurementPreference
           ),
           grade: effort.segment.average_grade,
+          PR: segment.xoms?.overall,
           id: effort.segment.id,
           time_from: dateTime(effort.start_date).unix() * 1000,
           time_to: (dateTime(effort.start_date).unix() + effort.elapsed_time) * 1000,

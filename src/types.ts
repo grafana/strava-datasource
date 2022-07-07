@@ -110,6 +110,18 @@ export interface Segment {
   name: string;
   private: boolean;
   starred: boolean;
+  xoms: XOMs;
+}
+
+export interface XOMs {
+  overall: string;
+  kom: string;
+  qom: string;
+  destination: {
+    href: string;
+    name: string;
+    type: string;
+  };
 }
 
 export interface Achievement {
