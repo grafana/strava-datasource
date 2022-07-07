@@ -33,7 +33,7 @@
     "babel-loader": "^8.1.0",
     "jest": "^26.5.3",
     "lodash": "^4.17.11",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-use": "17.4.0",
