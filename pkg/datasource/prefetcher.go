@@ -37,7 +37,8 @@ func (p *StravaPrefetcher) Run() {
 	}
 	log.DefaultLogger.Debug("Activities", "value", activities)
 
-	p.PrefetchActivitiesVariable()
+	p.PrefetchActivitiesVariable(10)
+	p.PrefetchActivitiesVariable(100)
 	p.PrefetchActivities(activities)
 }
 
@@ -148,9 +149,9 @@ func (p *StravaPrefetcher) PrefetchActivityStreams(activityId string) {
 	}
 }
 
-func (p *StravaPrefetcher) PrefetchActivitiesVariable() {
-	payloadPattern := `{"datasourceId":%d,"endpoint":"athlete/activities","params":{"limit":100,"per_page":100,"page":1}}`
-	payload := fmt.Sprintf(payloadPattern, p.ds.dsInfo.ID)
+func (p *StravaPrefetcher) PrefetchActivitiesVariable(limit int) {
+	payloadPattern := `{"datasourceId":%d,"endpoint":"athlete/activities","params":{"limit":%d,"per_page":%d,"page":1}}`
+	payload := fmt.Sprintf(payloadPattern, p.ds.dsInfo.ID, limit, limit)
 	log.DefaultLogger.Debug("Prefetching", "payload", payload)
 
 	requestHash := HashString(payload)
@@ -158,8 +159,8 @@ func (p *StravaPrefetcher) PrefetchActivitiesVariable() {
 	apiReq := &StravaAPIRequest{
 		Endpoint: "athlete/activities",
 		Params: map[string]json.RawMessage{
-			"limit":    []byte("100"),
-			"per_page": []byte("100"),
+			"limit":    []byte(fmt.Sprintf("%d", limit)),
+			"per_page": []byte(fmt.Sprintf("%d", limit)),
 			"page":     []byte("1"),
 		},
 	}
