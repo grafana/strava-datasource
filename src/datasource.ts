@@ -383,9 +383,11 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     const segments = activity.segment_efforts;
     if (segments?.length > 0) {
+      let detailedSegments = await Promise.all(segments.map((s) => this.stravaApi.getSegment(s.segment.id)));
+
       for (let i = 0; i < segments.length; i++) {
         const effort = segments[i];
-        const segment = await this.stravaApi.getSegment(effort.segment.id);
+        const segment = detailedSegments.find((s) => s.id === effort.segment.id);
 
         const paceFieldIdx = frame.fields.findIndex((field) => field.name === 'pace');
         let pace: number;
