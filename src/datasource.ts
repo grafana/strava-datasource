@@ -319,7 +319,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     let activityStats = (activity as any)[stats];
     if (stats.startsWith('gear_')) {
       const gearStatsName = stats.substring('gear_'.length);
-      activityStats = activity.gear[gearStatsName];
+      activityStats = activity.gear ? activity.gear[gearStatsName] : null;
     }
     if (stats === 'pace') {
       if (activity.type === 'Run') {
@@ -412,7 +412,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
             this.measurementPreference
           ),
           grade: effort.segment.average_grade,
-          PR: segment.xoms?.overall,
+          PR: segment?.xoms?.overall,
           id: effort.segment.id,
           time_from: dateTime(effort.start_date).unix() * 1000,
           time_to: (dateTime(effort.start_date).unix() + effort.elapsed_time) * 1000,
