@@ -14,6 +14,7 @@ import {
   StravaActivityData,
   StravaSplitStat,
   StravaAthlete,
+  TopAchievementStat,
 } from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
@@ -99,6 +100,7 @@ const INTERVAL_OPTIONS: Array<SelectableValue<StravaQueryInterval>> = [
 
 const extendedStatsOptions: Array<SelectableValue<string>> = [
   { label: 'achievement_count', value: 'achievement_count' },
+  { label: 'top_achievement', value: TopAchievementStat },
   { label: 'average_speed', value: 'average_speed' },
   { label: 'average_watts', value: 'average_watts' },
   { label: 'weighted_average_watts', value: 'weighted_average_watts' },

@@ -300,3 +300,5 @@ export interface VariableQuery {
 export enum VariableQueryTypes {
   Activity = 'activity',
 }
+
+export const TopAchievementStat = 'top_achievement';

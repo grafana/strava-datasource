@@ -33,6 +33,7 @@ import {
   StravaAuthType,
   StravaAthlete,
   StravaMeasurementPreference,
+  TopAchievementStat,
 } from './types';
 import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToPace, velocityToSpeed } from 'utils';
 import { getTemplateSrv } from '@grafana/runtime';
@@ -328,6 +329,19 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         valueFiled.config.unit = 'velocitykmh';
         activityStats = velocityToSpeed(activity.average_speed);
       }
+    }
+    if (stats === TopAchievementStat) {
+      let topAchievement = null;
+      for (const effort of activity.segment_efforts) {
+        if (effort.achievements) {
+          for (const achievement of effort.achievements) {
+            if (topAchievement === null || achievement.rank < topAchievement) {
+              topAchievement = achievement.rank;
+            }
+          }
+        }
+      }
+      activityStats = topAchievement;
     }
 
     const frame = new MutableDataFrame({
