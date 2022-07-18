@@ -1,4 +1,17 @@
 import { DisplayValue } from '@grafana/data';
+import { StravaMeasurementPreference } from 'types';
+
+export function metersToFeet(value: number): number {
+  return value / 0.3048;
+}
+
+export function metersToMiles(value: number): number {
+  return value / 1609.344;
+}
+
+export function paceToMiles(value: number): number {
+  return (value * 1609.344) / 1000;
+}
 
 export function velocityToPace(mps: number): number {
   if (mps === 0) {
@@ -10,26 +23,39 @@ export function velocityToPace(mps: number): number {
 }
 
 export function velocityToSpeed(mps: number): number {
+  // m/s to km/h
   return mps * 3.6;
 }
 
-export function velocityDataToPace(data: Array<number | null>): Array<number | null> {
+export function velocityDataToPace(data: Array<number | null>, mp: StravaMeasurementPreference): Array<number | null> {
   for (let i = 0; i < data.length; i++) {
     // m/s to min/km
     const point = data[i];
     if (point != null) {
-      data[i] = velocityToPace(point);
+      const paceMinkm = velocityToPace(point);
+      data[i] = mp === StravaMeasurementPreference.Feet ? paceToMiles(paceMinkm) : paceMinkm;
     }
   }
   return data;
 }
 
-export function velocityDataToSpeed(data: Array<number | null>): Array<number | null> {
+export function velocityDataToSpeed(data: Array<number | null>, mp: StravaMeasurementPreference): Array<number | null> {
   for (let i = 0; i < data.length; i++) {
     // m/s to km/h
     const point = data[i];
     if (point != null) {
-      data[i] = point * 3.6;
+      const speedKmph = velocityToSpeed(point);
+      data[i] = mp === StravaMeasurementPreference.Feet ? metersToMiles(speedKmph * 1000) : speedKmph;
+    }
+  }
+  return data;
+}
+
+export function metersDataToFeet(data: Array<number | null>, mp: StravaMeasurementPreference): Array<number | null> {
+  for (let i = 0; i < data.length; i++) {
+    const point = data[i];
+    if (point != null) {
+      data[i] = mp === StravaMeasurementPreference.Feet ? metersToFeet(point) : point;
     }
   }
   return data;

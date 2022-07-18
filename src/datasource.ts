@@ -35,7 +35,17 @@ import {
   StravaMeasurementPreference,
   TopAchievementStat,
 } from './types';
-import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToPace, velocityToSpeed } from 'utils';
+import {
+  smoothVelocityData,
+  velocityDataToPace,
+  velocityDataToSpeed,
+  velocityToPace,
+  velocityToSpeed,
+  metersToFeet,
+  metersToMiles,
+  paceToMiles,
+  metersDataToFeet,
+} from 'utils';
 import { getTemplateSrv } from '@grafana/runtime';
 
 const DEFAULT_RANGE = {
@@ -220,17 +230,23 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       if (activity.type === 'Run') {
         valueFiled.name = 'pace';
         valueFiled.config.unit = 'dthms';
-        streamValues = velocityDataToPace(streamValues);
+        streamValues = velocityDataToPace(streamValues, this.measurementPreference);
       } else {
         valueFiled.name = 'speed';
-        valueFiled.config.unit = 'velocitykmh';
-        streamValues = velocityDataToSpeed(streamValues);
+        valueFiled.config.unit = getPreferredSpeedUnit(this.measurementPreference);
+        streamValues = velocityDataToSpeed(streamValues, this.measurementPreference);
       }
     }
 
     if (target.activityGraph === StravaActivityStream.Velocity) {
       valueFiled.name = 'speed';
-      streamValues = velocityDataToSpeed(streamValues);
+      valueFiled.config.unit = getPreferredSpeedUnit(this.measurementPreference);
+      streamValues = velocityDataToSpeed(streamValues, this.measurementPreference);
+    }
+
+    if (target.activityGraph === StravaActivityStream.Altitude) {
+      valueFiled.config.unit = getPreferredLenghtUnit(this.measurementPreference);
+      streamValues = metersDataToFeet(streamValues, this.measurementPreference);
     }
 
     // Smooth data
@@ -292,10 +308,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       } else if (splitStat === StravaSplitStat.Pace) {
         if (activity.type === 'Run') {
           valueFiled.config.unit = 'dthms';
-          value = velocityToPace(split[StravaSplitStat.Speed]);
+          value = getPreferredPace(split[StravaSplitStat.Speed], this.measurementPreference);
         } else {
-          valueFiled.config.unit = 'velocitykmh';
-          value = velocityToSpeed(split[StravaSplitStat.Speed]);
+          valueFiled.config.unit = getPreferredSpeedUnit(this.measurementPreference);
+          value = getPreferredSpeed(split[StravaSplitStat.Speed], this.measurementPreference);
         }
       }
       valueFiled.values.add(value);
@@ -324,10 +340,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     if (stats === 'pace') {
       if (activity.type === 'Run') {
         valueFiled.config.unit = 'dthms';
-        activityStats = velocityToPace(activity.average_speed);
+        activityStats = getPreferredPace(activity.average_speed, this.measurementPreference);
       } else {
-        valueFiled.config.unit = 'velocitykmh';
-        activityStats = velocityToSpeed(activity.average_speed);
+        valueFiled.config.unit = getPreferredSpeedUnit(this.measurementPreference);
+        activityStats = getPreferredSpeed(activity.average_speed, this.measurementPreference);
       }
     }
     if (stats === TopAchievementStat) {
@@ -342,6 +358,14 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         }
       }
       activityStats = topAchievement;
+    }
+    if (stats === StravaActivityStat.Distance) {
+      valueFiled.config.unit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
+      activityStats = getPreferredDistance(activity.distance, this.measurementPreference);
+    }
+    if (stats === StravaActivityStat.ElevationGain) {
+      valueFiled.config.unit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
+      activityStats = getPreferredLenght(activity.total_elevation_gain, this.measurementPreference);
     }
 
     const frame = new MutableDataFrame({
@@ -393,10 +417,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         let pace: number;
         if (effort.segment.activity_type === 'Run') {
           frame.fields[paceFieldIdx].config.unit = 'dthms';
-          pace = velocityToPace(effort.distance / effort.moving_time);
+          pace = getPreferredPace(effort.distance / effort.moving_time, this.measurementPreference);
         } else {
-          frame.fields[paceFieldIdx].config.unit = 'velocitykmh';
-          pace = velocityToSpeed(effort.distance / effort.moving_time);
+          frame.fields[paceFieldIdx].config.unit = getPreferredSpeedUnit(this.measurementPreference);
+          pace = getPreferredSpeed(effort.distance / effort.moving_time, this.measurementPreference);
         }
 
         const dataRow: any = {
@@ -866,12 +890,22 @@ function getPreferredLenght(value: number, measurementPreference: StravaMeasurem
   return measurementPreference === StravaMeasurementPreference.Feet ? metersToFeet(value) : value;
 }
 
-function metersToFeet(value: number): number {
-  return value / 0.3048;
+function getPreferredSpeed(value: number, measurementPreference: StravaMeasurementPreference): number {
+  const speedKmph = velocityToSpeed(value);
+  return measurementPreference === StravaMeasurementPreference.Feet ? metersToMiles(speedKmph * 1000) : speedKmph;
 }
 
-function metersToMiles(value: number): number {
-  return value / 1609.344;
+function getPreferredSpeedUnit(measurementPreference: StravaMeasurementPreference) {
+  return measurementPreference === StravaMeasurementPreference.Feet ? 'velocitymph' : 'velocitykmh';
+}
+
+function getPreferredLenghtUnit(measurementPreference: StravaMeasurementPreference) {
+  return measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
+}
+
+function getPreferredPace(value: number, measurementPreference: StravaMeasurementPreference): number {
+  const paceMinkm = velocityToPace(value);
+  return measurementPreference === StravaMeasurementPreference.Feet ? paceToMiles(paceMinkm) : paceMinkm;
 }
 
 function getActivityStat(
