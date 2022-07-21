@@ -347,12 +347,13 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     if (target.fitToTimeRange) {
       ts = options.range.from.unix();
     }
-    const startIdx = Math.max(segmentEffort.start_index - GRAPH_SMOOTH_WINDOW, 0);
-    const endIdx = segmentEffort.end_index;
-    for (let i = startIdx; i < endIdx; i++) {
+    const startIdx = segmentEffort.start_index;
+    for (let i = startIdx; i < startIdx + streamLength; i++) {
       timeFiled.values.add(ts * 1000);
-      streamValues[timeStream.data[i] - firstTsIndex] = stream.data[i];
       ts++;
+    }
+    for (let i = startIdx; i < segmentEffort.end_index; i++) {
+      streamValues[timeStream.data[i] - firstTsIndex] = stream.data[i];
     }
 
     if (target.activityGraph === StravaActivityStream.Pace) {
