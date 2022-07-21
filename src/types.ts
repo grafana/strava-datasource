@@ -295,10 +295,12 @@ export interface VariableQuery {
   queryType: VariableQueryTypes;
   activityType: string;
   limit: number;
+  activityId: string;
 }
 
 export enum VariableQueryTypes {
   Activity = 'activity',
+  SegmentEffort = 'segment_effort',
 }
 
 export const TopAchievementStat = 'top_achievement';

@@ -34,6 +34,7 @@ import {
   StravaAthlete,
   StravaMeasurementPreference,
   TopAchievementStat,
+  VariableQueryTypes,
 } from './types';
 import {
   smoothVelocityData,
@@ -499,14 +500,28 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   async metricFindQuery(query: VariableQuery, options?: any): Promise<MetricFindValue[]> {
-    const limit = query.limit || DEFAULT_LIMIT;
-    let activities = await this.stravaApi.getActivities({ limit });
-    activities = this.filterActivities(activities, query.activityType);
-    const variableOptions: MetricFindValue[] = activities.map((a) => ({
-      value: a.id,
-      text: a.name,
-    }));
-    return variableOptions;
+    const queryType = query.queryType;
+    if (queryType === VariableQueryTypes.SegmentEffort) {
+      const activityId = getTemplateSrv().replace(query.activityId);
+      const activity: StravaActivity = await this.stravaApi.getActivity({
+        id: activityId,
+        include_all_efforts: true,
+      });
+      const segmentEfforts: MetricFindValue[] = [];
+      for (const effort of activity.segment_efforts) {
+        segmentEfforts.push({ value: effort.id, text: effort.name });
+      }
+      return segmentEfforts;
+    } else {
+      const limit = query.limit || DEFAULT_LIMIT;
+      let activities = await this.stravaApi.getActivities({ limit });
+      activities = this.filterActivities(activities, query.activityType);
+      const variableOptions: MetricFindValue[] = activities.map((a) => ({
+        value: a.id,
+        text: a.name,
+      }));
+      return variableOptions;
+    }
   }
 
   async testDatasource() {

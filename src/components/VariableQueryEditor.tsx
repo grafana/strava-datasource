@@ -31,7 +31,10 @@ export class StravaVariableQueryEditor extends PureComponent<VariableQueryProps,
     };
   }
 
-  queryTypes: Array<SelectableValue<VariableQueryTypes>> = [{ value: VariableQueryTypes.Activity, label: 'Activity' }];
+  queryTypes: Array<SelectableValue<VariableQueryTypes>> = [
+    { value: VariableQueryTypes.Activity, label: 'Activity' },
+    { value: VariableQueryTypes.SegmentEffort, label: 'Segment effort' },
+  ];
 
   onQueryTypeChange = (selectedItem: SelectableValue<VariableQueryTypes>) => {
     const queryType = selectedItem.value || VariableQueryTypes.Activity;
@@ -58,6 +61,12 @@ export class StravaVariableQueryEditor extends PureComponent<VariableQueryProps,
     this.props.onChange(queryModel, `Strava - ${this.props.query.queryType}`);
   };
 
+  onActivityIdChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
+    const activityId = e.currentTarget.value || '';
+    const queryModel: VariableQuery = { ...this.props.query, activityId };
+    this.props.onChange(queryModel, `Strava - ${this.props.query.queryType}`);
+  };
+
   render() {
     const { query } = this.props;
     const { limit } = this.state;
@@ -66,7 +75,7 @@ export class StravaVariableQueryEditor extends PureComponent<VariableQueryProps,
       <>
         <div className="gf-form max-width-21">
           <InlineFormLabel width={10}>Query Type</InlineFormLabel>
-          <Select width={16} value={query.queryType} options={this.queryTypes} onChange={this.onQueryTypeChange} />
+          <Select width={20} value={query.queryType} options={this.queryTypes} onChange={this.onQueryTypeChange} />
         </div>
         <div className="gf-form-inline">
           {query.queryType === VariableQueryTypes.Activity && (
@@ -86,6 +95,18 @@ export class StravaVariableQueryEditor extends PureComponent<VariableQueryProps,
                   onChange={this.onLimitStateChange}
                   onBlur={this.onLimitChange}
                   width={12}
+                />
+              </InlineField>
+            </InlineFieldRow>
+          )}
+          {query.queryType === VariableQueryTypes.SegmentEffort && (
+            <InlineFieldRow>
+              <InlineField label="Activity" labelWidth={20} tooltip="Activity id">
+                <Input
+                  value={query.activityId}
+                  onChange={this.onActivityIdChange}
+                  onBlur={this.onActivityIdChange}
+                  width={30}
                 />
               </InlineField>
             </InlineFieldRow>
