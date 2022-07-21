@@ -15,6 +15,7 @@ import {
   StravaSplitStat,
   StravaAthlete,
   TopAchievementStat,
+  StravaActivity,
 } from '../types';
 import StravaDatasource from '../datasource';
 import { AthleteLabel } from './AthleteLabel';
@@ -32,6 +33,11 @@ const stravaQueryTypeOptions: Array<SelectableValue<StravaQueryType>> = [
     value: StravaQueryType.Activity,
     label: 'Activity',
     description: 'Individual activity',
+  },
+  {
+    value: StravaQueryType.SegmentEffort,
+    label: 'Segment effort',
+    description: 'Activity segment efforts',
   },
 ];
 
@@ -57,6 +63,11 @@ const stravaActivityDataOptions: Array<SelectableValue<StravaActivityData>> = [
   { value: StravaActivityData.Splits, label: 'Splits' },
   { value: StravaActivityData.Stats, label: 'Stats' },
   { value: StravaActivityData.Segments, label: 'Segments' },
+  { value: StravaActivityData.Geomap, label: 'Geomap' },
+];
+
+const stravaSegmentDataOptions: Array<SelectableValue<StravaActivityData>> = [
+  { value: StravaActivityData.Graph, label: 'Graph' },
   { value: StravaActivityData.Geomap, label: 'Geomap' },
 ];
 
@@ -156,11 +167,13 @@ export const defaultQuery: StravaQuery = {
   format: StravaQueryFormat.TimeSeries,
   interval: StravaQueryInterval.Auto,
   activityData: StravaActivityData.Graph,
-  activityGraph: StravaActivityStream.Velocity,
+  activityGraph: StravaActivityStream.Pace,
   splitStat: StravaSplitStat.Speed,
   singleActivityStat: 'name',
   extendedStats: [],
   fitToTimeRange: true,
+  segmentData: StravaActivityData.Graph,
+  segmentGraph: StravaActivityStream.Pace,
 };
 
 export interface Props extends QueryEditorProps<StravaDatasource, StravaQuery, StravaJsonData> {}
@@ -176,12 +189,19 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
   const [{ value: activitiesOptions }, fetchActivitiesOptions] = useAsyncFn(async () => {
     return await getActivitiesOptions(query.activityType);
   }, [query.activityType]);
+  const [{ value: segmentsOptions }, fetchSegmentsOptions] = useAsyncFn(async () => {
+    const activityId = getTemplateSrv().replace(query.activityId?.toString());
+    return await getSegmentsOptions(activityId);
+  }, [query.activityType]);
 
   useEffect(() => {
     if (!datasource.athlete) {
       fetchAuthenticatedAthlete();
     }
     fetchActivitiesOptions();
+    if (query.queryType === StravaQueryType.SegmentEffort) {
+      fetchSegmentsOptions();
+    }
   }, [datasource.athlete, fetchAuthenticatedAthlete, fetchActivitiesOptions]);
 
   const getActivitiesOptions = async (activityType: StravaActivityType): Promise<Array<SelectableValue<number>>> => {
@@ -192,6 +212,32 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
       label: a.name,
       description: `${dateTime(a.start_date_local).format(ACTIVITY_DATE_FORMAT)} (${a.type})`,
     }));
+
+    const variables: SelectableValue[] = getTemplateSrv()
+      .getVariables()
+      .map((v) => ({
+        value: `$${v.name}`,
+        label: `$${v.name}`,
+        description: 'Variable',
+      }));
+    return variables.concat(options);
+  };
+
+  const getSegmentsOptions = async (activityId: string): Promise<Array<SelectableValue<number>>> => {
+    let options: Array<SelectableValue<number>> = [];
+    try {
+      let activity: StravaActivity = await datasource.stravaApi.getActivity({
+        id: activityId,
+        include_all_efforts: true,
+      });
+      options = activity.segment_efforts?.map((a) => ({
+        value: a.id,
+        label: a.name,
+        description: `${dateTime(a.start_date).format(ACTIVITY_DATE_FORMAT)}`,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
 
     const variables: SelectableValue[] = getTemplateSrv()
       .getVariables()
@@ -236,6 +282,14 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
     );
   };
 
+  const getSelectedSegmentData = () => {
+    return stravaSegmentDataOptions.find((v) => v.value === query.segmentData);
+  };
+
+  const getSelectedSegmentGraph = () => {
+    return stravaActivityGraphOptions.find((v) => v.value === query.segmentGraph);
+  };
+
   const getFormatOption = () => {
     return FORMAT_OPTIONS.find((v) => v.value === query.format);
   };
@@ -246,6 +300,10 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
 
   const getSelectedActivityOption = () => {
     return query.selectedActivity;
+  };
+
+  const getSelectedSegmentOption = () => {
+    return query.selectedSegmentEffort;
   };
 
   const onPropChange = (prop: string) => {
@@ -270,6 +328,12 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
   const onActivityChanged = (option: SelectableValue<number>) => {
     if (option.value !== undefined) {
       onChangeInternal({ ...query, activityId: option.value, selectedActivity: option });
+    }
+  };
+
+  const onSegmentChanged = (option: SelectableValue<number>) => {
+    if (option.value !== undefined) {
+      onChangeInternal({ ...query, segmentEffortId: option.value, selectedSegmentEffort: option });
     }
   };
 
@@ -415,6 +479,89 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
     );
   };
 
+  const renderSegmentEffortEditor = () => {
+    return (
+      <>
+        <InlineFieldRow>
+          <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
+          <InlineField label="Activity" labelWidth={10}>
+            <Select
+              isSearchable={true}
+              width={32}
+              value={getSelectedActivityOption()}
+              options={activitiesOptions}
+              onChange={onActivityChanged}
+            />
+          </InlineField>
+          <InlineField label="Segment effort" labelWidth={14}>
+            <Select
+              isSearchable={true}
+              width={32}
+              value={getSelectedSegmentOption()}
+              options={segmentsOptions}
+              onChange={onSegmentChanged}
+            />
+          </InlineField>
+          <div className="gf-form gf-form--grow">
+            <div className="gf-form-label gf-form-label--grow" />
+          </div>
+        </InlineFieldRow>
+        <InlineFieldRow>
+          <InlineFormLabel width={12}>&nbsp;</InlineFormLabel>
+          <InlineField label="Data" labelWidth={10}>
+            <Select
+              isSearchable={false}
+              width={16}
+              value={getSelectedSegmentData()}
+              options={stravaSegmentDataOptions}
+              onChange={onPropChange('segmentData')}
+            />
+          </InlineField>
+          {query.segmentData === StravaActivityData.Graph && (
+            <InlineField>
+              <Select
+                isSearchable={false}
+                width={16}
+                value={getSelectedSegmentGraph()}
+                options={stravaActivityGraphOptions}
+                onChange={onPropChange('segmentGraph')}
+              />
+            </InlineField>
+          )}
+          {query.activityData === StravaActivityData.Splits && (
+            <InlineField>
+              <Select
+                isSearchable={false}
+                width={16}
+                value={getSelectedActivitySplit()}
+                options={stravaActivitySplitOptions}
+                onChange={onPropChange('splitStat')}
+              />
+            </InlineField>
+          )}
+          {query.activityData === StravaActivityData.Stats && (
+            <InlineField>
+              <Select
+                isSearchable
+                allowCustomValue
+                width={20}
+                value={getSelectedSingleActivityStat()}
+                options={stravaStatsOptions}
+                onChange={onPropChange('singleActivityStat')}
+              />
+            </InlineField>
+          )}
+          <InlineField label="Fit to range" labelWidth={10}>
+            <InlineSwitch value={query.fitToTimeRange || false} onChange={onFitToRangeChanged} />
+          </InlineField>
+          <div className="gf-form gf-form--grow">
+            <div className="gf-form-label gf-form-label--grow" />
+          </div>
+        </InlineFieldRow>
+      </>
+    );
+  };
+
   const queryType = getSelectedQueryType();
 
   return (
@@ -424,7 +571,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
         <InlineField label="Query" labelWidth={10}>
           <Select
             isSearchable={false}
-            width={16}
+            width={20}
             value={queryType}
             options={stravaQueryTypeOptions}
             onChange={onPropChange('queryType')}
@@ -445,6 +592,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
       </InlineFieldRow>
       {queryType?.value === StravaQueryType.Activities && renderActivitiesEditor()}
       {queryType?.value === StravaQueryType.Activity && renderActivityEditor()}
+      {queryType?.value === StravaQueryType.SegmentEffort && renderSegmentEffortEditor()}
     </>
   );
 };

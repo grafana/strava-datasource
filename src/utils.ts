@@ -1,5 +1,5 @@
 import { DisplayValue } from '@grafana/data';
-import { StravaMeasurementPreference } from 'types';
+import { GRAPH_SMOOTH_WINDOW, StravaMeasurementPreference } from 'types';
 
 export function metersToFeet(value: number): number {
   return value / 0.3048;
@@ -63,8 +63,7 @@ export function metersDataToFeet(data: Array<number | null>, mp: StravaMeasureme
 
 export function smoothVelocityData(data: Array<number | null>): Array<number | null> {
   // It's not possible to calculate MA if n greater than number of points
-  const SMOOTH_RATIO = 20;
-  const n = Math.min(SMOOTH_RATIO, data.length);
+  const n = Math.min(GRAPH_SMOOTH_WINDOW, data.length);
 
   const sma = [];
   let w_sum = 0;
