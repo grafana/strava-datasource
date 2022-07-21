@@ -529,6 +529,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         { name: 'grade', type: FieldType.number, config: { unit: 'percent', decimals: 1 } },
         { name: 'PR', type: FieldType.string },
         { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
+        { name: 'segment_id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
         { name: 'time_from', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
         { name: 'time_to', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
       ],
@@ -566,7 +567,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
           ),
           grade: effort.segment.average_grade,
           PR: segment?.xoms?.overall,
-          id: effort.segment.id,
+          id: effort.id,
+          segment_id: effort.segment.id,
           time_from: dateTime(effort.start_date).unix() * 1000,
           time_to: (dateTime(effort.start_date).unix() + effort.elapsed_time) * 1000,
         };
