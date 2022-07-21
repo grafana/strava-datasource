@@ -366,7 +366,7 @@ func (ds *StravaDatasourceInstance) StravaAPIQueryWithCache(requestHash string) 
 				return nil, err
 			}
 			if query.Endpoint == "athlete/activities" {
-				ds.cache.SetWithExpiration(requestHash, response, time.Minute*5)
+				ds.cache.SetWithExpiration(requestHash, response, time.Minute*10)
 			} else {
 				ds.cache.Set(requestHash, response)
 			}
