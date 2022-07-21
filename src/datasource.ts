@@ -36,7 +36,6 @@ import {
   TopAchievementStat,
   VariableQueryTypes,
   SegmentEffort,
-  GRAPH_SMOOTH_WINDOW,
 } from './types';
 import {
   smoothVelocityData,
