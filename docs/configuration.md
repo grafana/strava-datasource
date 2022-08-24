@@ -28,3 +28,12 @@ You will be redirected back to the datasource configuration page. Now fill _Clie
 ![Save & Test](img/config_3.png)
 
 Now you can create some dashboards! Also, you can import dashboards from the _Dashboards_ tab at the data source configuration page.
+
+## Custom data directory
+
+By default, plugin stores data in user cache directory (ie `$HOME/.cache` on Linux or `%LocalAppData%` on Windows). If you need to change this directory, set `GF_STRAVA_DS_DATA_PATH` environment variable. This directory is used for storing obtained refresh tokens and make it available after plugin restart. Make sure user that runs grafana-server has write access to that directory.
+
+```sh
+mkdir /var/lib/grafana/strava
+export GF_STRAVA_DS_DATA_PATH=/var/lib/grafana/strava
+```
