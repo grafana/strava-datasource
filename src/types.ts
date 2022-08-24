@@ -96,6 +96,7 @@ export interface SegmentEffort {
 export interface Segment {
   id: number;
   activity_type: ActivityType;
+  athlete_segment_stats: AthleteSegmentStats;
   average_grade: number;
   city: string;
   climb_category: number;
@@ -111,6 +112,13 @@ export interface Segment {
   private: boolean;
   starred: boolean;
   xoms: XOMs;
+}
+
+export interface AthleteSegmentStats {
+  effort_count: number;
+  pr_activity_id: number;
+  pr_date: string;
+  pr_elapsed_time: number;
 }
 
 export interface XOMs {
