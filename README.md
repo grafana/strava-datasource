@@ -1,8 +1,9 @@
-# Strava datasource for Grafana dashboard
+# Strava datasource for Grafana
 
 Visualize your sport activity with Grafana.
 
-![Strava Dashboard](https://user-images.githubusercontent.com/4932851/72068746-d54a9580-32f6-11ea-9352-c2bcaa2a723a.png)
+![Strava Dashboards](https://user-images.githubusercontent.com/4932851/186380101-32565673-d16f-463a-bbe9-42cf2a9f376c.png)
+
 
 Features:
 
