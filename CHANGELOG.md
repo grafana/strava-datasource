@@ -1,5 +1,25 @@
 # Change Log
 
+## [1.5.0] - 2022-08-24
+
+### Added
+
+- Weighted average power metric, [#50](https://github.com/grafana/strava-datasource/issues/50)
+- Improved caching (including data pre-fetching).
+- Special _Pace_ stat which formats time based on activity type.
+- Query segments data.
+- Updated dashboards with data links navigation.
+- Achievements stats.
+- Activity route supports shared crosshair.
+- More precise data streams handling.
+- Build for Mac M1.
+
+## [1.4.1] - 2021-12-27
+
+### Fixed
+
+- Dashboard data sources (fix broken dashboards)
+
 ## [1.4.0] - 2021-12-27
 
 ### Added
