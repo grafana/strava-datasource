@@ -98,7 +98,7 @@ func (p *StravaPrefetcher) PrefetchActivity(activityId string) {
 	}
 	_, err := stravaApiQueryFn(context.Background(), apiReq)
 	if err != nil {
-		log.DefaultLogger.Error("Error loading activity", "errror", err)
+		log.DefaultLogger.Error("Error loading activity", "error", err)
 	}
 }
 
@@ -144,7 +144,7 @@ func (p *StravaPrefetcher) PrefetchActivityStreams(activityId string) {
 		}
 		_, err := stravaApiQueryFn(context.Background(), apiReq)
 		if err != nil {
-			log.DefaultLogger.Error("Error loading activity", "errror", err)
+			log.DefaultLogger.Error("Error loading activity", "error", err)
 		}
 	}
 }
@@ -166,6 +166,6 @@ func (p *StravaPrefetcher) PrefetchActivitiesVariable(limit int) {
 	}
 	_, err := stravaApiQueryFn(context.Background(), apiReq)
 	if err != nil {
-		log.DefaultLogger.Error("Error loading activities", "errror", err)
+		log.DefaultLogger.Error("Error loading activities", "error", err)
 	}
 }
