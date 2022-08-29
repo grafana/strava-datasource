@@ -1,0 +1,47 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "grafana",
+  "signedByOrg": "grafana",
+  "signedByOrgName": "Grafana Labs",
+  "plugin": "grafana-strava-datasource",
+  "version": "1.5.0",
+  "time": 1661767446511,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "strava-plugin_darwin_amd64": "362cd0390fe49807993cca30a867967b19138a201169bd34fcc542caba0b598e",
+    "module.js": "38cd6f04b1ddc07e51d8b43b0f01428c2895ff1f9095abb3869cfc7e7c7bb39b",
+    "module.js.LICENSE.txt": "0d8f66cd4afb566cb5b7e1540c68f43b939d3eba12ace290f18abc4f4cb53ed0",
+    "module.js.map": "53303f73b76d56b11bea95c43934b5a283b26ada388b7805be5344424803c585",
+    "README.md": "d0376b3859107872ac71251bdbfedc1cc37b9cb151aaa307a38735fa39c3b068",
+    "CHANGELOG.md": "b379b934e67251ad9cb6ff7cf54d11eab73bab53d6003ef9a0e330cc486a9567",
+    "plugin.json": "dac9fea7c398fa2c534a69a2dd861717bdc24c8a46d8d4968cb1727e1fa84c83",
+    "LICENSE": "0d8c4b0c61a3e7380ef52299a88ae6a59e661b6bd8cb55b504f3bec387a6962c",
+    "img/btn_strava_connectwith_orange.svg": "ff4134491d115b57a56fb2e3ccb3e0d7c212ea8872e57e8c221f12649299289b",
+    "img/strava_logo.svg": "29170f691955a5f4cc551a6508f1f732bed397dc34c525e13390fd468e2b4ee0",
+    "strava-plugin_darwin_arm64": "ed07c27b9a8032d104dd24ca3bbf49bc97673dbd1d7d5acc2f129e672a2e248a",
+    "strava-plugin_linux_arm": "55297e2249e328223b0db46703d47ac47fd8c9e49ac368c863c1499ec7e03052",
+    "strava-plugin_linux_arm64": "562218db0f513eceadaa386b4e31fb1098e6bd55da6ea3f496d306ddb5820545",
+    "dashboards/strava_activity_analysis.json": "47bd65873c1058c8090da0f563771dda366fcfe50aa1cc5651d6f1c64edf9645",
+    "dashboards/strava_activity_overview.json": "f137561f7ca297a9b25c6298cd0c38498eecf70b8ba1e75bed54588739642319",
+    "dashboards/strava_datasource.json": "69c2b08fc83976f5d284d93cb966a1a78095b3c4c3998df21c4751dba1129b61",
+    "dashboards/strava_segment_overview.json": "0a77fd274963fc7d1bd7272a0a9d5d91c107c47a8e4f3da4dd6337562b051fd0",
+    "dashboards/strava_athlete_dashboard.json": "b381b4433a18f6f3a63b79e9112398b11406889404ee2285baf618e93bd5835f",
+    "strava-plugin_windows_amd64.exe": "35569adf53a40d70f2b7aff61bd1477428f7b6d2a449deeb9a2bdec651ecbd5b",
+    "strava-plugin_linux_amd64": "62eef58db2d22de365cdea32e8ca4cac0e9dec4427b5a3c817dd4e46d18929e8"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.10
+Comment: https://openpgpjs.org
+
+wrgEARMKAAYFAmMMjxYAIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
+cIhm5/YGAgjKmt/noOZdW11yuWDEfjNvoRrPhct7T1f/9c1/msZo/Qpewi4I
+wunRWk7oKMmy5KayZgzqEtS7XBueW042nvL5BAIJAUZuoT7pKJFaNo4uvIuC
+j9Nm0WKOt/ntVSPrN2LxBXYOGDAn9To/4ZZwW6SP9Hn4y6gVDaBtbnWCraVl
+qBwjf6e2
+=XHvB
+-----END PGP SIGNATURE-----
