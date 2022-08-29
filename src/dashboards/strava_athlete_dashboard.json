@@ -9,19 +9,25 @@
       "pluginName": "Strava"
     }
   ],
-  "__elements": [],
+  "__elements": {},
   "__requires": [
+    {
+      "type": "panel",
+      "id": "geomap",
+      "name": "Geomap",
+      "version": ""
+    },
     {
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "9.0.0"
+      "version": "9.1.1"
     },
     {
       "type": "datasource",
       "id": "grafana-strava-datasource",
       "name": "Strava",
-      "version": "1.4.0"
+      "version": "1.4.1"
     },
     {
       "type": "panel",
@@ -37,12 +43,6 @@
     },
     {
       "type": "panel",
-      "id": "text",
-      "name": "Text",
-      "version": ""
-    },
-    {
-      "type": "panel",
       "id": "timeseries",
       "name": "Time series",
       "version": ""
@@ -53,7 +53,10 @@
       {
         "$$hashKey": "object:617",
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -76,19 +79,58 @@
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "dark-orange",
+            "mode": "fixed"
+          },
+          "displayName": "Last month summary",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {
-        "h": 2,
-        "w": 24,
+        "h": 3,
+        "w": 9,
         "x": 0,
         "y": 0
       },
       "id": 13,
       "options": {
-        "content": "# Monthly Summary",
-        "mode": "markdown"
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "name"
       },
-      "pluginVersion": "8.1.0",
-      "type": "text"
+      "pluginVersion": "9.1.1",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -115,7 +157,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "semi-dark-green",
+                "color": "dark-orange",
                 "value": null
               }
             ]
@@ -138,11 +180,12 @@
         ]
       },
       "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 2
+        "h": 3,
+        "w": 3,
+        "x": 9,
+        "y": 0
       },
+      "hideTimeOverride": true,
       "id": 9,
       "links": [],
       "options": {
@@ -160,10 +203,14 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "9.1.1",
       "targets": [
         {
           "activityStat": "moving_time",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "format": "time_series",
           "interval": "no",
           "queryType": "Activities",
@@ -193,13 +240,12 @@
               "type": "special"
             }
           ],
-          "max": 100,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
+                "color": "dark-orange",
                 "value": null
               }
             ]
@@ -209,11 +255,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 2
+        "h": 3,
+        "w": 4,
+        "x": 12,
+        "y": 0
       },
+      "hideTimeOverride": true,
       "id": 8,
       "links": [],
       "options": {
@@ -231,10 +278,14 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "9.1.1",
       "targets": [
         {
           "activityStat": "distance",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "queryType": "Activities",
           "refId": "A"
         }
@@ -268,7 +319,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "dark-blue",
+                "color": "dark-orange",
                 "value": null
               }
             ]
@@ -278,11 +329,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 12,
-        "y": 2
+        "h": 3,
+        "w": 4,
+        "x": 16,
+        "y": 0
       },
+      "hideTimeOverride": true,
       "id": 10,
       "links": [],
       "options": {
@@ -300,10 +352,14 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "9.1.1",
       "targets": [
         {
           "activityStat": "moving_time",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "queryType": "Activities",
           "refId": "A"
         }
@@ -318,6 +374,7 @@
       },
       "fieldConfig": {
         "defaults": {
+          "decimals": 3,
           "displayName": "Elevation gain",
           "mappings": [
             {
@@ -336,7 +393,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "dark-red",
+                "color": "dark-orange",
                 "value": null
               }
             ]
@@ -346,11 +403,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 2
+        "h": 3,
+        "w": 4,
+        "x": 20,
+        "y": 0
       },
+      "hideTimeOverride": true,
       "id": 11,
       "links": [],
       "options": {
@@ -368,31 +426,20 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "9.1.1",
       "targets": [
         {
           "activityStat": "total_elevation_gain",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "queryType": "Activities",
           "refId": "A"
         }
       ],
       "timeFrom": "1M",
       "type": "stat"
-    },
-    {
-      "gridPos": {
-        "h": 2,
-        "w": 24,
-        "x": 0,
-        "y": 6
-      },
-      "id": 14,
-      "options": {
-        "content": "# Year Summary\n\n\n",
-        "mode": "markdown"
-      },
-      "pluginVersion": "8.1.0",
-      "type": "text"
     },
     {
       "datasource": {
@@ -405,6 +452,8 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -528,20 +577,22 @@
         ]
       },
       "gridPos": {
-        "h": 9,
-        "w": 12,
+        "h": 6,
+        "w": 15,
         "x": 0,
-        "y": 8
+        "y": 3
       },
       "id": 6,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "multi",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.1.0",
@@ -549,6 +600,10 @@
         {
           "activityStat": "moving_time",
           "activityType": "Run",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "format": "time_series",
           "queryType": "Activities",
           "refId": "A"
@@ -556,6 +611,10 @@
         {
           "activityStat": "moving_time",
           "activityType": "Ride",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "format": "time_series",
           "queryType": "Activities",
           "refId": "B"
@@ -563,6 +622,10 @@
         {
           "activityStat": "moving_time",
           "activityType": "Other",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "format": "time_series",
           "queryType": "Activities",
           "refId": "C"
@@ -579,11 +642,278 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "mode": "fixed"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 19,
+        "w": 9,
+        "x": 15,
+        "y": 3
+      },
+      "id": 18,
+      "options": {
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": false,
+          "showAttribution": true,
+          "showDebug": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "opacity": 0.4,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "field": "value",
+                  "fixed": 5,
+                  "max": 10,
+                  "min": 4
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "text": {
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "A"
+            },
+            "location": {
+              "mode": "auto"
+            },
+            "name": "Run",
+            "tooltip": true,
+            "type": "markers"
+          },
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "opacity": 0.4,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "field": "value",
+                  "fixed": 5,
+                  "max": 11,
+                  "min": 4
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "B"
+            },
+            "location": {
+              "mode": "auto"
+            },
+            "name": "Ride",
+            "tooltip": true,
+            "type": "markers"
+          },
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "blue"
+                },
+                "opacity": 0.4,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "field": "value",
+                  "fixed": 5,
+                  "max": 10,
+                  "min": 4
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "C"
+            },
+            "location": {
+              "mode": "auto"
+            },
+            "name": "Other",
+            "tooltip": true,
+            "type": "markers"
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "id": "fit",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 14
+        }
+      },
+      "pluginVersion": "9.1.1",
+      "targets": [
+        {
+          "activityData": "graph",
+          "activityGraph": "velocity_smooth",
+          "activityStat": "moving_time",
+          "activityType": "Run",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
+          "extendedStats": [],
+          "fitToTimeRange": true,
+          "format": "worldmap",
+          "hide": false,
+          "interval": "auto",
+          "queryType": "Activities",
+          "refId": "A",
+          "singleActivityStat": "name",
+          "splitStat": "average_speed"
+        },
+        {
+          "activityData": "graph",
+          "activityGraph": "velocity_smooth",
+          "activityStat": "moving_time",
+          "activityType": "Ride",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
+          "extendedStats": [],
+          "fitToTimeRange": true,
+          "format": "worldmap",
+          "hide": false,
+          "interval": "auto",
+          "queryType": "Activities",
+          "refId": "B",
+          "singleActivityStat": "name",
+          "splitStat": "average_speed"
+        },
+        {
+          "activityData": "graph",
+          "activityGraph": "velocity_smooth",
+          "activityStat": "moving_time",
+          "activityType": "Other",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
+          "extendedStats": [],
+          "fitToTimeRange": true,
+          "format": "worldmap",
+          "hide": false,
+          "interval": "auto",
+          "queryType": "Activities",
+          "refId": "C",
+          "singleActivityStat": "name",
+          "splitStat": "average_speed"
+        }
+      ],
+      "title": "Panel Title",
+      "type": "geomap"
+    },
+    {
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "mode": "thresholds"
           },
           "custom": {
+            "align": "auto",
             "displayMode": "auto",
-            "filterable": false
+            "filterable": false,
+            "inspect": false
           },
           "decimals": 1,
           "links": [],
@@ -610,10 +940,6 @@
             },
             "properties": [
               {
-                "id": "custom.displayMode",
-                "value": "lcd-gauge"
-              },
-              {
                 "id": "thresholds",
                 "value": {
                   "mode": "absolute",
@@ -636,6 +962,10 @@
               {
                 "id": "max",
                 "value": 14400
+              },
+              {
+                "id": "custom.width",
+                "value": 95
               }
             ]
           },
@@ -646,8 +976,94 @@
             },
             "properties": [
               {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "AlpineSki": {
+                        "index": 9,
+                        "text": "🎿"
+                      },
+                      "EBikeRide": {
+                        "index": 3,
+                        "text": "🚴"
+                      },
+                      "Golf": {
+                        "index": 15,
+                        "text": "🏌️"
+                      },
+                      "IceSkate": {
+                        "index": 6,
+                        "text": "⛸"
+                      },
+                      "InlineSkate": {
+                        "index": 5,
+                        "text": "🛼"
+                      },
+                      "Kayaking": {
+                        "index": 14,
+                        "text": "🚣"
+                      },
+                      "NordicSki": {
+                        "index": 7,
+                        "text": "⛷"
+                      },
+                      "Ride": {
+                        "index": 2,
+                        "text": "🚴"
+                      },
+                      "RockClimbing": {
+                        "index": 12,
+                        "text": "🧗"
+                      },
+                      "Run": {
+                        "index": 0,
+                        "text": "👟"
+                      },
+                      "Skateboard": {
+                        "index": 16,
+                        "text": "🛹"
+                      },
+                      "Soccer": {
+                        "index": 11,
+                        "text": "⚽"
+                      },
+                      "Surfing": {
+                        "index": 13,
+                        "text": "🏄"
+                      },
+                      "Swim": {
+                        "index": 10,
+                        "text": "🏊"
+                      },
+                      "VirtualRide": {
+                        "index": 4,
+                        "text": "🚴"
+                      },
+                      "VirtualRun": {
+                        "index": 1,
+                        "text": "👟"
+                      },
+                      "WeightTraining": {
+                        "index": 8,
+                        "text": "🏋"
+                      },
+                      "Wheelchair": {
+                        "index": 18,
+                        "text": "🧑‍🦽"
+                      },
+                      "Yoga": {
+                        "index": 17,
+                        "text": "🧘"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              {
                 "id": "custom.width",
-                "value": 107
+                "value": 64
               },
               {
                 "id": "custom.filterable",
@@ -663,7 +1079,7 @@
             "properties": [
               {
                 "id": "custom.displayMode",
-                "value": "gradient-gauge"
+                "value": "color-background"
               },
               {
                 "id": "min",
@@ -679,27 +1095,35 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
+                      "color": "transparent",
                       "value": null
                     },
                     {
-                      "color": "dark-orange",
+                      "color": "#fca437",
+                      "value": 1
+                    },
+                    {
+                      "color": "orange",
                       "value": 500
                     },
                     {
-                      "color": "dark-red",
-                      "value": 900
+                      "color": "semi-dark-orange",
+                      "value": 1000
+                    },
+                    {
+                      "color": "dark-orange",
+                      "value": 1500
                     }
                   ]
                 }
               },
               {
-                "id": "custom.width",
-                "value": 130
-              },
-              {
                 "id": "decimals",
                 "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 75
               }
             ]
           },
@@ -711,7 +1135,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 94
+                "value": 77
               }
             ]
           },
@@ -722,8 +1146,8 @@
             },
             "properties": [
               {
-                "id": "custom.width",
-                "value": 109
+                "id": "custom.hidden",
+                "value": true
               }
             ]
           },
@@ -735,19 +1159,19 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 87
+                "value": 80
               },
               {
                 "id": "custom.displayMode",
-                "value": "basic"
+                "value": "color-background"
               },
               {
                 "id": "min",
-                "value": 120
+                "value": 100
               },
               {
                 "id": "max",
-                "value": 180
+                "value": 170
               },
               {
                 "id": "thresholds",
@@ -755,19 +1179,31 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "blue",
+                      "color": "transparent",
                       "value": null
                     },
                     {
-                      "color": "yellow",
-                      "value": 130
+                      "color": "#fd8e9b",
+                      "value": 1
                     },
                     {
-                      "color": "dark-orange",
+                      "color": "super-light-red",
+                      "value": 100
+                    },
+                    {
+                      "color": "light-red",
+                      "value": 120
+                    },
+                    {
+                      "color": "red",
                       "value": 150
                     },
                     {
                       "color": "dark-red",
+                      "value": 160
+                    },
+                    {
+                      "color": "#880010",
                       "value": 170
                     }
                   ]
@@ -783,7 +1219,10 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 113
+                "value": 75
+              },
+              {
+                "id": "decimals"
               }
             ]
           },
@@ -803,14 +1242,94 @@
                 ]
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 104
+              },
+              {
+                "id": "displayName",
+                "value": "Date"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "achievement_count"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "🏆"
+              },
+              {
+                "id": "custom.width",
+                "value": 54
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kudos_count"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "👍"
+              },
+              {
+                "id": "custom.width",
+                "value": 50
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "🏆"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 50
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "👍"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 50
+              }
+            ]
           }
         ]
       },
       "gridPos": {
-        "h": 17,
-        "w": 12,
-        "x": 12,
-        "y": 8
+        "h": 20,
+        "w": 15,
+        "x": 0,
+        "y": 9
       },
       "id": 16,
       "options": {
@@ -824,14 +1343,27 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "9.1.1",
       "targets": [
         {
+          "activityData": "graph",
+          "activityGraph": "velocity_smooth",
           "activityStat": "distance",
-          "extendedStats": [],
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
+          "extendedStats": [
+            "achievement_count",
+            "kudos_count"
+          ],
+          "fitToTimeRange": true,
           "format": "table",
+          "interval": "auto",
           "queryType": "Activities",
-          "refId": "A"
+          "refId": "A",
+          "singleActivityStat": "name",
+          "splitStat": "average_speed"
         }
       ],
       "title": "Activities",
@@ -841,15 +1373,19 @@
           "options": {
             "excludeByName": {},
             "indexByName": {
+              "achievement_count": 8,
               "distance": 3,
               "elapsed time": 5,
               "elevation gain": 7,
               "heart rate": 6,
-              "id": 9,
-              "kilojoules": 8,
+              "id": 11,
+              "kilojoules": 10,
+              "kudos_count": 9,
               "moving time": 4,
               "name": 1,
               "time": 0,
+              "time_from": 12,
+              "time_to": 13,
               "type": 2
             },
             "renameByName": {}
@@ -869,6 +1405,8 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -948,32 +1486,42 @@
         ]
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 17
+        "h": 7,
+        "w": 9,
+        "x": 15,
+        "y": 22
       },
       "id": 5,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "multi",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.1.0",
       "targets": [
         {
           "activityStat": "distance",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "format": "time_series",
           "queryType": "Activities",
           "refId": "A"
         },
         {
           "activityStat": "total_elevation_gain",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
           "format": "time_series",
           "queryType": "Activities",
           "refId": "B"
@@ -984,7 +1532,7 @@
     }
   ],
   "refresh": false,
-  "schemaVersion": 34,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -1011,6 +1559,6 @@
   "timezone": "",
   "title": "Strava Athlete Dashboad",
   "uid": "StravaAthleteDashboardModern-v2",
-  "version": 13,
+  "version": 15,
   "weekStart": ""
 }

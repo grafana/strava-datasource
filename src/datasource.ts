@@ -33,8 +33,21 @@ import {
   StravaAuthType,
   StravaAthlete,
   StravaMeasurementPreference,
+  TopAchievementStat,
+  VariableQueryTypes,
+  SegmentEffort,
 } from './types';
-import { smoothVelocityData, velocityDataToPace, velocityDataToSpeed, velocityToPace, velocityToSpeed } from 'utils';
+import {
+  smoothVelocityData,
+  velocityDataToPace,
+  velocityDataToSpeed,
+  velocityToPace,
+  velocityToSpeed,
+  metersToFeet,
+  metersToMiles,
+  paceToMiles,
+  metersDataToFeet,
+} from 'utils';
 import { getTemplateSrv } from '@grafana/runtime';
 
 const DEFAULT_RANGE = {
@@ -123,6 +136,9 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       } else if (target.queryType === StravaQueryType.Activity) {
         const activityData = await this.queryActivity(options, target);
         data.push(activityData);
+      } else if (target.queryType === StravaQueryType.SegmentEffort) {
+        const segmentData = await this.queryActivitySegment(options, target);
+        data.push(segmentData);
       }
     }
 
@@ -219,17 +235,23 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       if (activity.type === 'Run') {
         valueFiled.name = 'pace';
         valueFiled.config.unit = 'dthms';
-        streamValues = velocityDataToPace(streamValues);
+        streamValues = velocityDataToPace(streamValues, this.measurementPreference);
       } else {
         valueFiled.name = 'speed';
-        valueFiled.config.unit = 'velocitykmh';
-        streamValues = velocityDataToSpeed(streamValues);
+        valueFiled.config.unit = getPreferredSpeedUnit(this.measurementPreference);
+        streamValues = velocityDataToSpeed(streamValues, this.measurementPreference);
       }
     }
 
     if (target.activityGraph === StravaActivityStream.Velocity) {
       valueFiled.name = 'speed';
-      streamValues = velocityDataToSpeed(streamValues);
+      valueFiled.config.unit = getPreferredSpeedUnit(this.measurementPreference);
+      streamValues = velocityDataToSpeed(streamValues, this.measurementPreference);
+    }
+
+    if (target.activityGraph === StravaActivityStream.Altitude) {
+      valueFiled.config.unit = getPreferredLenghtUnit(this.measurementPreference);
+      streamValues = metersDataToFeet(streamValues, this.measurementPreference);
     }
 
     // Smooth data
@@ -239,6 +261,130 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       activityStream === StravaActivityStream.GradeSmooth ||
       activityStream === StravaActivityStream.WattsCalc ||
       activityStream === StravaActivityStream.Watts
+    ) {
+      streamValues = smoothVelocityData(streamValues);
+    }
+
+    valueFiled.values = new ArrayVector(streamValues);
+    frame.addField(timeFiled);
+    frame.addField(valueFiled);
+
+    return frame;
+  }
+
+  async queryActivitySegment(options: DataQueryRequest<StravaQuery>, target: StravaQuery) {
+    const activityId = getTemplateSrv().replace(target.activityId?.toString());
+    const segmentEffortId = getTemplateSrv().replace(target.segmentEffortId?.toString());
+    const activity: StravaActivity = await this.stravaApi.getActivity({
+      id: activityId,
+      include_all_efforts: true,
+    });
+
+    const segmentEffort = activity.segment_efforts?.find((se) => se.id.toString() === segmentEffortId);
+    if (!segmentEffort) {
+      return [];
+    }
+
+    if (target.activityData === StravaActivityData.Geomap) {
+      return this.querySegmentGeomap(activity, segmentEffort, target, options);
+    }
+
+    let segmentStream = target.segmentGraph;
+    if (segmentStream === StravaActivityStream.Pace) {
+      segmentStream = StravaActivityStream.Velocity;
+    }
+
+    if (!segmentStream) {
+      return null;
+    }
+
+    const streams = await this.stravaApi.getActivityStreams({
+      id: activityId,
+      streamType: segmentStream,
+    });
+
+    const timeFiled: MutableField<number> = {
+      name: TIME_SERIES_TIME_FIELD_NAME,
+      type: FieldType.time,
+      config: {
+        custom: {},
+      },
+      values: new ArrayVector(),
+    };
+
+    const valueFiled: MutableField<number | null> = {
+      name: segmentStream,
+      type: FieldType.number,
+      config: {
+        custom: {},
+      },
+      values: new ArrayVector(),
+    };
+
+    const frame = new MutableDataFrame({
+      name: activity.name,
+      refId: target.refId,
+      fields: [],
+    });
+
+    const stream = streams[segmentStream];
+    if (!stream) {
+      return frame;
+    }
+
+    // Data comes as a kind of sparce array. Time stream contains offset of data
+    // points, for example:
+    // heartrate: [70,81,82,81,99,96,97,98,99]
+    // time:      [0, 4, 5, 6, 20,21,22,23,24]
+    // So last value of the time stream is a highest index in data array
+    const timeStream = streams.time;
+    const streamLength: number = timeStream.data[segmentEffort.end_index] - timeStream.data[segmentEffort.start_index];
+    let streamValues = new Array<number | null>(streamLength).fill(null);
+
+    const firstTsIndex = timeStream.data[segmentEffort.start_index];
+    let ts = dateTime(activity.start_date).unix() + firstTsIndex;
+    if (target.fitToTimeRange) {
+      ts = options.range.from.unix();
+    }
+    const startIdx = segmentEffort.start_index;
+    for (let i = startIdx; i < startIdx + streamLength; i++) {
+      timeFiled.values.add(ts * 1000);
+      ts++;
+    }
+    for (let i = startIdx; i < segmentEffort.end_index; i++) {
+      streamValues[timeStream.data[i] - firstTsIndex] = stream.data[i];
+    }
+
+    if (target.activityGraph === StravaActivityStream.Pace) {
+      if (activity.type === 'Run') {
+        valueFiled.name = 'pace';
+        valueFiled.config.unit = 'dthms';
+        streamValues = velocityDataToPace(streamValues, this.measurementPreference);
+      } else {
+        valueFiled.name = 'speed';
+        valueFiled.config.unit = getPreferredSpeedUnit(this.measurementPreference);
+        streamValues = velocityDataToSpeed(streamValues, this.measurementPreference);
+      }
+    }
+
+    if (target.activityGraph === StravaActivityStream.Velocity) {
+      valueFiled.name = 'speed';
+      valueFiled.config.unit = getPreferredSpeedUnit(this.measurementPreference);
+      streamValues = velocityDataToSpeed(streamValues, this.measurementPreference);
+    }
+
+    if (target.activityGraph === StravaActivityStream.Altitude) {
+      valueFiled.config.unit = getPreferredLenghtUnit(this.measurementPreference);
+      streamValues = metersDataToFeet(streamValues, this.measurementPreference);
+    }
+
+    // Smooth data
+    if (
+      segmentStream === StravaActivityStream.Velocity ||
+      segmentStream === StravaActivityStream.HeartRate ||
+      segmentStream === StravaActivityStream.GradeSmooth ||
+      segmentStream === StravaActivityStream.WattsCalc ||
+      segmentStream === StravaActivityStream.Watts
     ) {
       streamValues = smoothVelocityData(streamValues);
     }
@@ -291,10 +437,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       } else if (splitStat === StravaSplitStat.Pace) {
         if (activity.type === 'Run') {
           valueFiled.config.unit = 'dthms';
-          value = velocityToPace(split[StravaSplitStat.Speed]);
+          value = getPreferredPace(split[StravaSplitStat.Speed], this.measurementPreference);
         } else {
-          valueFiled.config.unit = 'velocitykmh';
-          value = velocityToSpeed(split[StravaSplitStat.Speed]);
+          valueFiled.config.unit = getPreferredSpeedUnit(this.measurementPreference);
+          value = getPreferredSpeed(split[StravaSplitStat.Speed], this.measurementPreference);
         }
       }
       valueFiled.values.add(value);
@@ -318,16 +464,37 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     let activityStats = (activity as any)[stats];
     if (stats.startsWith('gear_')) {
       const gearStatsName = stats.substring('gear_'.length);
-      activityStats = activity.gear[gearStatsName];
+      activityStats = activity.gear ? activity.gear[gearStatsName] : null;
     }
     if (stats === 'pace') {
       if (activity.type === 'Run') {
         valueFiled.config.unit = 'dthms';
-        activityStats = velocityToPace(activity.average_speed);
+        activityStats = getPreferredPace(activity.average_speed, this.measurementPreference);
       } else {
-        valueFiled.config.unit = 'velocitykmh';
-        activityStats = velocityToSpeed(activity.average_speed);
+        valueFiled.config.unit = getPreferredSpeedUnit(this.measurementPreference);
+        activityStats = getPreferredSpeed(activity.average_speed, this.measurementPreference);
       }
+    }
+    if (stats === TopAchievementStat) {
+      let topAchievement = null;
+      for (const effort of activity.segment_efforts) {
+        if (effort.achievements) {
+          for (const achievement of effort.achievements) {
+            if (topAchievement === null || achievement.rank < topAchievement) {
+              topAchievement = achievement.rank;
+            }
+          }
+        }
+      }
+      activityStats = topAchievement;
+    }
+    if (stats === StravaActivityStat.Distance) {
+      valueFiled.config.unit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
+      activityStats = getPreferredDistance(activity.distance, this.measurementPreference);
+    }
+    if (stats === StravaActivityStat.ElevationGain) {
+      valueFiled.config.unit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
+      activityStats = getPreferredLenght(activity.total_elevation_gain, this.measurementPreference);
     }
 
     const frame = new MutableDataFrame({
@@ -344,7 +511,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return frame;
   }
 
-  queryActivitySegments(activity: StravaActivity, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
+  async queryActivitySegments(activity: StravaActivity, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
     const distanceUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
     const lenghtUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
 
@@ -360,7 +527,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         { name: 'distance', type: FieldType.number, config: { unit: distanceUnit } },
         { name: 'elevation gain', type: FieldType.number, config: { unit: lenghtUnit, decimals: 0 } },
         { name: 'grade', type: FieldType.number, config: { unit: 'percent', decimals: 1 } },
+        { name: 'PR', type: FieldType.string, config: { unit: 'dthms' } },
+        { name: 'KOM', type: FieldType.string },
         { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
+        { name: 'segment_id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
         { name: 'time_from', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
         { name: 'time_to', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
       ],
@@ -368,17 +538,20 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     const segments = activity.segment_efforts;
     if (segments?.length > 0) {
+      let detailedSegments = await Promise.all(segments.map((s) => this.stravaApi.getSegment(s.segment.id)));
+
       for (let i = 0; i < segments.length; i++) {
         const effort = segments[i];
+        const segment = detailedSegments.find((s) => s.id === effort.segment.id);
 
         const paceFieldIdx = frame.fields.findIndex((field) => field.name === 'pace');
         let pace: number;
         if (effort.segment.activity_type === 'Run') {
           frame.fields[paceFieldIdx].config.unit = 'dthms';
-          pace = velocityToPace(effort.distance / effort.moving_time);
+          pace = getPreferredPace(effort.distance / effort.moving_time, this.measurementPreference);
         } else {
-          frame.fields[paceFieldIdx].config.unit = 'velocitykmh';
-          pace = velocityToSpeed(effort.distance / effort.moving_time);
+          frame.fields[paceFieldIdx].config.unit = getPreferredSpeedUnit(this.measurementPreference);
+          pace = getPreferredSpeed(effort.distance / effort.moving_time, this.measurementPreference);
         }
 
         const dataRow: any = {
@@ -394,7 +567,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
             this.measurementPreference
           ),
           grade: effort.segment.average_grade,
-          id: effort.segment.id,
+          PR: segment?.athlete_segment_stats?.pr_elapsed_time,
+          KOM: segment?.xoms?.overall,
+          id: effort.id,
+          segment_id: effort.segment.id,
           time_from: dateTime(effort.start_date).unix() * 1000,
           time_to: (dateTime(effort.start_date).unix() + effort.elapsed_time) * 1000,
         };
@@ -455,15 +631,78 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return frame;
   }
 
+  async querySegmentGeomap(
+    activity: StravaActivity,
+    segmentEffort: SegmentEffort,
+    target: StravaQuery,
+    options: DataQueryRequest<StravaQuery>
+  ) {
+    const frame = new MutableDataFrame({
+      name: activity.name,
+      refId: target.refId,
+      fields: [
+        { name: TIME_SERIES_VALUE_FIELD_NAME, type: FieldType.number },
+        { name: 'latitude', type: FieldType.number },
+        { name: 'longitude', type: FieldType.number },
+      ],
+    });
+
+    if (!segmentEffort) {
+      return frame;
+    }
+
+    let points: Array<[number, number]> = [];
+
+    try {
+      const streams = await this.stravaApi.getActivityStreams({
+        id: activity.id,
+        streamType: StravaActivityStream.LatLng,
+      });
+      points = streams[StravaActivityStream.LatLng].data;
+      let startTs = dateTime(activity.start_date).unix();
+      const timeticks = streams.time?.data;
+      if (!timeticks) {
+        throw new Error('Time field not found');
+      }
+      frame.addField({ name: TIME_SERIES_TIME_FIELD_NAME, type: FieldType.time });
+      for (let i = segmentEffort.start_index; i < segmentEffort.end_index; i++) {
+        frame.add({
+          latitude: points[i][0],
+          longitude: points[i][1],
+          [TIME_SERIES_VALUE_FIELD_NAME]: 1,
+          [TIME_SERIES_TIME_FIELD_NAME]: (startTs + timeticks[i]) * 1000,
+        });
+      }
+    } catch (error) {
+      console.log('Cannot fetch geo points from activity stream');
+    }
+
+    return frame;
+  }
+
   async metricFindQuery(query: VariableQuery, options?: any): Promise<MetricFindValue[]> {
-    const limit = query.limit || DEFAULT_LIMIT;
-    let activities = await this.stravaApi.getActivities({ limit });
-    activities = this.filterActivities(activities, query.activityType);
-    const variableOptions: MetricFindValue[] = activities.map((a) => ({
-      value: a.id,
-      text: a.name,
-    }));
-    return variableOptions;
+    const queryType = query.queryType;
+    if (queryType === VariableQueryTypes.SegmentEffort) {
+      const activityId = getTemplateSrv().replace(query.activityId);
+      const activity: StravaActivity = await this.stravaApi.getActivity({
+        id: activityId,
+        include_all_efforts: true,
+      });
+      const segmentEfforts: MetricFindValue[] = [];
+      for (const effort of activity.segment_efforts) {
+        segmentEfforts.push({ value: effort.id, text: effort.name });
+      }
+      return segmentEfforts;
+    } else {
+      const limit = query.limit || DEFAULT_LIMIT;
+      let activities = await this.stravaApi.getActivities({ limit });
+      activities = this.filterActivities(activities, query.activityType);
+      const variableOptions: MetricFindValue[] = activities.map((a) => ({
+        value: a.id,
+        text: a.name,
+      }));
+      return variableOptions;
+    }
   }
 
   async testDatasource() {
@@ -847,12 +1086,22 @@ function getPreferredLenght(value: number, measurementPreference: StravaMeasurem
   return measurementPreference === StravaMeasurementPreference.Feet ? metersToFeet(value) : value;
 }
 
-function metersToFeet(value: number): number {
-  return value / 0.3048;
+function getPreferredSpeed(value: number, measurementPreference: StravaMeasurementPreference): number {
+  const speedKmph = velocityToSpeed(value);
+  return measurementPreference === StravaMeasurementPreference.Feet ? metersToMiles(speedKmph * 1000) : speedKmph;
 }
 
-function metersToMiles(value: number): number {
-  return value / 1609.344;
+function getPreferredSpeedUnit(measurementPreference: StravaMeasurementPreference) {
+  return measurementPreference === StravaMeasurementPreference.Feet ? 'velocitymph' : 'velocitykmh';
+}
+
+function getPreferredLenghtUnit(measurementPreference: StravaMeasurementPreference) {
+  return measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
+}
+
+function getPreferredPace(value: number, measurementPreference: StravaMeasurementPreference): number {
+  const paceMinkm = velocityToPace(value);
+  return measurementPreference === StravaMeasurementPreference.Feet ? paceToMiles(paceMinkm) : paceMinkm;
 }
 
 function getActivityStat(

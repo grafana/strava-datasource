@@ -54,6 +54,11 @@
       "type": "dashboard",
       "name": "Strava Activity Overview",
       "path": "dashboards/strava_activity_overview.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Strava Segment Overview",
+      "path": "dashboards/strava_segment_overview.json"
     }
   ],
 

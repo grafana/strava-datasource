@@ -299,7 +299,7 @@ jobs:
           path: ci/packages
 
   publish_github_release:
-    working_directory: ~/es-open-distro-datasource
+    working_directory: ~/grafana-strava-datasource
     docker:
       - image: cibuilds/github:0.13.0
     steps:

@@ -45,6 +45,11 @@ func (c *DSCache) SetWithExpiration(request string, response interface{}, d time
 	c.gocache.Set(request, response, d)
 }
 
+// Save item to the cache with no expiration
+func (c *DSCache) SetWithNoExpiration(request string, response interface{}, d time.Duration) {
+	c.gocache.Set(request, response, cache.NoExpiration)
+}
+
 // Set the value of the key "request" to "rersponse" with default expiration time.
 func (c *DSCache) SetDefault(request string, response interface{}) {
 	c.gocache.SetDefault(request, response)

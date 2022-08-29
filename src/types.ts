@@ -96,6 +96,7 @@ export interface SegmentEffort {
 export interface Segment {
   id: number;
   activity_type: ActivityType;
+  athlete_segment_stats: AthleteSegmentStats;
   average_grade: number;
   city: string;
   climb_category: number;
@@ -110,6 +111,25 @@ export interface Segment {
   name: string;
   private: boolean;
   starred: boolean;
+  xoms: XOMs;
+}
+
+export interface AthleteSegmentStats {
+  effort_count: number;
+  pr_activity_id: number;
+  pr_date: string;
+  pr_elapsed_time: number;
+}
+
+export interface XOMs {
+  overall: string;
+  kom: string;
+  qom: string;
+  destination: {
+    href: string;
+    name: string;
+    type: string;
+  };
 }
 
 export interface Achievement {
@@ -195,6 +215,10 @@ export interface StravaQuery extends DataQuery {
   singleActivityStat?: string;
   fitToTimeRange?: boolean;
   extendedStats: string[];
+  segmentEffortId?: number;
+  selectedSegmentEffort?: SelectableValue<number>;
+  segmentData?: string;
+  segmentGraph?: StravaActivityStream;
 }
 
 export enum StravaQueryFormat {
@@ -216,6 +240,7 @@ export enum StravaQueryInterval {
 export enum StravaQueryType {
   Activities = 'Activities',
   Activity = 'Activity',
+  SegmentEffort = 'SegmentEffort',
 }
 
 export enum StravaActivityStat {
@@ -283,8 +308,14 @@ export interface VariableQuery {
   queryType: VariableQueryTypes;
   activityType: string;
   limit: number;
+  activityId: string;
 }
 
 export enum VariableQueryTypes {
   Activity = 'activity',
+  SegmentEffort = 'segment_effort',
 }
+
+export const TopAchievementStat = 'top_achievement';
+
+export const GRAPH_SMOOTH_WINDOW = 20;
