@@ -47,7 +47,7 @@ func Init(mux *http.ServeMux) *datasource.StravaDatasource {
 			log.DefaultLogger.Error("Cannot get OS cache directory path", "error", err)
 		}
 		dataDirPath = path.Join(dataDirPath, DEFAULT_DATA_DIR)
-		err = os.Mkdir(dataDirPath, os.ModePerm)
+		err = os.MkdirAll(dataDirPath, os.ModePerm)
 		if err != nil {
 			log.DefaultLogger.Error("Cannot create data directory", "error", err)
 		}
