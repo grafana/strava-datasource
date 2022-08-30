@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"os"
 	"path"
@@ -36,22 +37,11 @@ func main() {
 }
 
 func Init(mux *http.ServeMux) *datasource.StravaDatasource {
-	dataDirPath, exist := os.LookupEnv(DATA_PATH_VARIABLE)
-	if exist && dataDirPath != "" {
-		log.DefaultLogger.Debug("Environment variable for storage path found", "variable", DATA_PATH_VARIABLE, "value", dataDirPath)
+	dataDirPath, err := getDataDir()
+	if err != nil {
+		log.DefaultLogger.Error(err.Error())
 	} else {
-		log.DefaultLogger.Info("Could not read environment variable", "variable", DATA_PATH_VARIABLE)
-		var err error
-		dataDirPath, err = os.UserCacheDir()
-		if err != nil {
-			log.DefaultLogger.Error("Cannot get OS cache directory path", "error", err)
-		}
-		dataDirPath = path.Join(dataDirPath, DEFAULT_DATA_DIR)
-		err = os.MkdirAll(dataDirPath, os.ModePerm)
-		if err != nil {
-			log.DefaultLogger.Error("Cannot create data directory", "error", err)
-		}
-		log.DefaultLogger.Info("Using default data path", "path", dataDirPath)
+		log.DefaultLogger.Info("Data dir configured", "path", dataDirPath)
 	}
 
 	ds := datasource.NewStravaDatasource(dataDirPath)
@@ -62,4 +52,37 @@ func Init(mux *http.ServeMux) *datasource.StravaDatasource {
 	mux.HandleFunc("/reset-access-token", ds.ResetAccessTokenHandler)
 
 	return ds
+}
+
+func getDataDir() (string, error) {
+	dataDirPath, exist := os.LookupEnv(DATA_PATH_VARIABLE)
+	if exist && dataDirPath != "" {
+		log.DefaultLogger.Info("Environment variable for storage path found", "variable", DATA_PATH_VARIABLE, "value", dataDirPath)
+		return dataDirPath, nil
+	}
+	log.DefaultLogger.Info("Could not read environment variable", "variable", DATA_PATH_VARIABLE)
+
+	var err error
+	dataDirPath, err = os.UserCacheDir()
+	if err != nil {
+		log.DefaultLogger.Error("Cannot get OS cache directory path", "error", err)
+	} else {
+		dataDirPath = path.Join(dataDirPath, DEFAULT_DATA_DIR)
+		err = os.MkdirAll(dataDirPath, os.ModePerm)
+		if err != nil {
+			log.DefaultLogger.Error("Cannot create data directory", "error", err)
+		} else {
+			return dataDirPath, nil
+		}
+	}
+
+	execPath, err := os.Executable()
+	if err != nil {
+		log.DefaultLogger.Error("Cannot get plugin directory", "error", err)
+	} else {
+		dataDirPath = path.Dir(execPath)
+		return dataDirPath, nil
+	}
+
+	return "", errors.New("Cannot get data directory")
 }
