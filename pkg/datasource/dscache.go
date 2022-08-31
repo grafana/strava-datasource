@@ -75,7 +75,13 @@ func (c *DSCache) Save(request string, response interface{}) error {
 	cacheKey := c.buildDSCacheKey(request)
 	filename := filepath.Join(c.dataDir, cacheKey)
 	cacheLogger.Debug("Saving key to file", "key", request, "path", filename)
-	return os.WriteFile(filename, []byte(response.(string)), 0644)
+	err := os.WriteFile(filename, []byte(response.(string)), 0644)
+	if err != nil {
+		cacheLogger.Error("Error saving data, switching to default directory", "dir", c.dataDir, "error", err)
+		c.dataDir = ""
+		return os.WriteFile(filepath.Join(c.dataDir, cacheKey), []byte(response.(string)), 0644)
+	}
+	return nil
 }
 
 // Load value from disk
