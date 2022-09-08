@@ -86,6 +86,30 @@ func (ds *StravaDatasource) ResetAccessTokenHandler(rw http.ResponseWriter, req 
 	rw.Write(b)
 }
 
+func (ds *StravaDatasource) ResetCacheHandler(rw http.ResponseWriter, req *http.Request) {
+	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
+	dsInstance, err := ds.getDSInstance(pluginCxt)
+	if err != nil {
+		ds.logger.Error("Error loading datasource", "error", err)
+		writeError(rw, http.StatusInternalServerError, err)
+		return
+	}
+
+	dsInstance.ResetCache()
+
+	data := make(map[string]interface{})
+	data["message"] = "Cache flushed"
+	var b []byte
+	if b, err = json.Marshal(data); err != nil {
+		rw.WriteHeader(http.StatusOK)
+		return
+	}
+
+	rw.Header().Add("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
+	rw.Write(b)
+}
+
 func (ds *StravaDatasource) StravaAPIHandler(rw http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		return

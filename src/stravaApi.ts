@@ -85,6 +85,16 @@ export default class StravaApi {
     }
   }
 
+  async resetCache() {
+    try {
+      const response = await getBackendSrv().get(`/api/datasources/${this.datasourceId}/resources/reset-cache`);
+      return this.handleTsdbResponse(response);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
   async request(url: string, params?: any) {
     return this.proxyfy(this._request, '_request', this)(url, params);
   }

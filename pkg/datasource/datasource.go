@@ -354,15 +354,16 @@ func (ds *StravaDatasourceInstance) RefreshAccessToken(refreshToken string) (*To
 func (ds *StravaDatasourceInstance) ResetAccessToken() error {
 	ds.cache.Delete("accessToken")
 	ds.logger.Debug("Access token removed from cache")
-	ds.ResetCache()
 	return nil
 }
 
 func (ds *StravaDatasourceInstance) ResetCache() {
-	refreshToken, _ := ds.cache.Get("refreshToken")
+	refreshToken, found := ds.cache.Get("refreshToken")
 	ds.cache.Flush()
 	// Do not remove refresh token from cache
-	ds.cache.SetWithExpiration("refreshToken", refreshToken, cache.NoExpiration)
+	if found {
+		ds.cache.SetWithExpiration("refreshToken", refreshToken.(string), cache.NoExpiration)
+	}
 	ds.logger.Info("Cache has been reset", "data source", ds.dsInfo.Name)
 }
 

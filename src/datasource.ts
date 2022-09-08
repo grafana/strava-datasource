@@ -720,6 +720,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     try {
       await this.stravaApi.resetAccessToken();
+      await this.stravaApi.resetCache();
       const athlete = await this.stravaApi.getAuthenticatedAthlete();
       if (!athlete) {
         return { status: 'error', message: `Cannot get authenticated user.` };
