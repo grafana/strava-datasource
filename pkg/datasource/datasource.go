@@ -226,6 +226,7 @@ func (ds *StravaDatasourceInstance) GetRefreshToken() (string, error) {
 				return "", errors.New("Refresh token not found, authorize datasource first")
 			}
 			ds.logger.Debug("Refresh token loaded from file")
+			ds.authCache.SetRefreshToken(refreshToken)
 			return refreshToken, nil
 		} else {
 			refreshToken = refreshTokenCached.(string)
