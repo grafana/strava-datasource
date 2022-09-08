@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - ..:/strava-datasource
+      - ./grafana.ini:/etc/grafana/grafana.ini:ro
