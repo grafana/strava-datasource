@@ -178,6 +178,25 @@ func (ds *StravaDatasourceInstance) GetAccessToken() (string, error) {
 		ds.logger.Debug("Access token expired, obtaining new one")
 	}
 
+	refreshToken, err := ds.GetRefreshToken()
+	if err != nil {
+		return "", err
+	}
+
+	tokenResp, err := ds.RefreshAccessToken(refreshToken)
+	if err != nil {
+		ds.logger.Error(err.Error())
+		return "", err
+	}
+
+	return tokenResp.AccessToken, nil
+}
+
+func (ds *StravaDatasourceInstance) GetRefreshToken() (string, error) {
+	if ds.refreshToken != "" {
+		return ds.refreshToken, nil
+	}
+
 	var refreshToken string
 	var err error
 
@@ -191,7 +210,7 @@ func (ds *StravaDatasourceInstance) GetAccessToken() (string, error) {
 	if stravaAuthType == "refresh_token" {
 		ds.logger.Debug("Using preconfigured refresh token")
 		secureJsonData := ds.dsInfo.DecryptedSecureJSONData
-		refreshToken = secureJsonData["refreshToken"]
+		return secureJsonData["refreshToken"], nil
 	} else {
 		refreshTokenCached, found := ds.cache.Get("refreshToken")
 		if !found {
@@ -202,18 +221,12 @@ func (ds *StravaDatasourceInstance) GetAccessToken() (string, error) {
 				return "", errors.New("Refresh token not found, authorize datasource first")
 			}
 			ds.logger.Debug("Refresh token loaded from file")
+			return refreshToken, nil
 		} else {
 			refreshToken = refreshTokenCached.(string)
+			return refreshToken, nil
 		}
 	}
-
-	tokenResp, err := ds.RefreshAccessToken(refreshToken)
-	if err != nil {
-		ds.logger.Error(err.Error())
-		return "", err
-	}
-
-	return tokenResp.AccessToken, nil
 }
 
 // ExchangeToken invokes first time when authentication required and exchange authorization code for the
@@ -261,10 +274,11 @@ func (ds *StravaDatasourceInstance) ExchangeToken(authCode string) (*TokenExchan
 
 	ds.cache.SetWithExpiration("accessToken", accessToken, accessTokenExpIn)
 	ds.cache.SetWithExpiration("refreshToken", refreshToken, cache.NoExpiration)
+	ds.refreshToken = refreshToken
 
 	err = ds.cache.Save("refreshToken", refreshToken)
 	if err != nil {
-		ds.logger.Error("Error saving refresh token", err)
+		ds.logger.Error("Error saving refresh token in file", err)
 	}
 
 	return &TokenExchangeResponse{
@@ -323,6 +337,7 @@ func (ds *StravaDatasourceInstance) RefreshAccessToken(refreshToken string) (*To
 		ds.logger.Debug("Got new refresh token", "refresh token", refreshTokenNew)
 		ds.cache.SetWithExpiration("refreshToken", refreshTokenNew, cache.NoExpiration)
 
+		ds.refreshToken = refreshTokenNew
 		err := ds.cache.Save("refreshToken", refreshTokenNew)
 		if err != nil {
 			ds.logger.Error("Error saving refresh token", err)
@@ -344,7 +359,10 @@ func (ds *StravaDatasourceInstance) ResetAccessToken() error {
 }
 
 func (ds *StravaDatasourceInstance) ResetCache() {
+	refreshToken, _ := ds.cache.Get("refreshToken")
 	ds.cache.Flush()
+	// Do not remove refresh token from cache
+	ds.cache.SetWithExpiration("refreshToken", refreshToken, cache.NoExpiration)
 	ds.logger.Info("Cache has been reset", "data source", ds.dsInfo.Name)
 }
 
