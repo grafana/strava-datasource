@@ -56,34 +56,53 @@ func Init(mux *http.ServeMux) *datasource.StravaDatasource {
 }
 
 func getDataDir() (string, error) {
+	// Return GF_STRAVA_DS_DATA_PATH value if set
 	dataDirPath, exist := os.LookupEnv(DATA_PATH_VARIABLE)
 	if exist && dataDirPath != "" {
 		log.DefaultLogger.Info("Environment variable for storage path found", "variable", DATA_PATH_VARIABLE, "value", dataDirPath)
 		return dataDirPath, nil
 	}
-	log.DefaultLogger.Info("Could not read environment variable", "variable", DATA_PATH_VARIABLE)
+	log.DefaultLogger.Debug("Could not read environment variable", "variable", DATA_PATH_VARIABLE)
 
-	var err error
-	dataDirPath, err = os.UserCacheDir()
+	dataDirOptions := make([]string, 0)
+
+	userCacheDir, err := os.UserCacheDir()
 	if err != nil {
-		log.DefaultLogger.Error("Cannot get OS cache directory path", "error", err)
+		log.DefaultLogger.Debug("Cannot get OS cache directory path", "error", err)
 	} else {
-		dataDirPath = path.Join(dataDirPath, DEFAULT_DATA_DIR)
-		err = os.MkdirAll(dataDirPath, os.ModePerm)
-		if err != nil {
-			log.DefaultLogger.Error("Cannot create data directory", "error", err)
-		} else {
-			return dataDirPath, nil
-		}
+		dataDirOptions = append(dataDirOptions, userCacheDir)
 	}
 
 	execPath, err := os.Executable()
 	if err != nil {
-		log.DefaultLogger.Error("Cannot get plugin directory", "error", err)
+		log.DefaultLogger.Debug("Cannot get plugin executable directory", "error", err)
 	} else {
-		dataDirPath = path.Dir(execPath)
-		return dataDirPath, nil
+		execDir := path.Dir(execPath)
+		dataDirOptions = append(dataDirOptions, execDir)
+	}
+
+	dataDirOptions = append(dataDirOptions, "/var/lib/grafana/data", "/var/lib/grafana")
+
+	for _, p := range dataDirOptions {
+		dataDirPath, err := checkDataDir(p)
+		if err == nil {
+			return dataDirPath, nil
+		} else {
+			log.DefaultLogger.Debug("Error checking data directory", "error", err)
+		}
 	}
 
 	return "", errors.New("Cannot get data directory")
+}
+
+func checkDataDir(p string) (string, error) {
+	if _, err := os.Stat(p); err != nil {
+		return "", err
+	}
+	dataDirPath := path.Join(p, DEFAULT_DATA_DIR)
+	err := os.MkdirAll(dataDirPath, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+	return dataDirPath, nil
 }
