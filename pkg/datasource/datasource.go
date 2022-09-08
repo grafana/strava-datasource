@@ -109,7 +109,9 @@ func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, da
 	// Initialize and run prefetcher
 	prefetcher := NewStravaPrefetcher(5, dsInstance)
 	dsInstance.prefetcher = prefetcher
-	dsInstance.prefetcher.Run()
+	go func() {
+		dsInstance.prefetcher.Run()
+	}()
 
 	return dsInstance, nil
 }
