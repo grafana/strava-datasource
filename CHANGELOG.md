@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.5.1] - 2022-09-08
+
+### Fixed
+
+- 401 Unauthorized when connecting to Strava API, [#62](https://github.com/grafana/strava-datasource/issues/62)
+
 ## [1.5.0] - 2022-08-24
 
 ### Added

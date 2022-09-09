@@ -35,7 +35,6 @@ func (p *StravaPrefetcher) Run() {
 		log.DefaultLogger.Error("Error fetching activities", "error", err)
 		return
 	}
-	log.DefaultLogger.Debug("Activities", "value", activities)
 
 	p.PrefetchActivitiesVariable(10)
 	p.PrefetchActivitiesVariable(100)
@@ -71,6 +70,7 @@ func (p *StravaPrefetcher) GetActivities() ([]string, error) {
 }
 
 func (p *StravaPrefetcher) PrefetchActivities(activities []string) {
+	log.DefaultLogger.Debug("Prefetching activities", "activities", len(activities))
 	queue := make(chan int, MaxTasks)
 	for i := 0; i < p.depth; i++ {
 		activityId := activities[i]
@@ -86,7 +86,6 @@ func (p *StravaPrefetcher) PrefetchActivities(activities []string) {
 func (p *StravaPrefetcher) PrefetchActivity(activityId string) {
 	payloadPattern := `{"datasourceId":%d,"endpoint":"/activities/%s","params":{"include_all_efforts":true}}`
 	payload := fmt.Sprintf(payloadPattern, p.ds.dsInfo.ID, activityId)
-	log.DefaultLogger.Debug("Prefetching", "payload", payload)
 
 	requestHash := HashString(payload)
 	stravaApiQueryFn := p.ds.StravaAPIQueryWithCache(requestHash)
@@ -134,7 +133,6 @@ func (p *StravaPrefetcher) PrefetchActivityStreams(activityId string) {
 
 	for _, task := range prefetchTasks {
 		payload := fmt.Sprintf(task.pattern, p.ds.dsInfo.ID, activityId)
-		log.DefaultLogger.Debug("Prefetching", "payload", payload)
 
 		requestHash := HashString(payload)
 		stravaApiQueryFn := p.ds.StravaAPIQueryWithCache(requestHash)
@@ -150,9 +148,9 @@ func (p *StravaPrefetcher) PrefetchActivityStreams(activityId string) {
 }
 
 func (p *StravaPrefetcher) PrefetchActivitiesVariable(limit int) {
+	log.DefaultLogger.Debug("Prefetching variables", "limit", limit)
 	payloadPattern := `{"datasourceId":%d,"endpoint":"athlete/activities","params":{"limit":%d,"per_page":%d,"page":1}}`
 	payload := fmt.Sprintf(payloadPattern, p.ds.dsInfo.ID, limit, limit)
-	log.DefaultLogger.Debug("Prefetching", "payload", payload)
 
 	requestHash := HashString(payload)
 	stravaApiQueryFn := p.ds.StravaAPIQueryWithCache(requestHash)

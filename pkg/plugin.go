@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"os"
 	"path"
@@ -36,22 +37,11 @@ func main() {
 }
 
 func Init(mux *http.ServeMux) *datasource.StravaDatasource {
-	dataDirPath, exist := os.LookupEnv(DATA_PATH_VARIABLE)
-	if exist && dataDirPath != "" {
-		log.DefaultLogger.Debug("Environment variable for storage path found", "variable", DATA_PATH_VARIABLE, "value", dataDirPath)
+	dataDirPath, err := getDataDir()
+	if err != nil {
+		log.DefaultLogger.Error(err.Error())
 	} else {
-		log.DefaultLogger.Info("Could not read environment variable", "variable", DATA_PATH_VARIABLE)
-		var err error
-		dataDirPath, err = os.UserCacheDir()
-		if err != nil {
-			log.DefaultLogger.Error("Cannot get OS cache directory path", "error", err)
-		}
-		dataDirPath = path.Join(dataDirPath, DEFAULT_DATA_DIR)
-		err = os.Mkdir(dataDirPath, os.ModePerm)
-		if err != nil {
-			log.DefaultLogger.Error("Cannot create data directory", "error", err)
-		}
-		log.DefaultLogger.Info("Using default data path", "path", dataDirPath)
+		log.DefaultLogger.Info("Data dir configured", "path", dataDirPath)
 	}
 
 	ds := datasource.NewStravaDatasource(dataDirPath)
@@ -60,6 +50,59 @@ func Init(mux *http.ServeMux) *datasource.StravaDatasource {
 	mux.HandleFunc("/auth", ds.StravaAuthHandler)
 	mux.HandleFunc("/strava-api", ds.StravaAPIHandler)
 	mux.HandleFunc("/reset-access-token", ds.ResetAccessTokenHandler)
+	mux.HandleFunc("/reset-cache", ds.ResetCacheHandler)
 
 	return ds
+}
+
+func getDataDir() (string, error) {
+	// Return GF_STRAVA_DS_DATA_PATH value if set
+	dataDirPath, exist := os.LookupEnv(DATA_PATH_VARIABLE)
+	if exist && dataDirPath != "" {
+		log.DefaultLogger.Info("Environment variable for storage path found", "variable", DATA_PATH_VARIABLE, "value", dataDirPath)
+		return dataDirPath, nil
+	}
+	log.DefaultLogger.Debug("Could not read environment variable", "variable", DATA_PATH_VARIABLE)
+
+	dataDirOptions := make([]string, 0)
+
+	userCacheDir, err := os.UserCacheDir()
+	if err != nil {
+		log.DefaultLogger.Debug("Cannot get OS cache directory path", "error", err)
+	} else {
+		dataDirOptions = append(dataDirOptions, userCacheDir)
+	}
+
+	execPath, err := os.Executable()
+	if err != nil {
+		log.DefaultLogger.Debug("Cannot get plugin executable directory", "error", err)
+	} else {
+		execDir := path.Dir(execPath)
+		dataDirOptions = append(dataDirOptions, execDir)
+	}
+
+	dataDirOptions = append(dataDirOptions, "/var/lib/grafana/data", "/var/lib/grafana")
+
+	for _, p := range dataDirOptions {
+		dataDirPath, err := checkDataDir(p)
+		if err == nil {
+			return dataDirPath, nil
+		} else {
+			log.DefaultLogger.Debug("Error checking data directory", "error", err)
+		}
+	}
+
+	return "", errors.New("Cannot get data directory")
+}
+
+func checkDataDir(p string) (string, error) {
+	if _, err := os.Stat(p); err != nil {
+		return "", err
+	}
+	dataDirPath := path.Join(p, DEFAULT_DATA_DIR)
+	err := os.MkdirAll(dataDirPath, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+	return dataDirPath, nil
 }
