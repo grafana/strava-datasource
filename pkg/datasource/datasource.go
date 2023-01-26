@@ -106,12 +106,15 @@ func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, da
 		},
 	}
 
-	// Initialize and run prefetcher
-	prefetcher := NewStravaPrefetcher(5, dsInstance)
-	dsInstance.prefetcher = prefetcher
-	go func() {
-		dsInstance.prefetcher.Run()
-	}()
+	oauthPassThru := isOAuthPassThruEnabled(dsInstance)
+	if !oauthPassThru {
+		// Initialize and run prefetcher
+		prefetcher := NewStravaPrefetcher(5, dsInstance)
+		dsInstance.prefetcher = prefetcher
+		go func() {
+			dsInstance.prefetcher.Run()
+		}()
+	}
 
 	return dsInstance, nil
 }
@@ -398,9 +401,15 @@ func (ds *StravaDatasourceInstance) StravaAPIQueryWithCache(requestHash string) 
 }
 
 func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *StravaAPIRequest) (*StravaApiResourceResponse, error) {
-	accessToken, err := ds.GetAccessToken()
-	if err != nil {
-		return nil, err
+	accessToken := ""
+	var err error
+	if query.AccessToken == "" {
+		accessToken, err = ds.GetAccessToken()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		accessToken = query.AccessToken
 	}
 
 	endpoint := query.Endpoint

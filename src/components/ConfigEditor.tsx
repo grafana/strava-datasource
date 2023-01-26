@@ -1,5 +1,5 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { Button, RadioButtonGroup, InlineField, Input, InlineFieldRow } from '@grafana/ui';
+import { Button, RadioButtonGroup, InlineField, Input, InlineFieldRow, InlineSwitch } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
 import { StravaAuthType, StravaJsonData, StravaSecureJsonData } from '../types';
 
@@ -188,6 +188,29 @@ export class ConfigEditor extends PureComponent<Props, State> {
 
     return (
       <>
+        <div className="gf-form-group">
+          <div className="gf-form-inline">
+            <InlineField
+              label="Forward OAuth Identity"
+              tooltip="Forward the user's upstream OAuth identity to the data source (Their access token gets passed along)."
+              labelWidth={26}
+            >
+              <InlineSwitch
+                id="http-settings-forward-oauth"
+                value={config.jsonData.oauthPassThru || false}
+                onChange={(event) =>
+                  this.updateDatasource({
+                    ...this.state.config,
+                    jsonData: {
+                      ...this.state.config.jsonData,
+                      oauthPassThru: event!.currentTarget.checked,
+                    },
+                  })
+                }
+              />
+            </InlineField>
+          </div>
+        </div>
         <h2 className="page-heading">Strava API Details</h2>
         <div className="gf-form-group">
           <h5>Auth type</h5>

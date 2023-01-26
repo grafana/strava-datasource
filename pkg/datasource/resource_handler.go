@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
+	simplejson "github.com/bitly/go-simplejson"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/resource/httpadapter"
 )
 
@@ -138,6 +140,19 @@ func (ds *StravaDatasource) StravaAPIHandler(rw http.ResponseWriter, req *http.R
 		return
 	}
 
+	oauthPassThru := isOAuthPassThruEnabled(dsInstance)
+	if oauthPassThru {
+		accessToken := ""
+		if len(req.Header["Authorization"]) > 0 {
+			authorizationStr := req.Header["Authorization"][0]
+			values := strings.Split(authorizationStr, " ")
+			if len(values) > 1 {
+				accessToken = values[1]
+			}
+		}
+		apiReq.AccessToken = accessToken
+	}
+
 	requestHash := HashByte(body)
 	stravaApiQueryFn := dsInstance.StravaAPIQueryWithCache(requestHash)
 	result, err := stravaApiQueryFn(req.Context(), &apiReq)
@@ -189,4 +204,13 @@ func writeError(rw http.ResponseWriter, statusCode int, err error) {
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusInternalServerError)
 	rw.Write(b)
+}
+
+func isOAuthPassThruEnabled(dsInstance *StravaDatasourceInstance) bool {
+	jsonDataStr := dsInstance.dsInfo.JSONData
+	jsonData, err := simplejson.NewJson([]byte(jsonDataStr))
+	if err != nil {
+		return false
+	}
+	return jsonData.Get("oauthPassThru").MustBool()
 }

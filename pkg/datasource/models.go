@@ -8,8 +8,9 @@ import (
 )
 
 type StravaAPIRequest struct {
-	Endpoint string                     `json:"endpoint"`
-	Params   map[string]json.RawMessage `json:"params,omitempty"`
+	Endpoint    string                     `json:"endpoint"`
+	Params      map[string]json.RawMessage `json:"params,omitempty"`
+	AccessToken string
 }
 
 type StravaApiResourceResponse struct {

@@ -4,6 +4,7 @@ export interface StravaJsonData extends DataSourceJsonData {
   clientID: string;
   stravaAuthType: StravaAuthType;
   cacheTTL: string;
+  oauthPassThru: boolean;
 }
 
 export enum StravaAuthType {

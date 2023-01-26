@@ -37,3 +37,29 @@ By default, plugin stores data in user cache directory (ie `$HOME/.cache` on Lin
 mkdir /var/lib/grafana/strava
 export GF_STRAVA_DS_DATA_PATH=/var/lib/grafana/strava
 ```
+
+## Forward OAuth identity
+
+It's possible to configure Grafana to authenticate users with Strava and then pass throug OAuth identity to the data source.
+This makes it possible for users to see its own data on dashboards without creating new data source for each user. To enable
+Strava authentication, add this section to the grafana config file:
+
+```ini
+[auth.generic_oauth]
+name = Strava
+icon = signin
+enabled = true
+allow_sign_up = true
+client_id = YOUR_APP_CLIENT_ID
+client_secret = YOUR_APP_CLIENT_SECRET
+scopes = activity:read_all
+# Strava does not expose user's email, so use username to prevent error
+email_attribute_path = username
+login_attribute_path = username
+name_attribute_path = join(' ', [firstname, lastname])
+auth_url = https://www.strava.com/oauth/authorize
+token_url = https://www.strava.com/api/v3/oauth/token
+api_url = https://www.strava.com/api/v3/athlete
+```
+
+Restart grafana server, then activate _Forward OAuth Identity_ toggle in data source config and press _Save and test_ button.

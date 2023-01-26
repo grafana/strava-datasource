@@ -72,6 +72,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   activities: any[];
   athlete?: StravaAthlete;
   measurementPreference: StravaMeasurementPreference;
+  oauthPassThru: boolean;
 
   constructor(instanceSettings: DataSourceInstanceSettings<StravaJsonData>) {
     super(instanceSettings);
@@ -82,6 +83,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     this.activities = [];
     this.stravaAuthType = instanceSettings.jsonData.stravaAuthType;
     this.measurementPreference = StravaMeasurementPreference.Meters;
+    this.oauthPassThru = instanceSettings.jsonData.oauthPassThru;
   }
 
   async query(options: DataQueryRequest<StravaQuery>) {
@@ -706,7 +708,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   async testDatasource() {
-    if (this.stravaAuthType !== StravaAuthType.RefreshToken) {
+    if (this.stravaAuthType !== StravaAuthType.RefreshToken && !this.oauthPassThru) {
       const authCode = this.getAuthCodeFromLocation();
       if (authCode) {
         // Exchange auth code for new refresh token if "Connect with Strava" button clicked
@@ -719,8 +721,10 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
 
     try {
-      await this.stravaApi.resetAccessToken();
-      await this.stravaApi.resetCache();
+      if (!this.oauthPassThru) {
+        await this.stravaApi.resetAccessToken();
+        await this.stravaApi.resetCache();
+      }
       const athlete = await this.stravaApi.getAuthenticatedAthlete();
       if (!athlete) {
         return { status: 'error', message: `Cannot get authenticated user.` };
