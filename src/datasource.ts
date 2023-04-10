@@ -754,7 +754,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     return activities.filter((activity) => {
       if (activityType === 'Other') {
-        return activity.type !== 'Run' && activity.type !== 'Ride';
+        return activity.type !== 'Run' && activity.type !== 'Ride' && activity.type !== 'Walk';
       } else {
       }
       return activity.type === activityType;

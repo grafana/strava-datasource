@@ -55,6 +55,7 @@ const stravaActivityTypeOptions: Array<SelectableValue<StravaActivityType>> = [
   { value: null, label: 'All' },
   { value: 'Run', label: 'Run' },
   { value: 'Ride', label: 'Ride' },
+  { value: 'Walk', label: 'Walk' },
   { value: 'Other', label: 'Other' },
 ];
 
