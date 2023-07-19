@@ -186,7 +186,7 @@ export default class StravaApi {
  */
 function callOnce(func: any, promiseKeeper: any, funcScope: any): (...args: any[]) => any {
   return function () {
-    var hash = getRequestHash(arguments);
+    let hash = getRequestHash(arguments);
     if (!promiseKeeper[hash]) {
       promiseKeeper[hash] = Promise.resolve(
         func.apply(funcScope, arguments).then((result: any) => {
@@ -205,7 +205,7 @@ function getRequestHash(args: any) {
 }
 
 function getHash(srt: string) {
-  var hash = 0,
+  let hash = 0,
     i,
     chr,
     len;

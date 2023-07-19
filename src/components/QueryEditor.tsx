@@ -202,7 +202,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
     if (query.queryType === StravaQueryType.SegmentEffort) {
       fetchSegmentsOptions();
     }
-  }, [datasource.athlete, fetchAuthenticatedAthlete, fetchActivitiesOptions]);
+  }, [datasource.athlete, query.queryType, fetchAuthenticatedAthlete, fetchActivitiesOptions, fetchSegmentsOptions]);
 
   const getActivitiesOptions = async (activityType: StravaActivityType): Promise<Array<SelectableValue<number>>> => {
     let activities = await datasource.stravaApi.getActivities({ limit: 100 });

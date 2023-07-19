@@ -8,9 +8,9 @@
 const PRECISION = 1e5;
 
 export function decode(value: any) {
-  var points: any[] = [];
-  var lat = 0;
-  var lon = 0;
+  let points: any[] = [];
+  let lat = 0;
+  let lon = 0;
 
   integers(value, function (x: number, y: number) {
     lat += x;
@@ -26,15 +26,15 @@ export function sign(value: any) {
 }
 
 export function integers(value: any, callback: any) {
-  var values = 0;
-  var x = 0;
-  var y = 0;
+  let values = 0;
+  let x = 0;
+  let y = 0;
 
-  var byte = 0;
-  var current = 0;
-  var bits = 0;
+  let byte = 0;
+  let current = 0;
+  let bits = 0;
 
-  for (var i = 0; i < value.length; i++) {
+  for (let i = 0; i < value.length; i++) {
     byte = value.charCodeAt(i) - 63;
     current = current | ((byte & 0x1f) << bits);
     bits = bits + 5;
