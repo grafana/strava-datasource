@@ -51,7 +51,6 @@ const config = async (env): Promise<Configuration> => ({
     'react-router',
     'react-router-dom',
     'd3',
-    'angular',
     '@grafana/ui',
     '@grafana/runtime',
     '@grafana/data',
@@ -96,7 +95,7 @@ const config = async (env): Promise<Configuration> => ({
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"]
+        use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.s[ac]ss$/,

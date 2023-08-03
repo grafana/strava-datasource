@@ -36,7 +36,6 @@
     "@swc/jest": "^0.2.26",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^12.1.4",
-    "@types/angular": "^1.6.54",
     "@types/jest": "^29.5.0",
     "@types/jquery": "^3.3.29",
     "@types/lodash": "^4.14.194",
