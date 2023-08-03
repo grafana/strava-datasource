@@ -47,6 +47,8 @@ import {
   metersToMiles,
   paceToMiles,
   metersDataToFeet,
+  expandDataStream,
+  fillWithPreviousValues,
 } from 'utils';
 import { getTemplateSrv } from '@grafana/runtime';
 
@@ -213,25 +215,14 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       return frame;
     }
 
-    let ts = dateTime(activity.start_date).unix();
+    const streamLength = streams.time?.original_size || streams.time?.data[streams.time?.data.length - 1] + 1;
+    let startTS = dateTime(activity.start_date).unix();
     if (target.fitToTimeRange) {
-      ts = options.range.from.unix();
+      startTS = options.range.from.unix();
     }
 
-    // Data comes as a kind of sparce array. Time stream contains offset of data
-    // points, for example:
-    // heartrate: [70,81,82,81,99,96,97,98,99]
-    // time:      [0, 4, 5, 6, 20,21,22,23,24]
-    // So last value of the time stream is a highest index in data array
-    const timeStream = streams.time;
-    const streamLength: number = streams.time?.data[streams.time?.data.length - 1] + 1;
-    let streamValues = new Array<number | null>(streamLength).fill(null);
-
-    for (let i = 0; i < streamLength; i++) {
-      timeFiled.values.add(ts * 1000);
-      streamValues[timeStream.data[i]] = stream.data[i];
-      ts++;
-    }
+    let [streamValues, segmentTicks] = expandDataStream(stream, streams.time, startTS, 0, streamLength - 1);
+    timeFiled.values = segmentTicks;
 
     if (target.activityGraph === StravaActivityStream.Pace) {
       if (activity.type === 'Run') {
@@ -334,28 +325,15 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       return frame;
     }
 
-    // Data comes as a kind of sparce array. Time stream contains offset of data
-    // points, for example:
-    // heartrate: [70,81,82,81,99,96,97,98,99]
-    // time:      [0, 4, 5, 6, 20,21,22,23,24]
-    // So last value of the time stream is a highest index in data array
-    const timeStream = streams.time;
-    const streamLength: number = timeStream.data[segmentEffort.end_index] - timeStream.data[segmentEffort.start_index];
-    let streamValues = new Array<number | null>(streamLength).fill(null);
+    let [streamValues, segmentTicks] = expandDataStream(
+      streams[segmentStream],
+      streams.time,
+      dateTime(activity.start_date).unix(),
+      segmentEffort.start_index,
+      segmentEffort.end_index
+    );
 
-    const firstTsIndex = timeStream.data[segmentEffort.start_index];
-    let ts = dateTime(activity.start_date).unix() + firstTsIndex;
-    if (target.fitToTimeRange) {
-      ts = options.range.from.unix();
-    }
-    const startIdx = segmentEffort.start_index;
-    for (let i = startIdx; i < startIdx + streamLength; i++) {
-      timeFiled.values.add(ts * 1000);
-      ts++;
-    }
-    for (let i = startIdx; i < segmentEffort.end_index; i++) {
-      streamValues[timeStream.data[i] - firstTsIndex] = stream.data[i];
-    }
+    timeFiled.values = segmentTicks;
 
     if (target.activityGraph === StravaActivityStream.Pace) {
       if (activity.type === 'Run') {
@@ -653,30 +631,34 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       return frame;
     }
 
-    let points: Array<[number, number]> = [];
-
     try {
       const streams = await this.stravaApi.getActivityStreams({
         id: activity.id,
         streamType: StravaActivityStream.LatLng,
       });
-      points = streams[StravaActivityStream.LatLng].data;
-      let startTs = dateTime(activity.start_date).unix();
-      const timeticks = streams.time?.data;
-      if (!timeticks) {
-        throw new Error('Time field not found');
-      }
+      const streamLength: number =
+        streams.time.data[segmentEffort.end_index] - streams.time.data[segmentEffort.start_index];
+
+      const [streamValues, segmentTicks] = expandDataStream(
+        streams[StravaActivityStream.LatLng],
+        streams.time,
+        dateTime(activity.start_date).unix(),
+        segmentEffort.start_index,
+        segmentEffort.end_index
+      );
+      const streamValuesNonNull = fillWithPreviousValues(streamValues);
+
       frame.addField({ name: TIME_SERIES_TIME_FIELD_NAME, type: FieldType.time });
-      for (let i = segmentEffort.start_index; i < segmentEffort.end_index; i++) {
+      for (let i = 0; i < streamLength; i++) {
         frame.add({
-          latitude: points[i][0],
-          longitude: points[i][1],
+          latitude: streamValuesNonNull[i][0],
+          longitude: streamValuesNonNull[i][1],
           [TIME_SERIES_VALUE_FIELD_NAME]: 1,
-          [TIME_SERIES_TIME_FIELD_NAME]: (startTs + timeticks[i]) * 1000,
+          [TIME_SERIES_TIME_FIELD_NAME]: segmentTicks[i],
         });
       }
     } catch (error) {
-      console.log('Cannot fetch geo points from activity stream');
+      console.log('Cannot fetch geo points from activity stream', error);
     }
 
     return frame;

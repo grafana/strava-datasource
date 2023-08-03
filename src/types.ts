@@ -139,6 +139,19 @@ export interface Achievement {
   type_id: number;
 }
 
+export interface DataStream<T> {
+  original_size: number;
+  resolution: DataStreamResolution;
+  series_type: DataStreamSeriesType;
+  data: T[];
+}
+
+export type DataStreamSet<T> = Record<StreamType, DataStream<T>>;
+
+export type DataStreamResolution = 'low' | 'medium' | 'high';
+
+export type DataStreamSeriesType = 'distance' | 'time';
+
 export type ActivityType =
   | 'AlpineSki'
   | 'BackcountrySki'
@@ -273,6 +286,7 @@ export enum StravaSplitStat {
 }
 
 export enum StravaActivityStream {
+  Time = 'time',
   Distance = 'distance',
   HeartRate = 'heartrate',
   Altitude = 'altitude',
