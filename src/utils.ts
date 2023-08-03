@@ -1,5 +1,5 @@
-import { DisplayValue } from '@grafana/data';
-import { GRAPH_SMOOTH_WINDOW, StravaMeasurementPreference } from 'types';
+import { DisplayValue, dateTime } from '@grafana/data';
+import { DataStream, GRAPH_SMOOTH_WINDOW, StravaMeasurementPreference } from 'types';
 
 export function metersToFeet(value: number): number {
   return value / 0.3048;
@@ -113,3 +113,59 @@ export const paceDisplayProcessor = (value: any): DisplayValue => {
   }
   return displayValue;
 };
+
+// Expands stream data to normal array with nulls for non-existing points.
+// Data comes as a kind of sparce array. Time stream contains offset of data
+// points, for example:
+// heartrate: [70,81,82,81,99,96,97,98,99]
+// time:      [0, 4, 5, 6, 20,21,22,23,24]
+// So last value of the time stream is a highest index in data array
+export function expandDataStream<T>(
+  dataStream: DataStream<T>,
+  timeStream: DataStream<number>,
+  startTS: number,
+  startIndex: number,
+  endIndex: number
+): [Array<T | null>, number[]] {
+  const streamLength: number = timeStream.data[endIndex] - timeStream.data[startIndex];
+  const streamValues = new Array<T | null>(streamLength).fill(null);
+  const segmentTicks = new Array<number>(0);
+
+  const firstTsIndex = timeStream.data[startIndex];
+  let ts = startTS + firstTsIndex;
+  for (let i = startIndex; i < startIndex + streamLength; i++) {
+    segmentTicks.push(ts * 1000);
+    ts++;
+  }
+  for (let i = startIndex; i < endIndex; i++) {
+    streamValues[timeStream.data[i] - firstTsIndex] = dataStream.data[i];
+  }
+
+  return [streamValues, segmentTicks];
+}
+
+export function fillWithPreviousValues<T>(values: Array<T | null>) {
+  let firstNonNullPoint = null;
+  for (let i = 0; i < values.length; i++) {
+    if (values[i] !== null) {
+      firstNonNullPoint = values[i];
+      break;
+    }
+  }
+
+  if (firstNonNullPoint === null) {
+    throw new Error('No geo data found for this segment');
+  }
+
+  let streamValuesNonNull = new Array<T>(values.length);
+  for (let i = 0; i < values.length; i++) {
+    const value = values[i];
+    if (value !== null) {
+      streamValuesNonNull[i] = value;
+    } else {
+      streamValuesNonNull[i] = streamValuesNonNull[i - 1] || firstNonNullPoint;
+    }
+  }
+
+  return streamValuesNonNull;
+}
