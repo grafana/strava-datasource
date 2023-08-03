@@ -1,4 +1,4 @@
-import { DisplayValue, dateTime } from '@grafana/data';
+import { DisplayValue } from '@grafana/data';
 import { DataStream, GRAPH_SMOOTH_WINDOW, StravaMeasurementPreference } from 'types';
 
 export function metersToFeet(value: number): number {
