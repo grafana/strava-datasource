@@ -469,7 +469,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
               />
             </InlineField>
           )}
-          <InlineField label="Fit to range" labelWidth={10}>
+          <InlineField label="Fit to range" labelWidth={12}>
             <InlineSwitch value={query.fitToTimeRange || false} onChange={onFitToRangeChanged} />
           </InlineField>
           <div className="gf-form gf-form--grow">
@@ -552,7 +552,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
               />
             </InlineField>
           )}
-          <InlineField label="Fit to range" labelWidth={10}>
+          <InlineField label="Fit to range" labelWidth={12}>
             <InlineSwitch value={query.fitToTimeRange || false} onChange={onFitToRangeChanged} />
           </InlineField>
           <div className="gf-form gf-form--grow">
