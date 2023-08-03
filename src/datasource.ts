@@ -224,7 +224,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     // time:      [0, 4, 5, 6, 20,21,22,23,24]
     // So last value of the time stream is a highest index in data array
     const timeStream = streams.time;
-    const streamLength: number = streams.time?.data[streams.time?.data.length - 1] + 1;
+    const streamLength: number = timeStream?.original_size || timeStream?.data[timeStream?.data.length - 1] + 1;
     let streamValues = new Array<number | null>(streamLength).fill(null);
 
     for (let i = 0; i < streamLength; i++) {
@@ -661,22 +661,66 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         streamType: StravaActivityStream.LatLng,
       });
       points = streams[StravaActivityStream.LatLng].data;
-      let startTs = dateTime(activity.start_date).unix();
-      const timeticks = streams.time?.data;
-      if (!timeticks) {
-        throw new Error('Time field not found');
+
+      // Data comes as a kind of sparce array. Time stream contains offset of data
+      // points, for example:
+      // heartrate: [70,81,82,81,99,96,97,98,99]
+      // time:      [0, 4, 5, 6, 20,21,22,23,24]
+      // So last value of the time stream is a highest index in data array
+      const timeStream = streams.time;
+      const streamLength: number =
+        timeStream.data[segmentEffort.end_index] - timeStream.data[segmentEffort.start_index];
+      const segmentTicks = new Array<number>(0);
+      let streamValues = new Array<number[] | null>(streamLength).fill(null);
+
+      const firstTsIndex = timeStream.data[segmentEffort.start_index];
+      const startTs = dateTime(activity.start_date).unix();
+      let ts = startTs + firstTsIndex;
+      if (target.fitToTimeRange) {
+        ts = options.range.from.unix();
       }
+      const startIdx = segmentEffort.start_index;
+      for (let i = startIdx; i < startIdx + streamLength; i++) {
+        segmentTicks.push(ts * 1000);
+        ts++;
+      }
+      for (let i = startIdx; i < segmentEffort.end_index; i++) {
+        streamValues[timeStream.data[i] - firstTsIndex] = points[i];
+      }
+
+      let firstNonNullPoint = null;
+      for (let i = 0; i < streamValues.length; i++) {
+        if (streamValues[i] !== null) {
+          firstNonNullPoint = streamValues[i];
+          break;
+        }
+      }
+      if (firstNonNullPoint === null) {
+        console.log('No geo data found for this segment');
+        return frame;
+      }
+
+      let streamValuesNonNull = new Array<number[]>(streamLength);
+      for (let i = 0; i < streamValues.length; i++) {
+        const value = streamValues[i];
+        if (value !== null) {
+          streamValuesNonNull[i] = value;
+        } else {
+          streamValuesNonNull[i] = streamValuesNonNull[i - 1] || firstNonNullPoint;
+        }
+      }
+
       frame.addField({ name: TIME_SERIES_TIME_FIELD_NAME, type: FieldType.time });
-      for (let i = segmentEffort.start_index; i < segmentEffort.end_index; i++) {
+      for (let i = 0; i < streamLength; i++) {
         frame.add({
-          latitude: points[i][0],
-          longitude: points[i][1],
+          latitude: streamValuesNonNull[i][0],
+          longitude: streamValuesNonNull[i][1],
           [TIME_SERIES_VALUE_FIELD_NAME]: 1,
-          [TIME_SERIES_TIME_FIELD_NAME]: (startTs + timeticks[i]) * 1000,
+          [TIME_SERIES_TIME_FIELD_NAME]: segmentTicks[i],
         });
       }
     } catch (error) {
-      console.log('Cannot fetch geo points from activity stream');
+      console.log('Cannot fetch geo points from activity stream', error);
     }
 
     return frame;

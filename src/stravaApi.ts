@@ -1,5 +1,5 @@
 import { getBackendSrv } from '@grafana/runtime';
-import { Segment, StravaActivity, StravaAthlete, StreamType } from 'types';
+import { DataStreamSet, Segment, StravaActivity, StravaAthlete, StreamType } from 'types';
 
 export default class StravaApi {
   datasourceId: number;
@@ -31,7 +31,7 @@ export default class StravaApi {
     return await this.tsdbRequest(`/activities/${id}`, { include_all_efforts });
   }
 
-  async getActivityStreams(params: { id: number | string; streamType: StreamType }) {
+  async getActivityStreams(params: { id: number | string; streamType: StreamType }): Promise<DataStreamSet<any>> {
     const { id, streamType } = params;
     return await this.tsdbRequest(`/activities/${id}/streams`, {
       key_by_type: true,
