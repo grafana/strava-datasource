@@ -1055,6 +1055,30 @@
                       "Yoga": {
                         "index": 17,
                         "text": "🧘"
+                      },
+                      "GravelRide": {
+                        "index": 20,
+                        "text": "🚴"
+                      },
+                      "EMountainBikeRide": {
+                        "index": 21,
+                        "text": "🚵‍♂️"
+                      },
+                      "MountainBikeRide": {
+                        "index": 22,
+                        "text": "🚵‍♂️"
+                      },
+                      "Walk": {
+                        "index": 23,
+                        "text": "👟"
+                      },
+                      "Hike": {
+                        "index": 24,
+                        "text": "👟"
+                      },
+                      "TrailRun": {
+                        "index": 25,
+                        "text": "👟"
                       }
                     },
                     "type": "value"
@@ -1559,6 +1583,6 @@
   "timezone": "",
   "title": "Strava Athlete Dashboard",
   "uid": "StravaAthleteDashboardModern-v2",
-  "version": 15,
+  "version": 16,
   "weekStart": ""
 }
