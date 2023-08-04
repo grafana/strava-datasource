@@ -3,9 +3,6 @@ import {
   DataSourceApi,
   DataSourceInstanceSettings,
   dateTime,
-  TimeRange,
-  TimeSeriesPoints,
-  TimeSeriesValue,
   TIME_SERIES_TIME_FIELD_NAME,
   FieldType,
   MutableField,
@@ -13,7 +10,6 @@ import {
   MutableDataFrame,
   TIME_SERIES_VALUE_FIELD_NAME,
   MetricFindValue,
-  DataFrame,
 } from '@grafana/data';
 import StravaApi from './stravaApi';
 import polyline from './polyline';
@@ -24,7 +20,6 @@ import {
   StravaQuery,
   StravaQueryFormat,
   StravaActivityType,
-  StravaQueryInterval,
   StravaQueryType,
   StravaActivityStream,
   StravaActivityData,
@@ -41,15 +36,23 @@ import {
   smoothVelocityData,
   velocityDataToPace,
   velocityDataToSpeed,
-  velocityToPace,
   velocityToSpeed,
-  metersToFeet,
-  metersToMiles,
-  paceToMiles,
   metersDataToFeet,
   expandDataStream,
+  getPreferredDistance,
+  getPreferredLenght,
+  getPreferredLenghtUnit,
+  getPreferredPace,
+  getPreferredSpeed,
+  getPreferredSpeedUnit,
 } from 'utils';
 import { getTemplateSrv } from '@grafana/runtime';
+import {
+  transformActivitiesToGeomap,
+  transformActivitiesToHeatmap,
+  transformActivitiesToTable,
+  transformActivitiesToTimeseries,
+} from 'responseHandler';
 
 const DEFAULT_RANGE = {
   from: dateTime(),
@@ -114,24 +117,26 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
       if (target.queryType === StravaQueryType.Activities) {
         const filteredActivities = this.filterActivities(activities, target.activityType);
+        const transformOptions = { measurementPreference: this.measurementPreference };
         switch (target.format) {
           case StravaQueryFormat.Table:
-            const tableData = this.transformActivitiesToTable(filteredActivities, target);
+            const tableData = transformActivitiesToTable(filteredActivities, target, transformOptions);
             data.push(tableData);
             break;
           case StravaQueryFormat.WorldMap:
-            const geomapData = this.transformActivitiesToGeomap(filteredActivities, target);
+            const geomapData = transformActivitiesToGeomap(filteredActivities, target, transformOptions);
             data.push(geomapData);
             break;
           case StravaQueryFormat.Heatmap:
-            const heatmapData = this.transformActivitiesToHeatmap(filteredActivities, target);
+            const heatmapData = transformActivitiesToHeatmap(filteredActivities, target, transformOptions);
             data.push(heatmapData);
             break;
           default:
-            const tsData = this.transformActivitiesToTimeseries(
+            const tsData = transformActivitiesToTimeseries(
               filteredActivities,
               target,
-              options.range || DEFAULT_RANGE
+              options.range || DEFAULT_RANGE,
+              transformOptions
             );
             data.push(tsData);
             break;
@@ -760,381 +765,4 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       return activity.type === activityType;
     });
   }
-
-  transformActivitiesToTimeseries(activities: StravaActivity[], target: StravaQuery, range: TimeRange): DataFrame {
-    let datapoints: any[] = [];
-    for (const activity of activities) {
-      const statValue = getActivityStat(activity, target.activityStat, this.measurementPreference);
-      datapoints.push([statValue, dateTime(activity.start_date).valueOf()]);
-    }
-    datapoints.sort((dpA, dpB) => dpA[1] - dpB[1]);
-
-    if (target.interval !== StravaQueryInterval.No) {
-      const aggInterval =
-        !target.interval || target.interval === StravaQueryInterval.Auto
-          ? getAggregationInterval(range)
-          : getAggregationIntervalFromTarget(target);
-      if (aggInterval >= INTERVAL_4w) {
-        datapoints = groupByMonthSum(datapoints, range);
-      } else if (aggInterval === INTERVAL_1w) {
-        datapoints = groupByWeekSum(datapoints, range);
-      } else {
-        datapoints = groupBySum(datapoints, range, aggInterval);
-      }
-    }
-
-    const timeFiled: MutableField<number> = {
-      name: TIME_SERIES_TIME_FIELD_NAME,
-      type: FieldType.time,
-      config: {},
-      values: new ArrayVector(),
-    };
-
-    const valueFiled: MutableField<number> = {
-      name: TIME_SERIES_VALUE_FIELD_NAME,
-      type: FieldType.number,
-      config: {
-        unit: getStatUnit(target.activityStat, this.measurementPreference),
-      },
-      values: new ArrayVector(),
-    };
-
-    for (let i = 0; i < datapoints.length; i++) {
-      const dp = datapoints[i];
-      timeFiled.values.add(dp[1]);
-      valueFiled.values.add(dp[0]);
-    }
-
-    const alias = `${target.activityType ? target.activityType + '_' : ''}${target.activityStat}`;
-    return new MutableDataFrame({
-      name: alias,
-      refId: target.refId,
-      fields: [timeFiled, valueFiled],
-    });
-  }
-
-  transformActivitiesToTable(activities: StravaActivity[], target: StravaQuery) {
-    const distanceUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
-    const lenghtUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
-
-    const frame = new MutableDataFrame({
-      refId: target.refId,
-      fields: [
-        { name: 'time', type: FieldType.time },
-        { name: 'name', type: FieldType.string },
-        { name: 'distance', type: FieldType.number, config: { unit: distanceUnit } },
-        { name: 'moving time', type: FieldType.number, config: { unit: 'dthms' } },
-        { name: 'elapsed time', type: FieldType.number, config: { unit: 'dthms' } },
-        { name: 'heart rate', type: FieldType.number, config: { unit: 'none', decimals: 0 } },
-        { name: 'elevation gain', type: FieldType.number, config: { unit: lenghtUnit, decimals: 0 } },
-        { name: 'kilojoules', type: FieldType.number, config: { unit: 'joule' } },
-        { name: 'type', type: FieldType.string },
-        { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
-        { name: 'time_from', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
-        { name: 'time_to', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
-      ],
-    });
-
-    target.extendedStats?.forEach((stat) => {
-      frame.addField({ name: stat });
-    });
-
-    for (let i = 0; i < activities.length; i++) {
-      const activity = activities[i];
-      const dataRow: any = {
-        time: dateTime(activity.start_date),
-        name: activity.name,
-        distance: getPreferredDistance(activity.distance, this.measurementPreference),
-        'moving time': activity.moving_time,
-        'elapsed time': activity.elapsed_time,
-        'heart rate': activity.average_heartrate,
-        'elevation gain': getPreferredLenght(activity.total_elevation_gain, this.measurementPreference),
-        kilojoules: activity.kilojoules,
-        type: activity.type,
-        id: activity.id,
-        time_from: dateTime(activity.start_date).unix() * 1000,
-        time_to: (dateTime(activity.start_date).unix() + activity.elapsed_time) * 1000,
-      };
-      target.extendedStats?.forEach((stat) => {
-        const statValue = (activity as any)[stat];
-        if (statValue) {
-          dataRow[stat] = statValue;
-        }
-      });
-      frame.add(dataRow);
-    }
-    return frame;
-  }
-
-  transformActivitiesToGeomap(activities: StravaActivity[], target: StravaQuery) {
-    const frame = new MutableDataFrame({
-      name: 'activities',
-      refId: target.refId,
-      fields: [
-        { name: 'name', type: FieldType.string },
-        { name: 'latitude', type: FieldType.number },
-        { name: 'longitude', type: FieldType.number },
-        {
-          name: 'value',
-          type: FieldType.number,
-          config: {
-            unit: getStatUnit(target.activityStat, this.measurementPreference),
-          },
-        },
-      ],
-    });
-
-    for (const activity of activities) {
-      const middlePoint = getActivityMiddlePoint(activity);
-      const latitude = middlePoint ? middlePoint[0] : activity.start_latlng[0];
-      const longitude = middlePoint ? middlePoint[1] : activity.start_latlng[1];
-      if (latitude && longitude) {
-        frame.add({
-          name: activity.name,
-          value: getActivityStat(activity, target.activityStat, this.measurementPreference),
-          latitude,
-          longitude,
-        });
-      }
-    }
-    return frame;
-  }
-
-  transformActivitiesToHeatmap(activities: StravaActivity[], target: StravaQuery) {
-    const frame = new MutableDataFrame({
-      name: 'heatmap',
-      refId: target.refId,
-      fields: [
-        { name: 'latitude', type: FieldType.number },
-        { name: 'longitude', type: FieldType.number },
-        { name: 'value', type: FieldType.number },
-      ],
-    });
-
-    for (const activity of activities) {
-      const summaryPolyline = activity?.map?.summary_polyline;
-      if (summaryPolyline) {
-        const points = polyline.decode(summaryPolyline);
-        for (let i = 0; i < points.length; i++) {
-          frame.add({
-            latitude: points[i][0],
-            longitude: points[i][1],
-            value: 1,
-          });
-        }
-      }
-    }
-    return frame;
-  }
-}
-
-function getActivityMiddlePoint(activity: any): number[] | null {
-  if (!activity.map || !activity.map.summary_polyline) {
-    return null;
-  }
-
-  const summaryPolyline = activity.map.summary_polyline;
-  const points = polyline.decode(summaryPolyline);
-  if (points && points.length) {
-    const middleIndex = Math.floor(points.length / 2);
-    return points[middleIndex];
-  } else {
-    return null;
-  }
-}
-
-const INTERVAL_1h = 3600000;
-const INTERVAL_1d = 86400000;
-const INTERVAL_1w = 604800000;
-const INTERVAL_4w = 2419200000;
-
-function getAggregationInterval(range: TimeRange): number {
-  const interval = range.to.unix() - range.from.unix();
-  const interval_ms = interval * 1000;
-  switch (true) {
-    // 4d
-    case interval_ms <= 345600000:
-      return INTERVAL_1h; // 1h
-    // 90d
-    case interval_ms <= 7776000000:
-      return INTERVAL_1d; // 1d
-    // 1y
-    case interval_ms <= 31536000000:
-      return INTERVAL_1w; // 1w
-    default:
-      return INTERVAL_4w; // 4w
-  }
-}
-
-function getAggregationIntervalFromTarget(target: StravaQuery): number {
-  switch (target.interval) {
-    case StravaQueryInterval.Hour:
-      return INTERVAL_1h;
-    case StravaQueryInterval.Day:
-      return INTERVAL_1d;
-    case StravaQueryInterval.Week:
-      return INTERVAL_1w;
-    case StravaQueryInterval.Month:
-      return INTERVAL_4w;
-    default:
-      return INTERVAL_4w;
-  }
-}
-
-const POINT_VALUE = 0;
-const POINT_TIMESTAMP = 1;
-
-const AGG_SUM = (values: TimeSeriesValue[]) => {
-  return values.reduce((acc, val) => acc! + val!);
-};
-
-export function groupBySum(datapoints: TimeSeriesPoints, range: TimeRange, interval: number): TimeSeriesPoints {
-  return groupByTime(datapoints, range, interval, getPointTimeFrame, getNextTimeFrame, AGG_SUM);
-}
-
-export function groupByWeekSum(datapoints: TimeSeriesPoints, range: TimeRange): TimeSeriesPoints {
-  return groupByTime(datapoints, range, null, getClosestWeek, getNextWeek, AGG_SUM);
-}
-
-export function groupByMonthSum(datapoints: TimeSeriesPoints, range: TimeRange): TimeSeriesPoints {
-  return groupByTime(datapoints, range, null, getClosestMonth, getNextMonth, AGG_SUM);
-}
-
-export function groupByTime(
-  datapoints: any[],
-  range: TimeRange,
-  interval: number | null,
-  intervalFn: any,
-  nextIntervalFn: any,
-  groupByFn: any
-): any[] {
-  if (datapoints.length === 0) {
-    return [];
-  }
-
-  const time_from = range.from.unix() * 1000;
-  const time_to = range.to.unix() * 1000;
-  let grouped_series: any[] = [];
-  let frame_values: any[] = [];
-  let frame_value;
-  let frame_ts = datapoints.length ? intervalFn(time_from, interval) : 0;
-  let point_frame_ts = frame_ts;
-  let point;
-
-  for (let i = 0; i < datapoints.length; i++) {
-    point = datapoints[i];
-    point_frame_ts = intervalFn(point[POINT_TIMESTAMP], interval);
-    if (point_frame_ts === frame_ts) {
-      frame_values.push(point[POINT_VALUE]);
-    } else if (point_frame_ts > frame_ts) {
-      frame_value = frame_values.length ? groupByFn(frame_values) : null;
-      grouped_series.push([frame_value, frame_ts]);
-
-      // Move frame window to next non-empty interval and fill empty by null
-      frame_ts = nextIntervalFn(frame_ts, interval);
-      while (frame_ts < point_frame_ts) {
-        grouped_series.push([null, frame_ts]);
-        frame_ts = nextIntervalFn(frame_ts, interval);
-      }
-      frame_values = [point[POINT_VALUE]];
-    }
-  }
-
-  frame_value = groupByFn(frame_values);
-  grouped_series.push([frame_value, frame_ts]);
-
-  // Move frame window to end of time range and fill empty by null
-  frame_ts = nextIntervalFn(frame_ts, interval);
-  while (frame_ts < time_to) {
-    grouped_series.push([null, frame_ts]);
-    frame_ts = nextIntervalFn(frame_ts, interval);
-  }
-
-  return grouped_series;
-}
-
-function getPointTimeFrame(timestamp: any, ms_interval: any) {
-  return Math.floor(timestamp / ms_interval) * ms_interval;
-}
-
-function getNextTimeFrame(timestamp: any, ms_interval: any) {
-  return timestamp + ms_interval;
-}
-
-function getClosestMonth(timestamp: any): number {
-  const month_time = dateTime(timestamp).startOf('month');
-  return month_time.unix() * 1000;
-}
-
-function getNextMonth(timestamp: any): number {
-  const next_month_time = dateTime(timestamp).add(1, 'month');
-  return next_month_time.unix() * 1000;
-}
-
-function getClosestWeek(timestamp: any): number {
-  // The first Monday after the Unix Epoch begins on Jan 5, 1970, 00:00.
-  // This is a UNIX timestamp of 96 hours or 345600000 ms
-  const FIRST_MONDAY_MS = 345600000;
-  const week_ts = timestamp - FIRST_MONDAY_MS;
-  return Math.floor(week_ts / INTERVAL_1w) * INTERVAL_1w + FIRST_MONDAY_MS;
-}
-
-function getNextWeek(timestamp: any): number {
-  return timestamp + INTERVAL_1w;
-}
-
-function getPreferredDistance(value: number, measurementPreference: StravaMeasurementPreference): number {
-  return measurementPreference === StravaMeasurementPreference.Feet ? metersToMiles(value) : value;
-}
-
-function getPreferredLenght(value: number, measurementPreference: StravaMeasurementPreference): number {
-  return measurementPreference === StravaMeasurementPreference.Feet ? metersToFeet(value) : value;
-}
-
-function getPreferredSpeed(value: number, measurementPreference: StravaMeasurementPreference): number {
-  const speedKmph = velocityToSpeed(value);
-  return measurementPreference === StravaMeasurementPreference.Feet ? metersToMiles(speedKmph * 1000) : speedKmph;
-}
-
-function getPreferredSpeedUnit(measurementPreference: StravaMeasurementPreference) {
-  return measurementPreference === StravaMeasurementPreference.Feet ? 'velocitymph' : 'velocitykmh';
-}
-
-function getPreferredLenghtUnit(measurementPreference: StravaMeasurementPreference) {
-  return measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
-}
-
-function getPreferredPace(value: number, measurementPreference: StravaMeasurementPreference): number {
-  const paceMinkm = velocityToPace(value);
-  return measurementPreference === StravaMeasurementPreference.Feet ? paceToMiles(paceMinkm) : paceMinkm;
-}
-
-function getActivityStat(
-  activity: StravaActivity,
-  activityStat: StravaActivityStat,
-  measurementPreference: StravaMeasurementPreference
-) {
-  if (activityStat === StravaActivityStat.Distance) {
-    return getPreferredDistance(activity.distance, measurementPreference);
-  } else if (activityStat === StravaActivityStat.ElevationGain) {
-    return getPreferredLenght(activity.total_elevation_gain, measurementPreference);
-  } else {
-    return activity[activityStat];
-  }
-}
-
-function getStatUnit(activityStat: StravaActivityStat, measurementPreference: StravaMeasurementPreference): string {
-  if (activityStat === StravaActivityStat.Distance) {
-    return measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
-  }
-  if (activityStat === StravaActivityStat.ElevationGain) {
-    return measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
-  }
-  if (activityStat === StravaActivityStat.ElapsedTime || activityStat === StravaActivityStat.MovingTime) {
-    return 'dthms';
-  }
-  if (activityStat === StravaActivityStat.AveragePower) {
-    return 'watt';
-  }
-  return 'none';
 }

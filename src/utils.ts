@@ -1,5 +1,69 @@
-import { DisplayValue } from '@grafana/data';
-import { DataStream, GRAPH_SMOOTH_WINDOW, StravaMeasurementPreference } from 'types';
+import { DisplayValue, TimeRange } from '@grafana/data';
+import { DataStream, GRAPH_SMOOTH_WINDOW, StravaMeasurementPreference, StravaQuery, StravaQueryInterval } from 'types';
+
+export const INTERVAL_1h = 3600000;
+export const INTERVAL_1d = 86400000;
+export const INTERVAL_1w = 604800000;
+export const INTERVAL_4w = 2419200000;
+
+export function getAggregationInterval(range: TimeRange): number {
+  const interval = range.to.unix() - range.from.unix();
+  const interval_ms = interval * 1000;
+  switch (true) {
+    // 4d
+    case interval_ms <= 345600000:
+      return INTERVAL_1h; // 1h
+    // 90d
+    case interval_ms <= 7776000000:
+      return INTERVAL_1d; // 1d
+    // 1y
+    case interval_ms <= 31536000000:
+      return INTERVAL_1w; // 1w
+    default:
+      return INTERVAL_4w; // 4w
+  }
+}
+
+export function getAggregationIntervalFromTarget(target: StravaQuery): number {
+  switch (target.interval) {
+    case StravaQueryInterval.Hour:
+      return INTERVAL_1h;
+    case StravaQueryInterval.Day:
+      return INTERVAL_1d;
+    case StravaQueryInterval.Week:
+      return INTERVAL_1w;
+    case StravaQueryInterval.Month:
+      return INTERVAL_4w;
+    default:
+      return INTERVAL_4w;
+  }
+}
+
+export function getPreferredDistance(value: number, measurementPreference: StravaMeasurementPreference): number {
+  return measurementPreference === StravaMeasurementPreference.Feet ? metersToMiles(value) : value;
+}
+
+export function getPreferredLenght(value: number, measurementPreference: StravaMeasurementPreference): number {
+  return measurementPreference === StravaMeasurementPreference.Feet ? metersToFeet(value) : value;
+}
+
+export function getPreferredSpeed(value: number, measurementPreference: StravaMeasurementPreference): number {
+  const speedKmph = velocityToSpeed(value);
+  return measurementPreference === StravaMeasurementPreference.Feet ? metersToMiles(speedKmph * 1000) : speedKmph;
+}
+
+export function getPreferredSpeedUnit(measurementPreference: StravaMeasurementPreference) {
+  return measurementPreference === StravaMeasurementPreference.Feet ? 'velocitymph' : 'velocitykmh';
+}
+
+export function getPreferredLenghtUnit(measurementPreference: StravaMeasurementPreference) {
+  return measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
+}
+
+export function getPreferredPace(value: number, measurementPreference: StravaMeasurementPreference): number {
+  const paceMinkm = velocityToPace(value);
+  return measurementPreference === StravaMeasurementPreference.Feet ? paceToMiles(paceMinkm) : paceMinkm;
+}
 
 export function metersToFeet(value: number): number {
   return value / 0.3048;
