@@ -1387,7 +1387,6 @@
             }
           },
           "mappings": [],
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1439,6 +1438,10 @@
               {
                 "id": "custom.fillOpacity",
                 "value": 0
+              },
+              {
+                "id": "custom.transform",
+                "value": "negative-Y"
               }
             ]
           }
