@@ -143,29 +143,3 @@ export function expandDataStream<T>(
 
   return [streamValues, segmentTicks];
 }
-
-export function fillWithPreviousValues<T>(values: Array<T | null>) {
-  let firstNonNullPoint = null;
-  for (let i = 0; i < values.length; i++) {
-    if (values[i] !== null) {
-      firstNonNullPoint = values[i];
-      break;
-    }
-  }
-
-  if (firstNonNullPoint === null) {
-    throw new Error('No geo data found for this segment');
-  }
-
-  let streamValuesNonNull = new Array<T>(values.length);
-  for (let i = 0; i < values.length; i++) {
-    const value = values[i];
-    if (value !== null) {
-      streamValuesNonNull[i] = value;
-    } else {
-      streamValuesNonNull[i] = streamValuesNonNull[i - 1] || firstNonNullPoint;
-    }
-  }
-
-  return streamValuesNonNull;
-}

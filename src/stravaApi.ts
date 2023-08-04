@@ -31,11 +31,12 @@ export default class StravaApi {
     return await this.tsdbRequest(`/activities/${id}`, { include_all_efforts });
   }
 
-  async getActivityStreams(params: { id: number | string; streamType: StreamType }): Promise<DataStreamSet<any>> {
-    const { id, streamType } = params;
+  async getActivityStreams(params: { id: number | string; streamTypes: StreamType[] }): Promise<DataStreamSet<any>> {
+    const { id, streamTypes } = params;
+    const streams = streamTypes.join(',');
     return await this.tsdbRequest(`/activities/${id}/streams`, {
       key_by_type: true,
-      keys: `${streamType},time`,
+      keys: `${streams},time`,
     });
   }
 

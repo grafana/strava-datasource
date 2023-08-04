@@ -48,7 +48,6 @@ import {
   paceToMiles,
   metersDataToFeet,
   expandDataStream,
-  fillWithPreviousValues,
 } from 'utils';
 import { getTemplateSrv } from '@grafana/runtime';
 
@@ -183,7 +182,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     const streams = await this.stravaApi.getActivityStreams({
       id: activityId,
-      streamType: activityStream,
+      streamTypes: [activityStream],
     });
 
     const timeFiled: MutableField<number> = {
@@ -293,7 +292,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
     const streams = await this.stravaApi.getActivityStreams({
       id: activityId,
-      streamType: segmentStream,
+      streamTypes: [segmentStream],
     });
 
     const timeFiled: MutableField<number> = {
@@ -567,9 +566,13 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       name: activity.name,
       refId: target.refId,
       fields: [
-        { name: TIME_SERIES_VALUE_FIELD_NAME, type: FieldType.number },
+        { name: TIME_SERIES_TIME_FIELD_NAME, type: FieldType.time },
         { name: 'latitude', type: FieldType.number },
         { name: 'longitude', type: FieldType.number },
+        { name: 'velocity', type: FieldType.number },
+        { name: 'altitude', type: FieldType.number },
+        { name: 'grade', type: FieldType.number },
+        { name: 'heartrate', type: FieldType.number },
       ],
     });
 
@@ -580,20 +583,30 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     try {
       const streams = await this.stravaApi.getActivityStreams({
         id: activity.id,
-        streamType: StravaActivityStream.LatLng,
+        streamTypes: [
+          StravaActivityStream.LatLng,
+          StravaActivityStream.Velocity,
+          StravaActivityStream.Altitude,
+          StravaActivityStream.GradeSmooth,
+          StravaActivityStream.HeartRate,
+        ],
       });
+
       points = streams[StravaActivityStream.LatLng].data;
       let startTs = dateTime(activity.start_date).unix();
       const timeticks = streams.time?.data;
       if (!timeticks) {
         throw new Error('Time field not found');
       }
-      frame.addField({ name: TIME_SERIES_TIME_FIELD_NAME, type: FieldType.time });
+
       for (let i = 0; i < points.length; i++) {
         frame.add({
           latitude: points[i][0],
           longitude: points[i][1],
-          [TIME_SERIES_VALUE_FIELD_NAME]: 1,
+          velocity: streams[StravaActivityStream.Velocity]?.data[i],
+          altitude: streams[StravaActivityStream.Altitude]?.data[i],
+          grade: streams[StravaActivityStream.GradeSmooth]?.data[i],
+          heartrate: streams[StravaActivityStream.HeartRate]?.data[i],
           [TIME_SERIES_TIME_FIELD_NAME]: (startTs + timeticks[i]) * 1000,
         });
       }
@@ -603,7 +616,6 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         frame.add({
           latitude: points[i][0],
           longitude: points[i][1],
-          [TIME_SERIES_VALUE_FIELD_NAME]: 1,
         });
       }
     }
@@ -621,9 +633,13 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       name: activity.name,
       refId: target.refId,
       fields: [
-        { name: TIME_SERIES_VALUE_FIELD_NAME, type: FieldType.number },
+        { name: TIME_SERIES_TIME_FIELD_NAME, type: FieldType.time },
         { name: 'latitude', type: FieldType.number },
         { name: 'longitude', type: FieldType.number },
+        { name: 'velocity', type: FieldType.number },
+        { name: 'altitude', type: FieldType.number },
+        { name: 'grade', type: FieldType.number },
+        { name: 'heartrate', type: FieldType.number },
       ],
     });
 
@@ -634,27 +650,29 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     try {
       const streams = await this.stravaApi.getActivityStreams({
         id: activity.id,
-        streamType: StravaActivityStream.LatLng,
+        streamTypes: [
+          StravaActivityStream.LatLng,
+          StravaActivityStream.Velocity,
+          StravaActivityStream.Altitude,
+          StravaActivityStream.GradeSmooth,
+          StravaActivityStream.HeartRate,
+        ],
       });
-      const streamLength: number =
-        streams.time.data[segmentEffort.end_index] - streams.time.data[segmentEffort.start_index];
 
-      const [streamValues, segmentTicks] = expandDataStream(
-        streams[StravaActivityStream.LatLng],
-        streams.time,
-        dateTime(activity.start_date).unix(),
-        segmentEffort.start_index,
-        segmentEffort.end_index
-      );
-      const streamValuesNonNull = fillWithPreviousValues(streamValues);
+      const geoStream = streams[StravaActivityStream.LatLng];
+      const points = geoStream.data.slice(segmentEffort.start_index, segmentEffort.end_index);
+      const timeticks = streams.time.data.slice(segmentEffort.start_index, segmentEffort.end_index);
+      let startTs = dateTime(activity.start_date).unix();
 
-      frame.addField({ name: TIME_SERIES_TIME_FIELD_NAME, type: FieldType.time });
-      for (let i = 0; i < streamLength; i++) {
+      for (let i = 0; i < points.length; i++) {
         frame.add({
-          latitude: streamValuesNonNull[i][0],
-          longitude: streamValuesNonNull[i][1],
-          [TIME_SERIES_VALUE_FIELD_NAME]: 1,
-          [TIME_SERIES_TIME_FIELD_NAME]: segmentTicks[i],
+          latitude: points[i][0],
+          longitude: points[i][1],
+          velocity: streams[StravaActivityStream.Velocity]?.data[i],
+          altitude: streams[StravaActivityStream.Altitude]?.data[i],
+          grade: streams[StravaActivityStream.GradeSmooth]?.data[i],
+          heartrate: streams[StravaActivityStream.HeartRate]?.data[i],
+          [TIME_SERIES_TIME_FIELD_NAME]: (startTs + timeticks[i]) * 1000,
         });
       }
     } catch (error) {
