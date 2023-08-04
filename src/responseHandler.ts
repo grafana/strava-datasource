@@ -132,7 +132,7 @@ export function transformActivitiesToTable(
       'heart rate': activity.average_heartrate,
       'elevation gain': getPreferredLenght(activity.total_elevation_gain, measurementPreference),
       kilojoules: activity.kilojoules,
-      type: activity.type,
+      type: activity.sport_type,
       id: activity.id,
       time_from: dateTime(activity.start_date).unix() * 1000,
       time_to: (dateTime(activity.start_date).unix() + activity.elapsed_time) * 1000,

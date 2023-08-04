@@ -31,6 +31,9 @@ import {
   TopAchievementStat,
   VariableQueryTypes,
   SegmentEffort,
+  getRideTypes,
+  getRunTypes,
+  getWalkTypes,
 } from './types';
 import {
   smoothVelocityData,
@@ -229,7 +232,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     timeFiled.values = segmentTicks;
 
     if (target.activityGraph === StravaActivityStream.Pace) {
-      if (activity.type === 'Run') {
+      if (activity.sport_type === 'Run') {
         valueFiled.name = 'pace';
         valueFiled.config.unit = 'dthms';
         streamValues = velocityDataToPace(streamValues, this.measurementPreference);
@@ -340,7 +343,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     timeFiled.values = segmentTicks;
 
     if (target.activityGraph === StravaActivityStream.Pace) {
-      if (activity.type === 'Run') {
+      if (activity.sport_type === 'Run') {
         valueFiled.name = 'pace';
         valueFiled.config.unit = 'dthms';
         streamValues = velocityDataToPace(streamValues, this.measurementPreference);
@@ -419,7 +422,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       if (splitStat === StravaSplitStat.Speed) {
         value = velocityToSpeed(value);
       } else if (splitStat === StravaSplitStat.Pace) {
-        if (activity.type === 'Run') {
+        if (activity.sport_type === 'Run') {
           valueFiled.config.unit = 'dthms';
           value = getPreferredPace(split[StravaSplitStat.Speed], this.measurementPreference);
         } else {
@@ -451,7 +454,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       activityStats = activity.gear ? activity.gear[gearStatsName] : null;
     }
     if (stats === 'pace') {
-      if (activity.type === 'Run') {
+      if (activity.sport_type === 'Run') {
         valueFiled.config.unit = 'dthms';
         activityStats = getPreferredPace(activity.average_speed, this.measurementPreference);
       } else {
@@ -751,18 +754,26 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     return authCode;
   }
 
-  filterActivities(activities: any[], activityType: StravaActivityType): any[] {
+  filterActivities(activities: StravaActivity[], activityType: StravaActivityType): any[] {
     if (!activityType) {
       // No filter, return all
       return activities;
     }
 
     return activities.filter((activity) => {
-      if (activityType === 'Other') {
-        return activity.type !== 'Run' && activity.type !== 'Ride' && activity.type !== 'Walk';
-      } else {
+      const sportType = activity.sport_type;
+      if (activityType === 'Ride') {
+        return getRideTypes().includes(sportType);
+      } else if (activityType === 'Run') {
+        return getRunTypes().includes(sportType);
+      } else if (activityType === 'Walk') {
+        return getWalkTypes().includes(sportType);
+      } else if (activityType === 'Other') {
+        const otherTypes = getRideTypes().concat(getRunTypes()).concat(getWalkTypes());
+        return !otherTypes.includes(sportType);
       }
-      return activity.type === activityType;
+
+      return sportType === activityType;
     });
   }
 }

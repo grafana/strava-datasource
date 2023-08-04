@@ -35,7 +35,11 @@ export interface StravaActivity {
   total_elevation_gain: number;
   elev_high: number;
   elev_low: number;
+
+  /** @deprecated use sport_type */
   type: ActivityType;
+
+  sport_type: SportType;
   start_date: string;
   start_date_local: string;
   timezone: string;
@@ -190,6 +194,80 @@ export type ActivityType =
   | 'Windsurf'
   | 'Workout'
   | 'Yoga';
+
+export type SportType =
+  | 'AlpineSki'
+  | 'BackcountrySki'
+  | 'Badminton'
+  | 'Canoeing'
+  | 'Crossfit'
+  | 'EBikeRide'
+  | 'Elliptical'
+  | 'EMountainBikeRide'
+  | 'Golf'
+  | 'GravelRide'
+  | 'Handcycle'
+  | 'HighIntensityIntervalTraining'
+  | 'Hike'
+  | 'IceSkate'
+  | 'InlineSkate'
+  | 'Kayaking'
+  | 'Kitesurf'
+  | 'MountainBikeRide'
+  | 'NordicSki'
+  | 'Pickleball'
+  | 'Pilates'
+  | 'Racquetball'
+  | 'Ride'
+  | 'RockClimbing'
+  | 'RollerSki'
+  | 'Rowing'
+  | 'Run'
+  | 'Sail'
+  | 'Skateboard'
+  | 'Snowboard'
+  | 'Snowshoe'
+  | 'Soccer'
+  | 'Squash'
+  | 'StairStepper'
+  | 'StandUpPaddling'
+  | 'Surfing'
+  | 'Swim'
+  | 'TableTennis'
+  | 'Tennis'
+  | 'TrailRun'
+  | 'Velomobile'
+  | 'VirtualRide'
+  | 'VirtualRow'
+  | 'VirtualRun'
+  | 'Walk'
+  | 'WeightTraining'
+  | 'Wheelchair'
+  | 'Windsurf'
+  | 'Workout'
+  | 'Yoga';
+
+export function getRunTypes(): Array<Partial<SportType>> {
+  return ['Run', 'TrailRun', 'VirtualRun'];
+}
+
+export function getRideTypes(): Array<Partial<SportType>> {
+  return [
+    'EBikeRide',
+    'EMountainBikeRide',
+    'GravelRide',
+    'Handcycle',
+    'MountainBikeRide',
+    'Ride',
+    'Velomobile',
+    'VirtualRide',
+    'Wheelchair',
+  ];
+}
+
+export function getWalkTypes(): Array<Partial<SportType>> {
+  return ['Hike', 'Walk'];
+}
 
 export interface MetaAthlete {
   id: number;

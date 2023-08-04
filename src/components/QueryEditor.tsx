@@ -211,7 +211,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
     let options: Array<SelectableValue<number>> = activities.map((a) => ({
       value: a.id,
       label: a.name,
-      description: `${dateTime(a.start_date_local).format(ACTIVITY_DATE_FORMAT)} (${a.type})`,
+      description: `${dateTime(a.start_date_local).format(ACTIVITY_DATE_FORMAT)} (${a.sport_type})`,
     }));
 
     const variables: SelectableValue[] = getTemplateSrv()

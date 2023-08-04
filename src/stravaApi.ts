@@ -26,7 +26,7 @@ export default class StravaApi {
     return await this.requestWithPagination('athlete/activities', params);
   }
 
-  async getActivity(params?: any) {
+  async getActivity(params?: any): Promise<StravaActivity> {
     const { id, include_all_efforts } = params;
     return await this.tsdbRequest(`/activities/${id}`, { include_all_efforts });
   }
