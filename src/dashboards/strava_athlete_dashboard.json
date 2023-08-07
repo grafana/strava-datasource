@@ -906,17 +906,14 @@
       },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
           "custom": {
             "align": "auto",
-            "displayMode": "auto",
-            "filterable": false,
-            "inspect": false
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "filterable": false
           },
-          "decimals": 1,
-          "links": [],
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -930,7 +927,12 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "links": []
         },
         "overrides": [
           {
@@ -965,7 +967,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 95
+                "value": 105
               }
             ]
           },
@@ -988,9 +990,21 @@
                         "index": 3,
                         "text": "🚴"
                       },
+                      "EMountainBikeRide": {
+                        "index": 21,
+                        "text": "🚵‍♂️"
+                      },
                       "Golf": {
                         "index": 15,
                         "text": "🏌️"
+                      },
+                      "GravelRide": {
+                        "index": 20,
+                        "text": "🚴"
+                      },
+                      "Hike": {
+                        "index": 24,
+                        "text": "👟"
                       },
                       "IceSkate": {
                         "index": 6,
@@ -1003,6 +1017,10 @@
                       "Kayaking": {
                         "index": 14,
                         "text": "🚣"
+                      },
+                      "MountainBikeRide": {
+                        "index": 22,
+                        "text": "🚵‍♂️"
                       },
                       "NordicSki": {
                         "index": 7,
@@ -1036,12 +1054,20 @@
                         "index": 10,
                         "text": "🏊"
                       },
+                      "TrailRun": {
+                        "index": 25,
+                        "text": "👟"
+                      },
                       "VirtualRide": {
                         "index": 4,
                         "text": "🚴"
                       },
                       "VirtualRun": {
                         "index": 1,
+                        "text": "👟"
+                      },
+                      "Walk": {
+                        "index": 23,
                         "text": "👟"
                       },
                       "WeightTraining": {
@@ -1055,30 +1081,6 @@
                       "Yoga": {
                         "index": 17,
                         "text": "🧘"
-                      },
-                      "GravelRide": {
-                        "index": 20,
-                        "text": "🚴"
-                      },
-                      "EMountainBikeRide": {
-                        "index": 21,
-                        "text": "🚵‍♂️"
-                      },
-                      "MountainBikeRide": {
-                        "index": 22,
-                        "text": "🚵‍♂️"
-                      },
-                      "Walk": {
-                        "index": 23,
-                        "text": "👟"
-                      },
-                      "Hike": {
-                        "index": 24,
-                        "text": "👟"
-                      },
-                      "TrailRun": {
-                        "index": 25,
-                        "text": "👟"
                       }
                     },
                     "type": "value"
@@ -1102,8 +1104,11 @@
             },
             "properties": [
               {
-                "id": "custom.displayMode",
-                "value": "color-background"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
               },
               {
                 "id": "min",
@@ -1147,7 +1152,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 75
+                "value": 90
               }
             ]
           },
@@ -1183,11 +1188,14 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 80
+                "value": 85
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-background"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
               },
               {
                 "id": "min",
@@ -1243,7 +1251,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 75
+                "value": 80
               },
               {
                 "id": "decimals"
@@ -1275,7 +1283,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 104
+                "value": 115
               },
               {
                 "id": "displayName",
@@ -1317,30 +1325,6 @@
                 "id": "displayName",
                 "value": "👍"
               },
-              {
-                "id": "custom.width",
-                "value": 50
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "🏆"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 50
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "👍"
-            },
-            "properties": [
               {
                 "id": "custom.width",
                 "value": 50
