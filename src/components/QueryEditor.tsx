@@ -359,7 +359,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
           <InlineField label="Format" labelWidth={10}>
             <Select
               isSearchable={false}
-              width={16}
+              width={20}
               options={FORMAT_OPTIONS}
               onChange={onPropChange('format')}
               value={getFormatOption()}
@@ -369,7 +369,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
             <InlineField label="Stat" labelWidth={12}>
               <Select
                 isSearchable={false}
-                width={16}
+                width={28}
                 value={getSelectedActivityStat()}
                 options={stravaActivityStatOptions}
                 onChange={onPropChange('activityStat')}
@@ -420,7 +420,7 @@ export const QueryEditor = ({ query, datasource, onChange, onRunQuery }: Props) 
           <InlineField label="Activity" labelWidth={10}>
             <Select
               isSearchable={true}
-              width={30}
+              width={32}
               value={getSelectedActivityOption()}
               options={activitiesOptions}
               onChange={onActivityChanged}
