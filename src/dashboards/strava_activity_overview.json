@@ -1438,7 +1438,15 @@
               {
                 "id": "custom.fillOpacity",
                 "value": 0
-              },
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pace"
+            },
+            "properties": [
               {
                 "id": "custom.transform",
                 "value": "negative-Y"
