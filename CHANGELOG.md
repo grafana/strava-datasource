@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.6.0] - 2023-08-08
+
+### Added
+
+- Authentication: Forward OAuth identity
+- Add more data to geomap format
+- Add Walk as a separate activity
+- Display pace values in reverse order
+
 ## [1.5.1] - 2022-09-08
 
 ### Fixed
