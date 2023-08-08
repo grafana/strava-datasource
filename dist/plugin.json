@@ -1,0 +1,65 @@
+{
+  "name": "Strava",
+  "id": "grafana-strava-datasource",
+  "type": "datasource",
+  "metrics": true,
+  "annotations": false,
+  "backend": true,
+  "alerting": false,
+  "executable": "gpx_strava",
+  "info": {
+    "description": "Strava datasource",
+    "author": {
+      "name": "Grafana Labs",
+      "url": "https://grafana.com"
+    },
+    "logos": {
+      "small": "img/strava_logo.svg",
+      "large": "img/strava_logo.svg"
+    },
+    "links": [
+      {
+        "name": "Website",
+        "url": "https://grafana.com/plugins/grafana-strava-datasource"
+      },
+      {
+        "name": "License",
+        "url": "https://grafana.com/plugins/grafana-strava-datasource/license"
+      }
+    ],
+    "version": "1.6.0",
+    "updated": "2023-08-08"
+  },
+  "includes": [
+    {
+      "type": "dashboard",
+      "name": "Strava Athlete Dashboard",
+      "path": "dashboards/strava_athlete_dashboard.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Strava Datasource",
+      "path": "dashboards/strava_datasource.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Strava Activity Analysis",
+      "path": "dashboards/strava_activity_analysis.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Strava Activity Overview",
+      "path": "dashboards/strava_activity_overview.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Strava Segment Overview",
+      "path": "dashboards/strava_segment_overview.json"
+    }
+  ],
+  "dependencies": {
+    "grafanaDependency": ">=8.1.0",
+    "grafanaVersion": "8.1",
+    "plugins": []
+  }
+}
