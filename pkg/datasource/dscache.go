@@ -9,9 +9,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	hclog "github.com/hashicorp/go-hclog"
 	cache "github.com/patrickmn/go-cache"
+
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
 
 var cacheLogger = hclog.New(&hclog.LoggerOptions{
@@ -50,7 +51,7 @@ func (c *DSCache) SetWithNoExpiration(request string, response interface{}, d ti
 	c.gocache.Set(request, response, cache.NoExpiration)
 }
 
-// Set the value of the key "request" to "rersponse" with default expiration time.
+// Set the value of the key "request" to "response" with default expiration time.
 func (c *DSCache) SetDefault(request string, response interface{}) {
 	c.gocache.SetDefault(request, response)
 }

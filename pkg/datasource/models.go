@@ -43,7 +43,7 @@ type QueryModel struct {
 	TimeRange backend.TimeRange `json:"-"`
 }
 
-// ReadQuery will read and validate Settings from the DataSourceConfg
+// ReadQuery will read and validate Settings from the DataSourceConfig
 func ReadQuery(query backend.DataQuery) (QueryModel, error) {
 	model := QueryModel{}
 	if err := json.Unmarshal(query.JSON, &model); err != nil {

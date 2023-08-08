@@ -16,13 +16,14 @@ import (
 	"time"
 
 	simplejson "github.com/bitly/go-simplejson"
+	cache "github.com/patrickmn/go-cache"
+	"golang.org/x/net/context/ctxhttp"
+
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/gtime"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
-	cache "github.com/patrickmn/go-cache"
-	"golang.org/x/net/context/ctxhttp"
 )
 
 const StravaAPIUrl = "https://www.strava.com/api/v3"
@@ -71,16 +72,16 @@ func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, da
 	logger := log.New()
 	logger.Debug("Initializing new data source instance")
 
-	setingsDTO := &StravaDatasourceSettingsDTO{}
-	err := json.Unmarshal(settings.JSONData, setingsDTO)
+	settingsDTO := &StravaDatasourceSettingsDTO{}
+	err := json.Unmarshal(settings.JSONData, settingsDTO)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read data source settings: %w", err)
 	}
 
-	if setingsDTO.CacheTTL == "" {
-		setingsDTO.CacheTTL = "1h"
+	if settingsDTO.CacheTTL == "" {
+		settingsDTO.CacheTTL = "1h"
 	}
-	cacheTTL, err := gtime.ParseInterval(setingsDTO.CacheTTL)
+	cacheTTL, err := gtime.ParseInterval(settingsDTO.CacheTTL)
 
 	dsInstance := &StravaDatasourceInstance{
 		dsInfo:    &settings,

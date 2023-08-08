@@ -25,7 +25,7 @@ import {
   getAggregationInterval,
   getAggregationIntervalFromTarget,
   getPreferredDistance,
-  getPreferredLenght,
+  getPreferredLength,
 } from 'utils';
 
 interface TransformOptions {
@@ -97,7 +97,7 @@ export function transformActivitiesToTable(
 ) {
   const { measurementPreference } = options;
   const distanceUnit = measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
-  const lenghtUnit = measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
+  const lengthUnit = measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
 
   const frame = new MutableDataFrame({
     refId: target.refId,
@@ -108,7 +108,7 @@ export function transformActivitiesToTable(
       { name: 'moving time', type: FieldType.number, config: { unit: 'dthms' } },
       { name: 'elapsed time', type: FieldType.number, config: { unit: 'dthms' } },
       { name: 'heart rate', type: FieldType.number, config: { unit: 'none', decimals: 0 } },
-      { name: 'elevation gain', type: FieldType.number, config: { unit: lenghtUnit, decimals: 0 } },
+      { name: 'elevation gain', type: FieldType.number, config: { unit: lengthUnit, decimals: 0 } },
       { name: 'kilojoules', type: FieldType.number, config: { unit: 'joule' } },
       { name: 'type', type: FieldType.string },
       { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
@@ -130,7 +130,7 @@ export function transformActivitiesToTable(
       'moving time': activity.moving_time,
       'elapsed time': activity.elapsed_time,
       'heart rate': activity.average_heartrate,
-      'elevation gain': getPreferredLenght(activity.total_elevation_gain, measurementPreference),
+      'elevation gain': getPreferredLength(activity.total_elevation_gain, measurementPreference),
       kilojoules: activity.kilojoules,
       type: activity.sport_type,
       id: activity.id,
@@ -226,7 +226,7 @@ function getActivityStat(
   if (activityStat === StravaActivityStat.Distance) {
     return getPreferredDistance(activity.distance, measurementPreference);
   } else if (activityStat === StravaActivityStat.ElevationGain) {
-    return getPreferredLenght(activity.total_elevation_gain, measurementPreference);
+    return getPreferredLength(activity.total_elevation_gain, measurementPreference);
   } else {
     return activity[activityStat];
   }

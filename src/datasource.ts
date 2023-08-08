@@ -43,8 +43,8 @@ import {
   metersDataToFeet,
   expandDataStream,
   getPreferredDistance,
-  getPreferredLenght,
-  getPreferredLenghtUnit,
+  getPreferredLength,
+  getPreferredLengthUnit,
   getPreferredPace,
   getPreferredSpeed,
   getPreferredSpeedUnit,
@@ -250,7 +250,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
 
     if (target.activityGraph === StravaActivityStream.Altitude) {
-      valueFiled.config.unit = getPreferredLenghtUnit(this.measurementPreference);
+      valueFiled.config.unit = getPreferredLengthUnit(this.measurementPreference);
       streamValues = metersDataToFeet(streamValues, this.measurementPreference);
     }
 
@@ -361,7 +361,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
 
     if (target.activityGraph === StravaActivityStream.Altitude) {
-      valueFiled.config.unit = getPreferredLenghtUnit(this.measurementPreference);
+      valueFiled.config.unit = getPreferredLengthUnit(this.measurementPreference);
       streamValues = metersDataToFeet(streamValues, this.measurementPreference);
     }
 
@@ -481,7 +481,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     }
     if (stats === StravaActivityStat.ElevationGain) {
       valueFiled.config.unit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
-      activityStats = getPreferredLenght(activity.total_elevation_gain, this.measurementPreference);
+      activityStats = getPreferredLength(activity.total_elevation_gain, this.measurementPreference);
     }
 
     const frame = new MutableDataFrame({
@@ -500,7 +500,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
 
   async queryActivitySegments(activity: StravaActivity, target: StravaQuery, options: DataQueryRequest<StravaQuery>) {
     const distanceUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthmi' : 'lengthm';
-    const lenghtUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
+    const lengthUnit = this.measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
 
     const frame = new MutableDataFrame({
       refId: target.refId,
@@ -512,7 +512,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
         { name: 'heart rate', type: FieldType.number, config: { unit: 'bpm', decimals: 0 } },
         { name: 'power', type: FieldType.number, config: { unit: 'watt' } },
         { name: 'distance', type: FieldType.number, config: { unit: distanceUnit } },
-        { name: 'elevation gain', type: FieldType.number, config: { unit: lenghtUnit, decimals: 0 } },
+        { name: 'elevation gain', type: FieldType.number, config: { unit: lengthUnit, decimals: 0 } },
         { name: 'grade', type: FieldType.number, config: { unit: 'percent', decimals: 1 } },
         { name: 'PR', type: FieldType.string, config: { unit: 'dthms' } },
         { name: 'KOM', type: FieldType.string },
@@ -549,7 +549,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
           'heart rate': effort.average_heartrate,
           power: effort.average_watts,
           distance: getPreferredDistance(effort.distance, this.measurementPreference),
-          'elevation gain': getPreferredLenght(
+          'elevation gain': getPreferredLength(
             effort.segment.elevation_high - effort.segment.elevation_low,
             this.measurementPreference
           ),

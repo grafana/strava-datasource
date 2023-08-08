@@ -43,7 +43,7 @@ export function getPreferredDistance(value: number, measurementPreference: Strav
   return measurementPreference === StravaMeasurementPreference.Feet ? metersToMiles(value) : value;
 }
 
-export function getPreferredLenght(value: number, measurementPreference: StravaMeasurementPreference): number {
+export function getPreferredLength(value: number, measurementPreference: StravaMeasurementPreference): number {
   return measurementPreference === StravaMeasurementPreference.Feet ? metersToFeet(value) : value;
 }
 
@@ -56,7 +56,7 @@ export function getPreferredSpeedUnit(measurementPreference: StravaMeasurementPr
   return measurementPreference === StravaMeasurementPreference.Feet ? 'velocitymph' : 'velocitykmh';
 }
 
-export function getPreferredLenghtUnit(measurementPreference: StravaMeasurementPreference) {
+export function getPreferredLengthUnit(measurementPreference: StravaMeasurementPreference) {
   return measurementPreference === StravaMeasurementPreference.Feet ? 'lengthft' : 'lengthm';
 }
 
@@ -169,9 +169,9 @@ export const paceDisplayProcessor = (value: any): DisplayValue => {
   };
 
   if (value) {
-    const minuntes = Math.floor(value / 60);
-    const seconds = Math.round(value - minuntes * 60);
-    text = `${minuntes}:${seconds}`;
+    const minutes = Math.floor(value / 60);
+    const seconds = Math.round(value - minutes * 60);
+    text = `${minutes}:${seconds}`;
     displayValue.text = text;
     displayValue.suffix = ' /km';
   }
@@ -179,7 +179,7 @@ export const paceDisplayProcessor = (value: any): DisplayValue => {
 };
 
 // Expands stream data to normal array with nulls for non-existing points.
-// Data comes as a kind of sparce array. Time stream contains offset of data
+// Data comes as a kind of sparse array. Time stream contains offset of data
 // points, for example:
 // heartrate: [70,81,82,81,99,96,97,98,99]
 // time:      [0, 4, 5, 6, 20,21,22,23,24]

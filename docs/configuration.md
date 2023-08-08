@@ -40,7 +40,7 @@ export GF_STRAVA_DS_DATA_PATH=/var/lib/grafana/strava
 
 ## Forward OAuth identity
 
-It's possible to configure Grafana to authenticate users with Strava and then pass throug OAuth identity to the data source.
+It's possible to configure Grafana to authenticate users with Strava and then pass through OAuth identity to the data source.
 This makes it possible for users to see its own data on dashboards without creating new data source for each user. To enable
 Strava authentication, add this section to the grafana config file:
 
