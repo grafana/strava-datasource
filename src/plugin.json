@@ -2,14 +2,11 @@
   "name": "Strava",
   "id": "grafana-strava-datasource",
   "type": "datasource",
-
   "metrics": true,
   "annotations": false,
-
   "backend": true,
   "alerting": false,
   "executable": "./strava-plugin",
-
   "info": {
     "description": "Strava datasource",
     "author": {
@@ -33,7 +30,6 @@
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
-
   "includes": [
     {
       "type": "dashboard",
@@ -61,7 +57,6 @@
       "path": "dashboards/strava_segment_overview.json"
     }
   ],
-
   "dependencies": {
     "grafanaDependency": ">=8.1.0",
     "grafanaVersion": "8.1",
