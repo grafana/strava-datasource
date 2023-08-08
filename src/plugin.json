@@ -6,7 +6,7 @@
   "annotations": false,
   "backend": true,
   "alerting": false,
-  "executable": "./strava-plugin",
+  "executable": "gpx_strava",
   "info": {
     "description": "Strava datasource",
     "author": {
