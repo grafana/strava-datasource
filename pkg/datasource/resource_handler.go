@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	simplejson "github.com/bitly/go-simplejson"
+
+	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/resource/httpadapter"
 )
 
@@ -17,7 +19,10 @@ import (
 func (ds *StravaDatasource) RootHandler(rw http.ResponseWriter, req *http.Request) {
 	ds.logger.Debug("Received resource call", "url", req.URL.String(), "method", req.Method)
 
-	rw.Write([]byte("Hello from Strava data source!"))
+	_, err := rw.Write([]byte("Hello from Strava data source!"))
+	if err != nil {
+		ds.logger.Warn("Error writing response")
+	}
 	rw.WriteHeader(http.StatusOK)
 }
 
@@ -85,7 +90,10 @@ func (ds *StravaDatasource) ResetAccessTokenHandler(rw http.ResponseWriter, req 
 
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	rw.Write(b)
+	_, err = rw.Write(b)
+	if err != nil {
+		ds.logger.Warn("Error writing response")
+	}
 }
 
 func (ds *StravaDatasource) ResetCacheHandler(rw http.ResponseWriter, req *http.Request) {
@@ -109,7 +117,10 @@ func (ds *StravaDatasource) ResetCacheHandler(rw http.ResponseWriter, req *http.
 
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	rw.Write(b)
+	_, err = rw.Write(b)
+	if err != nil {
+		ds.logger.Warn("Error writing response")
+	}
 }
 
 func (ds *StravaDatasource) StravaAPIHandler(rw http.ResponseWriter, req *http.Request) {
@@ -186,7 +197,10 @@ func writeAuthResponse(rw http.ResponseWriter, result *StravaAuthResourceRespons
 func writeResponse(rw http.ResponseWriter, resultJson []byte) {
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	rw.Write(resultJson)
+	_, err := rw.Write(resultJson)
+	if err != nil {
+		log.DefaultLogger.Warn("Error writing response")
+	}
 }
 
 func writeError(rw http.ResponseWriter, statusCode int, err error) {
@@ -203,7 +217,10 @@ func writeError(rw http.ResponseWriter, statusCode int, err error) {
 
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusInternalServerError)
-	rw.Write(b)
+	_, err = rw.Write(b)
+	if err != nil {
+		log.DefaultLogger.Warn("Error writing response")
+	}
 }
 
 func isOAuthPassThruEnabled(dsInstance *StravaDatasourceInstance) bool {

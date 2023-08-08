@@ -43,13 +43,12 @@ type StravaDatasource struct {
 // StravaDatasourceInstance stores state about a specific datasource
 // and provides methods to make requests to the Strava API
 type StravaDatasourceInstance struct {
-	dsInfo       *backend.DataSourceInstanceSettings
-	refreshToken string
-	cache        *DSCache
-	authCache    *DSAuthCache
-	logger       log.Logger
-	httpClient   *http.Client
-	prefetcher   *StravaPrefetcher
+	dsInfo     *backend.DataSourceInstanceSettings
+	cache      *DSCache
+	authCache  *DSAuthCache
+	logger     log.Logger
+	httpClient *http.Client
+	prefetcher *StravaPrefetcher
 }
 
 func NewStravaDatasource(dataDir string) *StravaDatasource {
@@ -81,7 +80,11 @@ func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, da
 	if settingsDTO.CacheTTL == "" {
 		settingsDTO.CacheTTL = "1h"
 	}
+
 	cacheTTL, err := gtime.ParseInterval(settingsDTO.CacheTTL)
+	if err != nil {
+		log.DefaultLogger.Warn("Cannot read cache TTL", "error", err)
+	}
 
 	dsInstance := &StravaDatasourceInstance{
 		dsInfo:    &settings,
@@ -261,7 +264,9 @@ func (ds *StravaDatasourceInstance) ExchangeToken(authCode string) (*TokenExchan
 	}
 
 	authResp, err := ds.httpClient.PostForm(StravaAPITokenUrl, authParams)
-	if authResp.StatusCode != http.StatusOK {
+	if err != nil {
+		return nil, err
+	} else if authResp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Auth error, status: %v", authResp.Status)
 	}
 
@@ -418,6 +423,9 @@ func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *S
 
 	requestUrlStr := fmt.Sprintf("%s/%s", StravaAPIUrl, strings.TrimLeft(endpoint, "/"))
 	requestUrl, err := url.Parse(requestUrlStr)
+	if err != nil {
+		return nil, err
+	}
 
 	q := requestUrl.Query()
 	for param, value := range params {
