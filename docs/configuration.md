@@ -11,7 +11,7 @@ In order to start using Strava datasource you will need to make a Strava API app
    - Authorization token: Your authorization token which will change every six hours (please keep this confidential)
    - Your Refresh token: The token you will use to get a new authorization token (please keep this confidential)
    - Rate limits: Your current rate limit
-   - Authorization Callback Domain: change “Authorization Callback Domain” to localhost or any domain.
+   - Authorization Callback Domain: set it to domain you're using to access Grafana. If you're using Grafana at localhost, you can put anything here, `localhost` and `127.0.01` are white-listed. If you're running plugin at Grafana Cloud, set it to your cloud instance domain, ie `myorg.grafana.net`.
 
 Learn more about Strava API applications at [Strava developer docs](https://developers.strava.com/docs/getting-started/#account).
 
