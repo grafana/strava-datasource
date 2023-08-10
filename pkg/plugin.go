@@ -6,10 +6,11 @@ import (
 	"os"
 	"path"
 
+	"github.com/grafana/strava-datasource/pkg/datasource"
+
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/resource/httpadapter"
-	"github.com/grafana/strava-datasource/pkg/datasource"
 )
 
 const (
@@ -71,14 +72,6 @@ func getDataDir() (string, error) {
 		log.DefaultLogger.Debug("Cannot get OS cache directory path", "error", err)
 	} else {
 		dataDirOptions = append(dataDirOptions, userCacheDir)
-	}
-
-	execPath, err := os.Executable()
-	if err != nil {
-		log.DefaultLogger.Debug("Cannot get plugin executable directory", "error", err)
-	} else {
-		execDir := path.Dir(execPath)
-		dataDirOptions = append(dataDirOptions, execDir)
 	}
 
 	dataDirOptions = append(dataDirOptions, "/var/lib/grafana/data", "/var/lib/grafana")
