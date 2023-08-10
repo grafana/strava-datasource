@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.6.1] - 2022-08-10
+
+### Fixed
+
+- Invalid plugin signature after grafana restart
+
 ## [1.6.0] - 2023-08-08
 
 ### Added
