@@ -21,7 +21,7 @@ Then go to grafana and create new Strava datasource.
 
 Fill _Client ID_ field with value obtained from Strava API application page. Click _Connect with Strava_ button and authorize grafana datasource to connect to Strava.
 
-If you get `redirect_uri invalid` error after clicking _Connect with Strava_, that means Authorization Callback Domain not properly configured. Get back to the Strava API aaplication config and make sure you set it to exactly the same domain you use to open Grafana in your browser.
+If you get `redirect_uri invalid` error after clicking _Connect with Strava_, that means Authorization Callback Domain not properly configured. Get back to the Strava API application config and make sure you set it to exactly the same domain you use to open Grafana in your browser.
 
 ![Authorize datasource](img/config_2.png)
 
