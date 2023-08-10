@@ -11,7 +11,7 @@ In order to start using Strava datasource you will need to make a Strava API app
    - Authorization token: Your authorization token which will change every six hours (please keep this confidential)
    - Your Refresh token: The token you will use to get a new authorization token (please keep this confidential)
    - Rate limits: Your current rate limit
-   - Authorization Callback Domain: set it to domain you're using to access Grafana. If you're using Grafana at localhost, you can put anything here, `localhost` and `127.0.01` are white-listed. If you're running plugin at Grafana Cloud, set it to your cloud instance domain, ie `myorg.grafana.net`.
+   - Authorization Callback Domain: set it to domain you're using to access Grafana. If you're using Grafana at localhost, you can put anything here, `localhost` and `127.0.01` are white-listed. If you're running plugin at Grafana Cloud, set it to your cloud instance domain, ie `myorg.grafana.net`. If you're accessing grafana via IP-address, ie `192.168.1.10`, set callback domain to that address.
 
 Learn more about Strava API applications at [Strava developer docs](https://developers.strava.com/docs/getting-started/#account).
 
@@ -20,6 +20,8 @@ Then go to grafana and create new Strava datasource.
 ![New Data Source](img/config_1.png)
 
 Fill _Client ID_ field with value obtained from Strava API application page. Click _Connect with Strava_ button and authorize grafana datasource to connect to Strava.
+
+If you get `redirect_uri invalid` error after clicking _Connect with Strava_, that means Authorization Callback Domain not properly configured. Get back to the Strava API aaplication config and make sure you set it to exactly the same domain you use to open Grafana in your browser.
 
 ![Authorize datasource](img/config_2.png)
 
