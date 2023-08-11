@@ -70,6 +70,7 @@ enable_alpha = true
 
 Plugin uses cache on the backend to store information of activities. This helps to reduce API usage and prevent rate limiting. Plugin basically caches everything except the list of activities on the "Strava Athlete Dashboard" (those activities cached, but with the short non-configurable interval). So if you updated activity information in Strava (ie, name, gear, etc), you don't see updates in Grafana until cache is refreshed. You can manually reset cache by clicking _Save and Test_ button at the data source config page.
 
+
 ### Custom data directory
 
 By default, plugin stores data in user cache directory (ie `$HOME/.cache` on Linux or `%LocalAppData%` on Windows). If you need to change this directory, set `GF_STRAVA_DS_DATA_PATH` environment variable. This directory is used for storing obtained refresh tokens and make it available after plugin restart. Make sure user that runs grafana-server has write access to that directory.
@@ -104,3 +105,12 @@ api_url = https://www.strava.com/api/v3/athlete
 ```
 
 Restart grafana server, then activate _Forward OAuth Identity_ toggle in data source config and press _Save and test_ button.
+
+### Authentication with refresh token
+
+There's a way to authenticate plugin using refresh token available on the My Application page. However, it's mostly for debugging purposes because token has expiration time and needs to be updated eventually. Set the _Auth type_ to the "Refresh token" in the data source config and copy refresh token from Strava. Then click _Save and test_ button. You don't need to click _Connect with Strava_ button in this case. Here's a difference in auth process:
+
+1. OAuth: Click _Connect with Strava_ -> Get authorization code -> Exchange authorization code for access token and refresh token -> store refresh token and use it once access toke expired.
+2. Refresh token: Exchange existing refresh token for access token and use it.
+
+The main difference here that in case of OAuth process any Strava user can be authorized, but in case of refresh token you use your own token, so this use case is limited.
