@@ -66,6 +66,10 @@ enable_alpha = true
 
 ## Advanced
 
+### Cache TTL
+
+Plugin uses cache on the backend to store information of activities. This helps to reduce API usage and prevent rate limiting. Plugin basically caches everything except the list of activities on the "Strava Athlete Dashboard" (those activities cached, but with the short non-configurable interval). So if you updated activity information in Strava (ie, name, gear, etc), you don't see updates in Grafana until cache is refreshed. You can manually reset cache by clicking _Save and Test_ button at the data source config page.
+
 ### Custom data directory
 
 By default, plugin stores data in user cache directory (ie `$HOME/.cache` on Linux or `%LocalAppData%` on Windows). If you need to change this directory, set `GF_STRAVA_DS_DATA_PATH` environment variable. This directory is used for storing obtained refresh tokens and make it available after plugin restart. Make sure user that runs grafana-server has write access to that directory.
