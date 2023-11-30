@@ -641,14 +641,11 @@
       },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "fixed"
-          },
           "custom": {
             "hideFrom": {
-              "legend": false,
               "tooltip": false,
-              "viz": false
+              "viz": false,
+              "legend": false
             }
           },
           "mappings": [],
@@ -664,9 +661,67 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "color": {
+            "mode": "fixed"
+          },
+          "links": [
+            {
+              "title": "Go to activity",
+              "url": "/d/StravaActivityOverview?var-Activity=${__data.fields.id}&from=${__data.fields.time_from}&to=${__data.fields.time_to}"
+            }
+          ]
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "id"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "tooltip": true,
+                  "viz": false,
+                  "legend": false
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "time_from"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "tooltip": true,
+                  "viz": false,
+                  "legend": false
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "time_to"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "tooltip": true,
+                  "viz": false,
+                  "legend": false
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 19,
@@ -896,7 +951,7 @@
           "splitStat": "average_speed"
         }
       ],
-      "title": "Panel Title",
+      "title": "Activities on map",
       "type": "geomap"
     },
     {
@@ -1567,6 +1622,6 @@
   "timezone": "",
   "title": "Strava Athlete Dashboard",
   "uid": "StravaAthleteDashboardModern-v2",
-  "version": 16,
+  "version": 17,
   "weekStart": ""
 }

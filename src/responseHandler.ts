@@ -168,6 +168,10 @@ export function transformActivitiesToGeomap(
           unit: getStatUnit(target.activityStat, measurementPreference),
         },
       },
+      { name: 'time', type: FieldType.time },
+      { name: 'id', type: FieldType.string, config: { unit: 'none', custom: { hidden: true } } },
+      { name: 'time_from', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
+      { name: 'time_to', type: FieldType.number, config: { unit: 'none', decimals: 0, custom: { hidden: true } } },
     ],
   });
 
@@ -181,6 +185,10 @@ export function transformActivitiesToGeomap(
         value: getActivityStat(activity, target.activityStat, measurementPreference),
         latitude,
         longitude,
+        time: dateTime(activity.start_date),
+        id: activity.id,
+        time_from: dateTime(activity.start_date).unix() * 1000,
+        time_to: (dateTime(activity.start_date).unix() + activity.elapsed_time) * 1000,
       });
     }
   }
