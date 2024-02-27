@@ -16,7 +16,7 @@ import (
 // mux.HandleFunc("/", ds.RootHandler)
 // mux.HandleFunc("/strava-api", ds.StravaAPIHandler)
 
-func (ds *StravaDatasource) RootHandler(rw http.ResponseWriter, req *http.Request) {
+func (ds *StravaDatasourcePlugin) RootHandler(rw http.ResponseWriter, req *http.Request) {
 	ds.logger.Debug("Received resource call", "url", req.URL.String(), "method", req.Method)
 
 	_, err := rw.Write([]byte("Hello from Strava data source!"))
@@ -26,7 +26,7 @@ func (ds *StravaDatasource) RootHandler(rw http.ResponseWriter, req *http.Reques
 	rw.WriteHeader(http.StatusOK)
 }
 
-func (ds *StravaDatasource) StravaAuthHandler(rw http.ResponseWriter, req *http.Request) {
+func (ds *StravaDatasourcePlugin) StravaAuthHandler(rw http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		return
 	}
@@ -64,7 +64,7 @@ func (ds *StravaDatasource) StravaAuthHandler(rw http.ResponseWriter, req *http.
 	writeAuthResponse(rw, result)
 }
 
-func (ds *StravaDatasource) ResetAccessTokenHandler(rw http.ResponseWriter, req *http.Request) {
+func (ds *StravaDatasourcePlugin) ResetAccessTokenHandler(rw http.ResponseWriter, req *http.Request) {
 	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
 	dsInstance, err := ds.getDSInstance(req.Context(), pluginCxt)
 	if err != nil {
@@ -96,7 +96,7 @@ func (ds *StravaDatasource) ResetAccessTokenHandler(rw http.ResponseWriter, req 
 	}
 }
 
-func (ds *StravaDatasource) ResetCacheHandler(rw http.ResponseWriter, req *http.Request) {
+func (ds *StravaDatasourcePlugin) ResetCacheHandler(rw http.ResponseWriter, req *http.Request) {
 	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
 	dsInstance, err := ds.getDSInstance(req.Context(), pluginCxt)
 	if err != nil {
@@ -123,7 +123,7 @@ func (ds *StravaDatasource) ResetCacheHandler(rw http.ResponseWriter, req *http.
 	}
 }
 
-func (ds *StravaDatasource) StravaAPIHandler(rw http.ResponseWriter, req *http.Request) {
+func (ds *StravaDatasourcePlugin) StravaAPIHandler(rw http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		return
 	}

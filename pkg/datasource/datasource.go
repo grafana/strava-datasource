@@ -35,7 +35,7 @@ const StravaAuthQueryType = "stravaAuth"
 
 var ErrAlertingNotSupported = errors.New("alerting not supported")
 
-type StravaDatasource struct {
+type StravaDatasourcePlugin struct {
 	im      instancemgmt.InstanceManager
 	dataDir string
 	saToken string
@@ -55,9 +55,9 @@ type StravaDatasourceInstance struct {
 	grafanaClient grafanaclient.GrafanaHTTPClient
 }
 
-func NewStravaDatasource(dataDir string, saToken string) *StravaDatasource {
+func NewStravaDatasourcePlugin(dataDir string, saToken string) *StravaDatasourcePlugin {
 	im := datasource.NewInstanceManager(newInstanceWithDataDir(dataDir, saToken))
-	return &StravaDatasource{
+	return &StravaDatasourcePlugin{
 		im:      im,
 		dataDir: dataDir,
 		saToken: saToken,
@@ -136,7 +136,7 @@ func newStravaDatasourceInstance(ctx context.Context, settings backend.DataSourc
 }
 
 // getDSInstance Returns cached datasource or creates new one
-func (ds *StravaDatasource) getDSInstance(ctx context.Context, pluginContext backend.PluginContext) (*StravaDatasourceInstance, error) {
+func (ds *StravaDatasourcePlugin) getDSInstance(ctx context.Context, pluginContext backend.PluginContext) (*StravaDatasourceInstance, error) {
 	instance, err := ds.im.Get(ctx, pluginContext)
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func (ds *StravaDatasource) getDSInstance(ctx context.Context, pluginContext bac
 	return instance.(*StravaDatasourceInstance), nil
 }
 
-func (ds *StravaDatasource) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
+func (ds *StravaDatasourcePlugin) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
 	qdr := backend.NewQueryDataResponse()
 
 	for _, q := range req.Queries {
@@ -157,7 +157,7 @@ func (ds *StravaDatasource) QueryData(ctx context.Context, req *backend.QueryDat
 }
 
 // CheckHealth checks if the plugin is running properly
-func (ds *StravaDatasource) CheckHealth(ctx context.Context, req *backend.CheckHealthRequest) (*backend.CheckHealthResult, error) {
+func (ds *StravaDatasourcePlugin) CheckHealth(ctx context.Context, req *backend.CheckHealthRequest) (*backend.CheckHealthResult, error) {
 	res := &backend.CheckHealthResult{}
 
 	_, err := ds.getDSInstance(ctx, req.PluginContext)
