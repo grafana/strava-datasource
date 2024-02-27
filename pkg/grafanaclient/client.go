@@ -51,6 +51,9 @@ func (c grafanaHTTPClient) DoRequest(method string, url string, body io.Reader) 
 	url = strings.TrimLeft(url, "/")
 	appURL := strings.TrimRight(c.appURL, "/")
 	req, err := http.NewRequest(method, fmt.Sprintf("%s/%s", appURL, url), body)
+	if err != nil {
+		return nil, err
+	}
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err

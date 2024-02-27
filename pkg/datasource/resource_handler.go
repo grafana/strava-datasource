@@ -2,7 +2,7 @@ package datasource
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -31,7 +31,7 @@ func (ds *StravaDatasourcePlugin) StravaAuthHandler(rw http.ResponseWriter, req 
 		return
 	}
 
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := io.ReadAll(req.Body)
 	defer req.Body.Close()
 	if err != nil || len(body) == 0 {
 		writeError(rw, http.StatusBadRequest, err)
@@ -128,7 +128,7 @@ func (ds *StravaDatasourcePlugin) StravaAPIHandler(rw http.ResponseWriter, req *
 		return
 	}
 
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := io.ReadAll(req.Body)
 	defer req.Body.Close()
 	if err != nil || len(body) == 0 {
 		writeError(rw, http.StatusBadRequest, err)

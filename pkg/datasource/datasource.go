@@ -236,6 +236,9 @@ func (ds *StravaDatasourceInstance) SaveRefreshToken(token string) error {
 	}
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
 
 	jsonData := make(map[string]any)
 	err = json.Unmarshal(body, &jsonData)
