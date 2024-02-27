@@ -1,14 +1,9 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { Button, RadioButtonGroup, InlineField, Input, InlineFieldRow, InlineSwitch } from '@grafana/ui';
+import { Button, InlineField, Input, InlineFieldRow, InlineSwitch } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
-import { StravaAuthType, StravaJsonData, StravaSecureJsonData } from '../types';
+import { StravaJsonData, StravaSecureJsonData } from '../types';
 
 const AuthCodePattern = /code=([\w]+)/;
-
-const authOptions = [
-  { label: 'OAuth', value: StravaAuthType.OAuth },
-  { label: 'Refresh token', value: StravaAuthType.RefreshToken },
-];
 
 export type Props = DataSourcePluginOptionsEditorProps<StravaJsonData>;
 
@@ -49,10 +44,6 @@ export class ConfigEditor extends PureComponent<Props, State> {
 
     if (!options.hasOwnProperty('secureJsonFields')) {
       options.secureJsonFields = {};
-    }
-
-    if (!options.jsonData.stravaAuthType) {
-      options.jsonData.stravaAuthType = StravaAuthType.OAuth;
     }
 
     return options;
@@ -156,16 +147,6 @@ export class ConfigEditor extends PureComponent<Props, State> {
     });
   };
 
-  onAuthTypeChange = (value?: StravaAuthType) => {
-    this.updateDatasource({
-      ...this.state.config,
-      jsonData: {
-        ...this.state.config.jsonData,
-        stravaAuthType: value,
-      },
-    });
-  };
-
   isLocationContainsCode = () => {
     return AuthCodePattern.test(window.location.search);
   };
@@ -213,14 +194,6 @@ export class ConfigEditor extends PureComponent<Props, State> {
         </div>
         <h2 className="page-heading">Strava API Details</h2>
         <div className="gf-form-group">
-          <h5>Auth type</h5>
-          <RadioButtonGroup
-            options={authOptions}
-            value={config.jsonData.stravaAuthType}
-            onChange={this.onAuthTypeChange}
-          />
-        </div>
-        <div className="gf-form-group">
           <InlineFieldRow>
             <InlineField label="Client ID" labelWidth={16}>
               <Input
@@ -252,38 +225,12 @@ export class ConfigEditor extends PureComponent<Props, State> {
               </InlineField>
             )}
           </InlineFieldRow>
-          {config.jsonData?.stravaAuthType === StravaAuthType.RefreshToken && (
-            <InlineFieldRow>
-              {config.secureJsonFields && config.secureJsonFields.refreshToken ? (
-                <>
-                  <InlineField label="Refresh Token" labelWidth={16}>
-                    <Input placeholder="Configured" width={50} disabled />
-                  </InlineField>
-                  <InlineField>
-                    <Button variant="secondary" type="button" onClick={this.onResetRefreshToken}>
-                      Reset
-                    </Button>
-                  </InlineField>
-                </>
-              ) : (
-                <InlineField label="Refresh Token" labelWidth={16}>
-                  <Input
-                    width={50}
-                    value={config.secureJsonData?.refreshToken || ''}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => this.onRefreshTokenChange(event.target.value)}
-                  />
-                </InlineField>
-              )}
-            </InlineFieldRow>
-          )}
         </div>
-        {config.jsonData?.stravaAuthType !== StravaAuthType.RefreshToken && (
-          <div className="gf-form-group">
-            <a type="button" href={connectWithStravaHref}>
-              <img src="public/plugins/grafana-strava-datasource/img/btn_strava_connectwith_orange.svg" />
-            </a>
-          </div>
-        )}
+        <div className="gf-form-group">
+          <a type="button" href={connectWithStravaHref}>
+            <img src="public/plugins/grafana-strava-datasource/img/btn_strava_connectwith_orange.svg" />
+          </a>
+        </div>
         <InlineFieldRow>
           <InlineField label="Cache TTL" labelWidth={16}>
             <Input
