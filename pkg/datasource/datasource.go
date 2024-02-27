@@ -1,27 +1,29 @@
 package datasource
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	simplejson "github.com/bitly/go-simplejson"
-	cache "github.com/patrickmn/go-cache"
 	"golang.org/x/net/context/ctxhttp"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/gtime"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/httpclient"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 )
@@ -37,37 +39,42 @@ var ErrAlertingNotSupported = errors.New("alerting not supported")
 type StravaDatasource struct {
 	im      instancemgmt.InstanceManager
 	dataDir string
+	saToken string
 	logger  log.Logger
 }
 
 // StravaDatasourceInstance stores state about a specific datasource
 // and provides methods to make requests to the Strava API
 type StravaDatasourceInstance struct {
-	dsInfo     *backend.DataSourceInstanceSettings
-	cache      *DSCache
-	authCache  *DSAuthCache
-	logger     log.Logger
-	httpClient *http.Client
-	prefetcher *StravaPrefetcher
+	dsInfo        *backend.DataSourceInstanceSettings
+	cache         *DSCache
+	authCache     *DSAuthCache
+	logger        log.Logger
+	httpClient    *http.Client
+	prefetcher    *StravaPrefetcher
+	saToken       string
+	grafanaClient *http.Client
+	grafanaAppURL string
 }
 
-func NewStravaDatasource(dataDir string) *StravaDatasource {
-	im := datasource.NewInstanceManager(newInstanceWithDataDir(dataDir))
+func NewStravaDatasource(dataDir string, saToken string) *StravaDatasource {
+	im := datasource.NewInstanceManager(newInstanceWithDataDir(dataDir, saToken))
 	return &StravaDatasource{
 		im:      im,
 		dataDir: dataDir,
+		saToken: saToken,
 		logger:  log.New(),
 	}
 }
 
-func newInstanceWithDataDir(dataDir string) func(backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
-	return func(settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
-		return newStravaDatasourceInstance(settings, dataDir)
+func newInstanceWithDataDir(dataDir string, saToken string) func(context.Context, backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
+	return func(ctx context.Context, settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
+		return newStravaDatasourceInstance(ctx, settings, dataDir, saToken)
 	}
 }
 
 // newStravaDatasourceInstance returns an initialized datasource instance
-func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, dataDir string) (instancemgmt.Instance, error) {
+func newStravaDatasourceInstance(ctx context.Context, settings backend.DataSourceInstanceSettings, dataDir string, saToken string) (instancemgmt.Instance, error) {
 	logger := log.New()
 	logger.Debug("Initializing new data source instance")
 
@@ -91,6 +98,7 @@ func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, da
 		logger:    logger,
 		cache:     NewDSCache(&settings, cacheTTL, 10*time.Minute, dataDir),
 		authCache: GetDSAuthCache(settings.ID),
+		saToken:   saToken,
 		httpClient: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
@@ -120,12 +128,30 @@ func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, da
 		}()
 	}
 
+	grafanaAppURL := strings.TrimRight(os.Getenv("GF_APP_URL"), "/")
+	opts, err := settings.HTTPClientOptions(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("http client options: %w", err)
+	}
+
+	opts.Headers = map[string]string{
+		"Authorization": "Bearer " + saToken,
+		"Content-Type":  "application/json",
+	}
+
+	grafanaClient, err := httpclient.New(opts)
+	if err != nil {
+		return nil, fmt.Errorf("httpclient new: %w", err)
+	}
+	dsInstance.grafanaAppURL = grafanaAppURL
+	dsInstance.grafanaClient = grafanaClient
+
 	return dsInstance, nil
 }
 
 // getDSInstance Returns cached datasource or creates new one
-func (ds *StravaDatasource) getDSInstance(pluginContext backend.PluginContext) (*StravaDatasourceInstance, error) {
-	instance, err := ds.im.Get(pluginContext)
+func (ds *StravaDatasource) getDSInstance(ctx context.Context, pluginContext backend.PluginContext) (*StravaDatasourceInstance, error) {
+	instance, err := ds.im.Get(ctx, pluginContext)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +174,7 @@ func (ds *StravaDatasource) QueryData(ctx context.Context, req *backend.QueryDat
 func (ds *StravaDatasource) CheckHealth(ctx context.Context, req *backend.CheckHealthRequest) (*backend.CheckHealthResult, error) {
 	res := &backend.CheckHealthResult{}
 
-	_, err := ds.getDSInstance(req.PluginContext)
+	_, err := ds.getDSInstance(ctx, req.PluginContext)
 	if err != nil {
 		res.Status = backend.HealthStatusError
 		res.Message = "Error getting datasource instance"
@@ -204,42 +230,49 @@ func (ds *StravaDatasourceInstance) GetAccessToken() (string, error) {
 }
 
 func (ds *StravaDatasourceInstance) GetRefreshToken() (string, error) {
-	var refreshToken string
-	var err error
+	secureJsonData := ds.dsInfo.DecryptedSecureJSONData
+	refreshToken := secureJsonData["refreshToken"]
+	ds.logger.Debug("Got refresh token from secureJsonData")
 
-	refreshToken = ds.authCache.GetRefreshToken()
-	if refreshToken != "" {
-		return refreshToken, nil
+	if refreshToken == "" {
+		ds.logger.Error("Error loading refresh token")
+		return "", errors.New("Refresh token not found, authorize datasource first")
 	}
+	return refreshToken, nil
+}
 
-	jsonDataStr := ds.dsInfo.JSONData
-	jsonData, err := simplejson.NewJson([]byte(jsonDataStr))
+func (ds *StravaDatasourceInstance) SaveRefreshToken(token string) error {
+	ds.logger.Debug("saving refresh token")
+	res, err := ds.grafanaClient.Get(fmt.Sprintf("%s/api/datasources/uid/%s", ds.grafanaAppURL, ds.dsInfo.UID))
 	if err != nil {
-		return "", err
+		return err
 	}
-	stravaAuthType := jsonData.Get("stravaAuthType").MustString()
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
 
-	if stravaAuthType == "refresh_token" {
-		ds.logger.Debug("Using preconfigured refresh token")
-		secureJsonData := ds.dsInfo.DecryptedSecureJSONData
-		return secureJsonData["refreshToken"], nil
-	} else {
-		refreshTokenCached, found := ds.cache.Get("refreshToken")
-		if !found {
-			ds.logger.Debug("Loading refresh token from file")
-			refreshToken, err = ds.cache.Load("refreshToken")
-			if err != nil {
-				ds.logger.Error("Error loading token from file", "err", err)
-				return "", errors.New("Refresh token not found, authorize datasource first")
-			}
-			ds.logger.Debug("Refresh token loaded from file")
-			ds.authCache.SetRefreshToken(refreshToken)
-			return refreshToken, nil
-		} else {
-			refreshToken = refreshTokenCached.(string)
-			return refreshToken, nil
-		}
+	jsonData := make(map[string]any)
+	err = json.Unmarshal(body, &jsonData)
+	if err != nil {
+		return err
 	}
+	secureJsonData := make(map[string]string)
+	secureJsonData["refreshToken"] = token
+	jsonData["secureJsonData"] = secureJsonData
+
+	updatedData, err := json.Marshal(jsonData)
+	if err != nil {
+		return err
+	}
+
+	reqData := bytes.NewReader(updatedData)
+	updateReq, err := http.NewRequest("PUT", fmt.Sprintf("%s/api/datasources/uid/%s", ds.grafanaAppURL, ds.dsInfo.UID), reqData)
+	updateRes, err := ds.grafanaClient.Do(updateReq)
+	if err != nil {
+		return err
+	}
+	ds.logger.Debug("data source updated", "status", updateRes.Status)
+
+	return nil
 }
 
 // ExchangeToken invokes first time when authentication required and exchange authorization code for the
@@ -271,7 +304,7 @@ func (ds *StravaDatasourceInstance) ExchangeToken(authCode string) (*TokenExchan
 	}
 
 	defer authResp.Body.Close()
-	body, err := ioutil.ReadAll(authResp.Body)
+	body, err := io.ReadAll(authResp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -288,12 +321,9 @@ func (ds *StravaDatasourceInstance) ExchangeToken(authCode string) (*TokenExchan
 	ds.logger.Debug("Got new refresh token")
 
 	ds.cache.SetWithExpiration("accessToken", accessToken, accessTokenExpIn)
-	ds.cache.SetWithExpiration("refreshToken", refreshToken, cache.NoExpiration)
-	ds.authCache.SetRefreshToken(refreshToken)
-
-	err = ds.cache.Save("refreshToken", refreshToken)
+	err = ds.SaveRefreshToken(refreshToken)
 	if err != nil {
-		ds.logger.Error("Error saving refresh token in file", err)
+		ds.logger.Error("Error saving refresh token", "err", err)
 	}
 
 	return &TokenExchangeResponse{
@@ -332,7 +362,7 @@ func (ds *StravaDatasourceInstance) RefreshAccessToken(refreshToken string) (*To
 	}
 
 	defer authResp.Body.Close()
-	body, err := ioutil.ReadAll(authResp.Body)
+	body, err := io.ReadAll(authResp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -349,13 +379,11 @@ func (ds *StravaDatasourceInstance) RefreshAccessToken(refreshToken string) (*To
 
 	ds.cache.SetWithExpiration("accessToken", accessToken, accessTokenExpIn)
 	if refreshTokenNew != refreshToken {
-		ds.logger.Debug("Got new refresh token", "refresh token", refreshTokenNew)
-		ds.cache.SetWithExpiration("refreshToken", refreshTokenNew, cache.NoExpiration)
+		ds.logger.Debug("Got new refresh token")
 
-		ds.authCache.SetRefreshToken(refreshTokenNew)
-		err := ds.cache.Save("refreshToken", refreshTokenNew)
+		err := ds.SaveRefreshToken(refreshToken)
 		if err != nil {
-			ds.logger.Error("Error saving refresh token", err)
+			ds.logger.Error("Error saving refresh token", "err", err)
 		}
 	}
 
@@ -472,7 +500,7 @@ func makeHTTPRequest(ctx context.Context, httpClient *http.Client, req *http.Req
 		return nil, err
 	}
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 
 	if res.StatusCode >= 400 {
 		return body, fmt.Errorf("Error status: %v", res.Status)

@@ -47,7 +47,7 @@ func (ds *StravaDatasource) StravaAuthHandler(rw http.ResponseWriter, req *http.
 	}
 
 	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
-	dsInstance, err := ds.getDSInstance(pluginCxt)
+	dsInstance, err := ds.getDSInstance(req.Context(), pluginCxt)
 	if err != nil {
 		ds.logger.Error("Error loading datasource", "error", err)
 		writeError(rw, http.StatusInternalServerError, err)
@@ -66,7 +66,7 @@ func (ds *StravaDatasource) StravaAuthHandler(rw http.ResponseWriter, req *http.
 
 func (ds *StravaDatasource) ResetAccessTokenHandler(rw http.ResponseWriter, req *http.Request) {
 	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
-	dsInstance, err := ds.getDSInstance(pluginCxt)
+	dsInstance, err := ds.getDSInstance(req.Context(), pluginCxt)
 	if err != nil {
 		ds.logger.Error("Error loading datasource", "error", err)
 		writeError(rw, http.StatusInternalServerError, err)
@@ -98,7 +98,7 @@ func (ds *StravaDatasource) ResetAccessTokenHandler(rw http.ResponseWriter, req 
 
 func (ds *StravaDatasource) ResetCacheHandler(rw http.ResponseWriter, req *http.Request) {
 	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
-	dsInstance, err := ds.getDSInstance(pluginCxt)
+	dsInstance, err := ds.getDSInstance(req.Context(), pluginCxt)
 	if err != nil {
 		ds.logger.Error("Error loading datasource", "error", err)
 		writeError(rw, http.StatusInternalServerError, err)
@@ -144,7 +144,7 @@ func (ds *StravaDatasource) StravaAPIHandler(rw http.ResponseWriter, req *http.R
 	}
 
 	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
-	dsInstance, err := ds.getDSInstance(pluginCxt)
+	dsInstance, err := ds.getDSInstance(req.Context(), pluginCxt)
 	if err != nil {
 		ds.logger.Error("Error loading datasource", "error", err)
 		writeError(rw, http.StatusInternalServerError, err)

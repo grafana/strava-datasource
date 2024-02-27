@@ -45,7 +45,13 @@ func Init(mux *http.ServeMux) *datasource.StravaDatasource {
 		log.DefaultLogger.Info("Data dir configured", "path", dataDirPath)
 	}
 
-	ds := datasource.NewStravaDatasource(dataDirPath)
+	saToken := os.Getenv("GF_PLUGIN_APP_CLIENT_SECRET")
+	log.DefaultLogger.Debug("Plugin SA", "GF_PLUGIN_APP_CLIENT_SECRET", saToken)
+	if saToken == "" {
+		log.DefaultLogger.Error("GF_PLUGIN_APP_CLIENT_SECRET is required")
+	}
+
+	ds := datasource.NewStravaDatasource(dataDirPath, saToken)
 
 	mux.HandleFunc("/", ds.RootHandler)
 	mux.HandleFunc("/auth", ds.StravaAuthHandler)

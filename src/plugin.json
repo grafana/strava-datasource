@@ -58,8 +58,20 @@
     }
   ],
   "dependencies": {
-    "grafanaDependency": ">=8.1.0",
-    "grafanaVersion": "8.1",
+    "grafanaDependency": ">=10.3.0",
+    "grafanaVersion": "10.3.0",
     "plugins": []
+  },
+  "iam": {
+    "permissions": [
+      {
+        "action": "datasources:write",
+        "scope": "datasources:uid:*"
+      },
+      {
+        "action": "datasources:read",
+        "scope": "datasources:uid:*"
+      }
+    ]
   }
 }
