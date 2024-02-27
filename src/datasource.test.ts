@@ -57,7 +57,6 @@ describe('StravaDatasource', () => {
       id: 123,
       url: '',
       jsonData: {
-        stravaAuthType: 'oauth',
         oauthPassThru: false,
       },
     };

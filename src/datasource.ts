@@ -25,7 +25,6 @@ import {
   StravaActivityData,
   StravaSplitStat,
   VariableQuery,
-  StravaAuthType,
   StravaAthlete,
   StravaMeasurementPreference,
   TopAchievementStat,
@@ -73,7 +72,6 @@ export const DEFAULT_ACTIVITIES_CACHE_INTERVAL = 5 * 60;
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
   datasourceId: number;
-  stravaAuthType: StravaAuthType;
   apiUrl: string;
   stravaApi: StravaApi;
   activities: any[];
@@ -88,7 +86,6 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
     this.apiUrl = instanceSettings.url!;
     this.stravaApi = new StravaApi(this.datasourceId);
     this.activities = [];
-    this.stravaAuthType = instanceSettings.jsonData.stravaAuthType;
     this.measurementPreference = StravaMeasurementPreference.Meters;
     this.oauthPassThru = instanceSettings.jsonData.oauthPassThru;
   }
@@ -716,7 +713,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   }
 
   async testDatasource() {
-    if (this.stravaAuthType !== StravaAuthType.RefreshToken && !this.oauthPassThru) {
+    if (!this.oauthPassThru) {
       const authCode = this.getAuthCodeFromLocation();
       if (authCode) {
         // Exchange auth code for new refresh token if "Connect with Strava" button clicked

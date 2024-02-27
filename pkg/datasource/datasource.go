@@ -1,12 +1,13 @@
 package datasource
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -16,7 +17,7 @@ import (
 	"time"
 
 	simplejson "github.com/bitly/go-simplejson"
-	cache "github.com/patrickmn/go-cache"
+	"github.com/grafana/strava-datasource/pkg/grafanaclient"
 	"golang.org/x/net/context/ctxhttp"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
@@ -34,40 +35,44 @@ const StravaAuthQueryType = "stravaAuth"
 
 var ErrAlertingNotSupported = errors.New("alerting not supported")
 
-type StravaDatasource struct {
+type StravaDatasourcePlugin struct {
 	im      instancemgmt.InstanceManager
 	dataDir string
+	saToken string
 	logger  log.Logger
 }
 
 // StravaDatasourceInstance stores state about a specific datasource
 // and provides methods to make requests to the Strava API
 type StravaDatasourceInstance struct {
-	dsInfo     *backend.DataSourceInstanceSettings
-	cache      *DSCache
-	authCache  *DSAuthCache
-	logger     log.Logger
-	httpClient *http.Client
-	prefetcher *StravaPrefetcher
+	dsInfo        *backend.DataSourceInstanceSettings
+	cache         *DSCache
+	authCache     *DSAuthCache
+	logger        log.Logger
+	httpClient    *http.Client
+	prefetcher    *StravaPrefetcher
+	saToken       string
+	grafanaClient grafanaclient.GrafanaHTTPClient
 }
 
-func NewStravaDatasource(dataDir string) *StravaDatasource {
-	im := datasource.NewInstanceManager(newInstanceWithDataDir(dataDir))
-	return &StravaDatasource{
+func NewStravaDatasourcePlugin(dataDir string, saToken string) *StravaDatasourcePlugin {
+	im := datasource.NewInstanceManager(newInstanceWithDataDir(dataDir, saToken))
+	return &StravaDatasourcePlugin{
 		im:      im,
 		dataDir: dataDir,
+		saToken: saToken,
 		logger:  log.New(),
 	}
 }
 
-func newInstanceWithDataDir(dataDir string) func(backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
-	return func(settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
-		return newStravaDatasourceInstance(settings, dataDir)
+func newInstanceWithDataDir(dataDir string, saToken string) func(context.Context, backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
+	return func(ctx context.Context, settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
+		return newStravaDatasourceInstance(ctx, settings, dataDir, saToken)
 	}
 }
 
 // newStravaDatasourceInstance returns an initialized datasource instance
-func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, dataDir string) (instancemgmt.Instance, error) {
+func newStravaDatasourceInstance(ctx context.Context, settings backend.DataSourceInstanceSettings, dataDir string, saToken string) (instancemgmt.Instance, error) {
 	logger := log.New()
 	logger.Debug("Initializing new data source instance")
 
@@ -86,11 +91,18 @@ func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, da
 		log.DefaultLogger.Warn("Cannot read cache TTL", "error", err)
 	}
 
+	grafanaClient, err := grafanaclient.NewGrafanaHTTPClient(ctx, settings, saToken)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create grafana client: %w", err)
+	}
+
 	dsInstance := &StravaDatasourceInstance{
-		dsInfo:    &settings,
-		logger:    logger,
-		cache:     NewDSCache(&settings, cacheTTL, 10*time.Minute, dataDir),
-		authCache: GetDSAuthCache(settings.ID),
+		dsInfo:        &settings,
+		logger:        logger,
+		cache:         NewDSCache(&settings, cacheTTL, 10*time.Minute, dataDir),
+		authCache:     GetDSAuthCache(settings.ID),
+		saToken:       saToken,
+		grafanaClient: grafanaClient,
 		httpClient: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
@@ -124,15 +136,15 @@ func newStravaDatasourceInstance(settings backend.DataSourceInstanceSettings, da
 }
 
 // getDSInstance Returns cached datasource or creates new one
-func (ds *StravaDatasource) getDSInstance(pluginContext backend.PluginContext) (*StravaDatasourceInstance, error) {
-	instance, err := ds.im.Get(pluginContext)
+func (ds *StravaDatasourcePlugin) getDSInstance(ctx context.Context, pluginContext backend.PluginContext) (*StravaDatasourceInstance, error) {
+	instance, err := ds.im.Get(ctx, pluginContext)
 	if err != nil {
 		return nil, err
 	}
 	return instance.(*StravaDatasourceInstance), nil
 }
 
-func (ds *StravaDatasource) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
+func (ds *StravaDatasourcePlugin) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
 	qdr := backend.NewQueryDataResponse()
 
 	for _, q := range req.Queries {
@@ -145,10 +157,10 @@ func (ds *StravaDatasource) QueryData(ctx context.Context, req *backend.QueryDat
 }
 
 // CheckHealth checks if the plugin is running properly
-func (ds *StravaDatasource) CheckHealth(ctx context.Context, req *backend.CheckHealthRequest) (*backend.CheckHealthResult, error) {
+func (ds *StravaDatasourcePlugin) CheckHealth(ctx context.Context, req *backend.CheckHealthRequest) (*backend.CheckHealthResult, error) {
 	res := &backend.CheckHealthResult{}
 
-	_, err := ds.getDSInstance(req.PluginContext)
+	_, err := ds.getDSInstance(ctx, req.PluginContext)
 	if err != nil {
 		res.Status = backend.HealthStatusError
 		res.Message = "Error getting datasource instance"
@@ -204,42 +216,52 @@ func (ds *StravaDatasourceInstance) GetAccessToken() (string, error) {
 }
 
 func (ds *StravaDatasourceInstance) GetRefreshToken() (string, error) {
-	var refreshToken string
-	var err error
+	secureJsonData := ds.dsInfo.DecryptedSecureJSONData
+	refreshToken := secureJsonData["refreshToken"]
+	ds.logger.Debug("Got refresh token from secureJsonData")
 
-	refreshToken = ds.authCache.GetRefreshToken()
-	if refreshToken != "" {
-		return refreshToken, nil
+	if refreshToken == "" {
+		ds.logger.Error("Error loading refresh token")
+		return "", errors.New("Refresh token not found, authorize datasource first")
 	}
+	return refreshToken, nil
+}
 
-	jsonDataStr := ds.dsInfo.JSONData
-	jsonData, err := simplejson.NewJson([]byte(jsonDataStr))
+// SaveRefreshToken saves refresh token in secureJsonData by calling update data source API endpoint
+func (ds *StravaDatasourceInstance) SaveRefreshToken(token string) error {
+	ds.logger.Debug("saving refresh token")
+	res, err := ds.grafanaClient.Get(fmt.Sprintf("/api/datasources/uid/%s", ds.dsInfo.UID))
 	if err != nil {
-		return "", err
+		return err
 	}
-	stravaAuthType := jsonData.Get("stravaAuthType").MustString()
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
 
-	if stravaAuthType == "refresh_token" {
-		ds.logger.Debug("Using preconfigured refresh token")
-		secureJsonData := ds.dsInfo.DecryptedSecureJSONData
-		return secureJsonData["refreshToken"], nil
-	} else {
-		refreshTokenCached, found := ds.cache.Get("refreshToken")
-		if !found {
-			ds.logger.Debug("Loading refresh token from file")
-			refreshToken, err = ds.cache.Load("refreshToken")
-			if err != nil {
-				ds.logger.Error("Error loading token from file", "err", err)
-				return "", errors.New("Refresh token not found, authorize datasource first")
-			}
-			ds.logger.Debug("Refresh token loaded from file")
-			ds.authCache.SetRefreshToken(refreshToken)
-			return refreshToken, nil
-		} else {
-			refreshToken = refreshTokenCached.(string)
-			return refreshToken, nil
-		}
+	jsonData := make(map[string]any)
+	err = json.Unmarshal(body, &jsonData)
+	if err != nil {
+		return err
 	}
+	secureJsonData := make(map[string]string)
+	secureJsonData["refreshToken"] = token
+	jsonData["secureJsonData"] = secureJsonData
+
+	updatedData, err := json.Marshal(jsonData)
+	if err != nil {
+		return err
+	}
+
+	reqData := bytes.NewReader(updatedData)
+	updateRes, err := ds.grafanaClient.DoRequest("PUT", fmt.Sprintf("/api/datasources/uid/%s", ds.dsInfo.UID), reqData)
+	if err != nil {
+		return err
+	}
+	ds.logger.Debug("data source updated", "status", updateRes.Status)
+
+	return nil
 }
 
 // ExchangeToken invokes first time when authentication required and exchange authorization code for the
@@ -271,7 +293,7 @@ func (ds *StravaDatasourceInstance) ExchangeToken(authCode string) (*TokenExchan
 	}
 
 	defer authResp.Body.Close()
-	body, err := ioutil.ReadAll(authResp.Body)
+	body, err := io.ReadAll(authResp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -288,12 +310,9 @@ func (ds *StravaDatasourceInstance) ExchangeToken(authCode string) (*TokenExchan
 	ds.logger.Debug("Got new refresh token")
 
 	ds.cache.SetWithExpiration("accessToken", accessToken, accessTokenExpIn)
-	ds.cache.SetWithExpiration("refreshToken", refreshToken, cache.NoExpiration)
-	ds.authCache.SetRefreshToken(refreshToken)
-
-	err = ds.cache.Save("refreshToken", refreshToken)
+	err = ds.SaveRefreshToken(refreshToken)
 	if err != nil {
-		ds.logger.Error("Error saving refresh token in file", err)
+		ds.logger.Error("Error saving refresh token", "err", err)
 	}
 
 	return &TokenExchangeResponse{
@@ -332,7 +351,7 @@ func (ds *StravaDatasourceInstance) RefreshAccessToken(refreshToken string) (*To
 	}
 
 	defer authResp.Body.Close()
-	body, err := ioutil.ReadAll(authResp.Body)
+	body, err := io.ReadAll(authResp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -349,13 +368,11 @@ func (ds *StravaDatasourceInstance) RefreshAccessToken(refreshToken string) (*To
 
 	ds.cache.SetWithExpiration("accessToken", accessToken, accessTokenExpIn)
 	if refreshTokenNew != refreshToken {
-		ds.logger.Debug("Got new refresh token", "refresh token", refreshTokenNew)
-		ds.cache.SetWithExpiration("refreshToken", refreshTokenNew, cache.NoExpiration)
+		ds.logger.Debug("Got new refresh token")
 
-		ds.authCache.SetRefreshToken(refreshTokenNew)
-		err := ds.cache.Save("refreshToken", refreshTokenNew)
+		err := ds.SaveRefreshToken(refreshToken)
 		if err != nil {
-			ds.logger.Error("Error saving refresh token", err)
+			ds.logger.Error("Error saving refresh token", "err", err)
 		}
 	}
 
@@ -472,7 +489,7 @@ func makeHTTPRequest(ctx context.Context, httpClient *http.Client, req *http.Req
 		return nil, err
 	}
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 
 	if res.StatusCode >= 400 {
 		return body, fmt.Errorf("Error status: %v", res.Status)

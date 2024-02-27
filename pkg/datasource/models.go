@@ -55,9 +55,8 @@ func ReadQuery(query backend.DataQuery) (QueryModel, error) {
 }
 
 type StravaDatasourceSettingsDTO struct {
-	StravaAuthType string `json:"stravaAuthType"`
-	ClientID       string `json:"clientID"`
-	CacheTTL       string `json:"cacheTTL"`
+	ClientID string `json:"clientID"`
+	CacheTTL string `json:"cacheTTL"`
 }
 
 type ActivityDTO = struct {

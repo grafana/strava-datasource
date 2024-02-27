@@ -2,14 +2,8 @@ import { DataQuery, DataSourceJsonData, SelectableValue } from '@grafana/data';
 
 export interface StravaJsonData extends DataSourceJsonData {
   clientID: string;
-  stravaAuthType: StravaAuthType;
   cacheTTL: string;
   oauthPassThru: boolean;
-}
-
-export enum StravaAuthType {
-  OAuth = 'oauth',
-  RefreshToken = 'refresh_token',
 }
 
 export interface StravaAthlete {

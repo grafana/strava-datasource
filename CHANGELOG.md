@@ -1,5 +1,12 @@
 # Change Log
 
+## [1.7.0] - 2024-02-27
+
+### Changed
+
+- Plugin uses service account to store and update refresh token in data source secure JSON data. Required Grafana 10.3 and `externalServiceAccounts` feature toggle to be enabled. Fixes re-authentication in Grafana Cloud.
+- "Refresh token" authentication type removed and not supported anymore.
+
 ## [1.6.1] - 2022-08-10
 
 ### Fixed

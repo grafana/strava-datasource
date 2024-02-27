@@ -71,6 +71,8 @@
     "kmph",
     "minkm",
     "signin",
-    "myorg"
+    "myorg",
+    "grafanaclient",
+    "httpclient"
   ]
 }

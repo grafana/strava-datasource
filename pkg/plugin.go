@@ -37,7 +37,7 @@ func main() {
 	}
 }
 
-func Init(mux *http.ServeMux) *datasource.StravaDatasource {
+func Init(mux *http.ServeMux) *datasource.StravaDatasourcePlugin {
 	dataDirPath, err := getDataDir()
 	if err != nil {
 		log.DefaultLogger.Error(err.Error())
@@ -45,7 +45,12 @@ func Init(mux *http.ServeMux) *datasource.StravaDatasource {
 		log.DefaultLogger.Info("Data dir configured", "path", dataDirPath)
 	}
 
-	ds := datasource.NewStravaDatasource(dataDirPath)
+	saToken := os.Getenv("GF_PLUGIN_APP_CLIENT_SECRET")
+	if saToken == "" {
+		log.DefaultLogger.Error("GF_PLUGIN_APP_CLIENT_SECRET is required")
+	}
+
+	ds := datasource.NewStravaDatasourcePlugin(dataDirPath, saToken)
 
 	mux.HandleFunc("/", ds.RootHandler)
 	mux.HandleFunc("/auth", ds.StravaAuthHandler)
