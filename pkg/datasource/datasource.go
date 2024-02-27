@@ -227,6 +227,7 @@ func (ds *StravaDatasourceInstance) GetRefreshToken() (string, error) {
 	return refreshToken, nil
 }
 
+// SaveRefreshToken saves refresh token in secureJsonData by calling update data source API endpoint
 func (ds *StravaDatasourceInstance) SaveRefreshToken(token string) error {
 	ds.logger.Debug("saving refresh token")
 	res, err := ds.grafanaClient.Get(fmt.Sprintf("/api/datasources/uid/%s", ds.dsInfo.UID))
