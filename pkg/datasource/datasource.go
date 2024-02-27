@@ -11,19 +11,18 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	simplejson "github.com/bitly/go-simplejson"
+	"github.com/grafana/strava-datasource/pkg/grafanaclient"
 	"golang.org/x/net/context/ctxhttp"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/gtime"
-	"github.com/grafana/grafana-plugin-sdk-go/backend/httpclient"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 )
@@ -53,8 +52,7 @@ type StravaDatasourceInstance struct {
 	httpClient    *http.Client
 	prefetcher    *StravaPrefetcher
 	saToken       string
-	grafanaClient *http.Client
-	grafanaAppURL string
+	grafanaClient grafanaclient.GrafanaHTTPClient
 }
 
 func NewStravaDatasource(dataDir string, saToken string) *StravaDatasource {
@@ -93,12 +91,18 @@ func newStravaDatasourceInstance(ctx context.Context, settings backend.DataSourc
 		log.DefaultLogger.Warn("Cannot read cache TTL", "error", err)
 	}
 
+	grafanaClient, err := grafanaclient.NewGrafanaHTTPClient(ctx, settings, saToken)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create grafana client: %w", err)
+	}
+
 	dsInstance := &StravaDatasourceInstance{
-		dsInfo:    &settings,
-		logger:    logger,
-		cache:     NewDSCache(&settings, cacheTTL, 10*time.Minute, dataDir),
-		authCache: GetDSAuthCache(settings.ID),
-		saToken:   saToken,
+		dsInfo:        &settings,
+		logger:        logger,
+		cache:         NewDSCache(&settings, cacheTTL, 10*time.Minute, dataDir),
+		authCache:     GetDSAuthCache(settings.ID),
+		saToken:       saToken,
+		grafanaClient: grafanaClient,
 		httpClient: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
@@ -127,24 +131,6 @@ func newStravaDatasourceInstance(ctx context.Context, settings backend.DataSourc
 			dsInstance.prefetcher.Run()
 		}()
 	}
-
-	grafanaAppURL := strings.TrimRight(os.Getenv("GF_APP_URL"), "/")
-	opts, err := settings.HTTPClientOptions(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("http client options: %w", err)
-	}
-
-	opts.Headers = map[string]string{
-		"Authorization": "Bearer " + saToken,
-		"Content-Type":  "application/json",
-	}
-
-	grafanaClient, err := httpclient.New(opts)
-	if err != nil {
-		return nil, fmt.Errorf("httpclient new: %w", err)
-	}
-	dsInstance.grafanaAppURL = grafanaAppURL
-	dsInstance.grafanaClient = grafanaClient
 
 	return dsInstance, nil
 }
@@ -243,7 +229,7 @@ func (ds *StravaDatasourceInstance) GetRefreshToken() (string, error) {
 
 func (ds *StravaDatasourceInstance) SaveRefreshToken(token string) error {
 	ds.logger.Debug("saving refresh token")
-	res, err := ds.grafanaClient.Get(fmt.Sprintf("%s/api/datasources/uid/%s", ds.grafanaAppURL, ds.dsInfo.UID))
+	res, err := ds.grafanaClient.Get(fmt.Sprintf("/api/datasources/uid/%s", ds.dsInfo.UID))
 	if err != nil {
 		return err
 	}
@@ -265,8 +251,7 @@ func (ds *StravaDatasourceInstance) SaveRefreshToken(token string) error {
 	}
 
 	reqData := bytes.NewReader(updatedData)
-	updateReq, err := http.NewRequest("PUT", fmt.Sprintf("%s/api/datasources/uid/%s", ds.grafanaAppURL, ds.dsInfo.UID), reqData)
-	updateRes, err := ds.grafanaClient.Do(updateReq)
+	updateRes, err := ds.grafanaClient.DoRequest("PUT", fmt.Sprintf("/api/datasources/uid/%s", ds.dsInfo.UID), reqData)
 	if err != nil {
 		return err
 	}

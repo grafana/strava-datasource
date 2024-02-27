@@ -46,7 +46,6 @@ func Init(mux *http.ServeMux) *datasource.StravaDatasource {
 	}
 
 	saToken := os.Getenv("GF_PLUGIN_APP_CLIENT_SECRET")
-	log.DefaultLogger.Debug("Plugin SA", "GF_PLUGIN_APP_CLIENT_SECRET", saToken)
 	if saToken == "" {
 		log.DefaultLogger.Error("GF_PLUGIN_APP_CLIENT_SECRET is required")
 	}
