@@ -24,6 +24,9 @@ type grafanaHTTPClient struct {
 
 func NewGrafanaHTTPClient(ctx context.Context, settings backend.DataSourceInstanceSettings, saToken string) (*grafanaHTTPClient, error) {
 	grafanaAppURL := strings.TrimRight(os.Getenv("GF_APP_URL"), "/")
+	if grafanaAppURL == "" {
+		grafanaAppURL = "http://localhost:3000"
+	}
 	opts, err := settings.HTTPClientOptions(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error getting http client options: %w", err)
