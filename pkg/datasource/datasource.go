@@ -47,7 +47,6 @@ type StravaDatasourcePlugin struct {
 type StravaDatasourceInstance struct {
 	dsInfo        *backend.DataSourceInstanceSettings
 	cache         *DSCache
-	authCache     *DSAuthCache
 	logger        log.Logger
 	httpClient    *http.Client
 	prefetcher    *StravaPrefetcher
@@ -100,7 +99,6 @@ func newStravaDatasourceInstance(ctx context.Context, settings backend.DataSourc
 		dsInfo:        &settings,
 		logger:        logger,
 		cache:         NewDSCache(&settings, cacheTTL, 10*time.Minute, dataDir),
-		authCache:     GetDSAuthCache(settings.ID),
 		saToken:       saToken,
 		grafanaClient: grafanaClient,
 		httpClient: &http.Client{
