@@ -14,6 +14,29 @@ In order to start using Strava datasource you will need to make a Strava API app
 
 Learn more about Strava API applications at [Strava developer docs](https://developers.strava.com/docs/getting-started/#account).
 
+## Enable externalServiceAccounts feature
+
+Plugin requires `externalServiceAccounts` feature toggle to be enabled since version `1.7.0`. It could be done in config file:
+
+```ini
+[feature_toggles]
+externalServiceAccounts = true
+```
+
+or through ENV variables:
+
+```yaml
+services:
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-strava-datasource
+      - GF_FEATURE_TOGGLES_ENABLE=externalServiceAccounts
+```
+
 Then go to grafana and create new Strava datasource.
 
 ![New Data Source](img/config_1.png)
@@ -29,15 +52,6 @@ You will be redirected back to the datasource configuration page. Now fill _Clie
 ![Save & Test](img/config_3.png)
 
 Now you can create some dashboards! Also, you can import dashboards from the _Dashboards_ tab at the data source configuration page.
-
-## Custom data directory
-
-By default, plugin stores data in user cache directory (ie `$HOME/.cache` on Linux or `%LocalAppData%` on Windows). If you need to change this directory, set `GF_STRAVA_DS_DATA_PATH` environment variable. This directory is used for storing obtained refresh tokens and make it available after plugin restart. Make sure user that runs grafana-server has write access to that directory.
-
-```sh
-mkdir /var/lib/grafana/strava
-export GF_STRAVA_DS_DATA_PATH=/var/lib/grafana/strava
-```
 
 ## Forward OAuth identity
 
