@@ -214,20 +214,28 @@ func (ds *StravaDatasourceInstance) GetAccessToken() (string, error) {
 }
 
 func (ds *StravaDatasourceInstance) GetRefreshToken() (string, error) {
+	cachedToken, found := ds.cache.Get("refreshToken")
+	if found {
+		ds.logger.Debug("Got refresh token from cache")
+		return cachedToken.(string), nil
+	}
+
 	secureJsonData := ds.dsInfo.DecryptedSecureJSONData
 	refreshToken := secureJsonData["refreshToken"]
-	ds.logger.Debug("Got refresh token from secureJsonData")
-
 	if refreshToken == "" {
 		ds.logger.Error("Error loading refresh token")
 		return "", errors.New("Refresh token not found, authorize datasource first")
 	}
+
+	ds.logger.Debug("Got refresh token from secureJsonData")
 	return refreshToken, nil
 }
 
 // SaveRefreshToken saves refresh token in secureJsonData by calling update data source API endpoint
 func (ds *StravaDatasourceInstance) SaveRefreshToken(token string) error {
 	ds.logger.Debug("saving refresh token")
+	ds.cache.SetWithNoExpiration("refreshToken", token)
+
 	res, err := ds.grafanaClient.Get(fmt.Sprintf("/api/datasources/uid/%s", ds.dsInfo.UID))
 	if err != nil {
 		return err

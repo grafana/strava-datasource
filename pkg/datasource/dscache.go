@@ -47,7 +47,7 @@ func (c *DSCache) SetWithExpiration(request string, response interface{}, d time
 }
 
 // Save item to the cache with no expiration
-func (c *DSCache) SetWithNoExpiration(request string, response interface{}, d time.Duration) {
+func (c *DSCache) SetWithNoExpiration(request string, response interface{}) {
 	c.gocache.Set(request, response, cache.NoExpiration)
 }
 
