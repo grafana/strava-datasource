@@ -28,6 +28,29 @@ In order to start using Strava datasource you will need to make a Strava API app
 
 Learn more about Strava API applications at [Strava developer docs](https://developers.strava.com/docs/getting-started/#account).
 
+## Enable externalServiceAccounts feature
+
+Plugin requires `externalServiceAccounts` feature toggle to be enabled. It could be done in config file:
+
+```ini
+[feature_toggles]
+externalServiceAccounts = true
+```
+
+or through ENV variables:
+
+```yaml
+services:
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-strava-datasource
+      - GF_FEATURE_TOGGLES_ENABLE=externalServiceAccounts
+```
+
 Then go to grafana and create new Strava datasource.
 
 ![New Data Source](docs/img/config_1.png)
