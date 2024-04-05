@@ -283,8 +283,6 @@ export enum StravaMeasurementPreference {
 
 export interface StravaSecureJsonData {
   clientSecret: string;
-  authCode: string;
-  refreshToken: string;
 }
 
 export interface StravaQuery extends DataQuery {
