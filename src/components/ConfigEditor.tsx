@@ -166,6 +166,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
   render() {
     const { config } = this.state;
     const connectWithStravaHref = this.getConnectWithStravaHref();
+    const showConnectWithStravaButton = config.jsonData.clientID && config.secureJsonFields.clientSecret;
 
     return (
       <>
@@ -226,11 +227,13 @@ export class ConfigEditor extends PureComponent<Props, State> {
             )}
           </InlineFieldRow>
         </div>
-        <div className="gf-form-group">
-          <a type="button" href={connectWithStravaHref}>
-            <img src="public/plugins/grafana-strava-datasource/img/btn_strava_connectwith_orange.svg" />
-          </a>
-        </div>
+        {showConnectWithStravaButton && (
+          <div className="gf-form-group">
+            <a type="button" href={connectWithStravaHref}>
+              <img src="public/plugins/grafana-strava-datasource/img/btn_strava_connectwith_orange.svg" />
+            </a>
+          </div>
+        )}
         <InlineFieldRow>
           <InlineField label="Cache TTL" labelWidth={16}>
             <Input
