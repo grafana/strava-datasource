@@ -1,5 +1,5 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { Button, InlineField, Input, InlineFieldRow, InlineSwitch } from '@grafana/ui';
+import { Button, InlineField, Input, InlineFieldRow, InlineSwitch, Alert, VerticalGroup } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
 import { StravaJsonData, StravaSecureJsonData } from '../types';
 
@@ -227,23 +227,36 @@ export class ConfigEditor extends PureComponent<Props, State> {
             )}
           </InlineFieldRow>
         </div>
+        <div className="gf-form-group">
+          <InlineFieldRow>
+            <InlineField
+              label="Cache TTL"
+              labelWidth={16}
+              tooltip="Plugin stores activities and other data in cache to improve performance and avoid API rate limits."
+            >
+              <Input
+                width={10}
+                value={config.jsonData.cacheTTL || ''}
+                placeholder="1h"
+                onChange={(event: ChangeEvent<HTMLInputElement>) => this.onCacheTTLChange(event.target.value)}
+              />
+            </InlineField>
+          </InlineFieldRow>
+        </div>
         {showConnectWithStravaButton && (
           <div className="gf-form-group">
-            <a type="button" href={connectWithStravaHref}>
-              <img src="public/plugins/grafana-strava-datasource/img/btn_strava_connectwith_orange.svg" />
-            </a>
+            <VerticalGroup>
+              <a type="button" href={connectWithStravaHref}>
+                <img src="public/plugins/grafana-strava-datasource/img/btn_strava_connectwith_orange.svg" />
+              </a>
+              {this.isLocationContainsCode() && (
+                <Alert severity="info" title={''}>
+                  Auth code successfully obtained. Save data source to finish authentication.
+                </Alert>
+              )}
+            </VerticalGroup>
           </div>
         )}
-        <InlineFieldRow>
-          <InlineField label="Cache TTL" labelWidth={16}>
-            <Input
-              width={10}
-              value={config.jsonData.cacheTTL || ''}
-              placeholder="1h"
-              onChange={(event: ChangeEvent<HTMLInputElement>) => this.onCacheTTLChange(event.target.value)}
-            />
-          </InlineField>
-        </InlineFieldRow>
       </>
     );
   }
