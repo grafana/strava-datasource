@@ -319,6 +319,7 @@ func (ds *StravaDatasourceInstance) ExchangeToken(authCode string) (*TokenExchan
 	err = ds.SaveRefreshToken(refreshToken)
 	if err != nil {
 		ds.logger.Error("Error saving refresh token", "err", err)
+		return nil, fmt.Errorf("Error saving refresh token: %v", err)
 	}
 
 	return &TokenExchangeResponse{
