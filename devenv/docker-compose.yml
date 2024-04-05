@@ -7,5 +7,8 @@ services:
     ports:
       - "3001:3000"
     volumes:
-      - ..:/strava-datasource
+      - ../dist:/strava-datasource
       - ./grafana.ini:/etc/grafana/grafana.ini:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+      - GF_FEATURE_TOGGLES_ENABLE=externalServiceAccounts
