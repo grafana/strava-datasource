@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.7.1] -
+
+### Fixed
+
+- Fix error during initial authentication
+- Set default grafana URL if empty
+- Improved authentication UX
+- Add note about externalServiceAccounts toggle
+
 ## [1.7.0] - 2024-02-27
 
 ### Changed
