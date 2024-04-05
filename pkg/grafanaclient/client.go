@@ -10,6 +10,7 @@ import (
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/httpclient"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 )
 
 type GrafanaHTTPClient interface {
@@ -26,7 +27,10 @@ func NewGrafanaHTTPClient(ctx context.Context, settings backend.DataSourceInstan
 	grafanaAppURL := strings.TrimRight(os.Getenv("GF_APP_URL"), "/")
 	if grafanaAppURL == "" {
 		grafanaAppURL = "http://localhost:3000"
+		log.DefaultLogger.Debug("URL is empty, set default one", "url", grafanaAppURL)
 	}
+	log.DefaultLogger.Debug("Grafana App URL", "url", grafanaAppURL)
+
 	opts, err := settings.HTTPClientOptions(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error getting http client options: %w", err)
