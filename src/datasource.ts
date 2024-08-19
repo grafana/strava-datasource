@@ -6,7 +6,6 @@ import {
   TIME_SERIES_TIME_FIELD_NAME,
   FieldType,
   MutableField,
-  ArrayVector,
   MutableDataFrame,
   TIME_SERIES_VALUE_FIELD_NAME,
   MetricFindValue,
@@ -196,7 +195,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       config: {
         custom: {},
       },
-      values: new ArrayVector(),
+      values: [],
     };
 
     const valueFiled: MutableField<number | null> = {
@@ -205,7 +204,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       config: {
         custom: {},
       },
-      values: new ArrayVector(),
+      values: [],
     };
 
     const frame = new MutableDataFrame({
@@ -262,7 +261,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       streamValues = smoothVelocityData(streamValues);
     }
 
-    valueFiled.values = new ArrayVector(streamValues);
+    valueFiled.values = streamValues;
     frame.addField(timeFiled);
     frame.addField(valueFiled);
 
@@ -306,7 +305,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       config: {
         custom: {},
       },
-      values: new ArrayVector(),
+      values: [],
     };
 
     const valueFiled: MutableField<number | null> = {
@@ -315,7 +314,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       config: {
         custom: {},
       },
-      values: new ArrayVector(),
+      values: [],
     };
 
     const frame = new MutableDataFrame({
@@ -373,7 +372,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       streamValues = smoothVelocityData(streamValues);
     }
 
-    valueFiled.values = new ArrayVector(streamValues);
+    valueFiled.values = streamValues;
     frame.addField(timeFiled);
     frame.addField(valueFiled);
 
@@ -387,7 +386,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       config: {
         custom: {},
       },
-      values: new ArrayVector(),
+      values: [],
     };
 
     const splitStat = target.splitStat || '';
@@ -396,7 +395,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       name: splitStat || TIME_SERIES_VALUE_FIELD_NAME,
       type: FieldType.number,
       config: {},
-      values: new ArrayVector(),
+      values: [],
     };
 
     const frame = new MutableDataFrame({
@@ -443,7 +442,7 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
       name: stats,
       type: FieldType.other,
       config: {},
-      values: new ArrayVector(),
+      values: [],
     };
     let activityStats = (activity as any)[stats];
     if (stats.startsWith('gear_')) {
