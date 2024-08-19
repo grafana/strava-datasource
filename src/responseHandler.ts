@@ -1,30 +1,30 @@
 import {
-  value TimeRange,
-  value DataFrame,
-  value dateTime,
-  value MutableField,
-  value TIME_SERIES_TIME_FIELD_NAME,
-  value FieldType,
-  value TIME_SERIES_VALUE_FIELD_NAME,
-  value MutableDataFrame,
-  value TimeSeriesPoints,
-  value TimeSeriesValue,
+  TimeRange,
+  DataFrame,
+  dateTime,
+  MutableField,
+  TIME_SERIES_TIME_FIELD_NAME,
+  FieldType,
+  TIME_SERIES_VALUE_FIELD_NAME,
+  MutableDataFrame,
+  TimeSeriesPoints,
+  TimeSeriesValue,
 } from '@grafana/data';
 import polyline from 'polyline';
 import {
-  value StravaActivity,
-  value StravaQuery,
-  value StravaQueryInterval,
-  value StravaMeasurementPreference,
-  value StravaActivityStat,
+  StravaActivity,
+  StravaQuery,
+  StravaQueryInterval,
+  StravaMeasurementPreference,
+  StravaActivityStat,
 } from 'types';
 import {
-  value INTERVAL_1w,
-  value INTERVAL_4w,
-  value getAggregationInterval,
-  value getAggregationIntervalFromTarget,
-  value getPreferredDistance,
-  value getPreferredLength,
+  INTERVAL_1w,
+  INTERVAL_4w,
+  getAggregationInterval,
+  getAggregationIntervalFromTarget,
+  getPreferredDistance,
+  getPreferredLength,
 } from 'utils';
 
 interface TransformOptions {
@@ -72,7 +72,7 @@ export function transformActivitiesToTimeseries(
     config: {
       unit: getStatUnit(target.activityStat, measurementPreference),
     },
-    values: [],
+    values: []
   };
 
   for (let i = 0; i < datapoints.length; i++) {
