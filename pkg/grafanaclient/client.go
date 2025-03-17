@@ -36,9 +36,9 @@ func NewGrafanaHTTPClient(ctx context.Context, settings backend.DataSourceInstan
 		return nil, fmt.Errorf("error getting http client options: %w", err)
 	}
 
-	opts.Headers = map[string]string{
-		"Authorization": "Bearer " + saToken,
-		"Content-Type":  "application/json",
+	opts.Header = http.Header{
+		"Authorization": []string{"Bearer " + saToken},
+		"Content-Type":  []string{"application/json"},
 	}
 
 	httpClient, err := httpclient.New(opts)
