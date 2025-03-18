@@ -10,7 +10,6 @@ import (
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
-	"github.com/grafana/grafana-plugin-sdk-go/backend/resource/httpadapter"
 )
 
 // Resource handler describes handlers for the resources populated by plugin in plugin.go, like:
@@ -144,7 +143,7 @@ func (ds *StravaDatasourcePlugin) StravaAPIHandler(rw http.ResponseWriter, req *
 		return
 	}
 
-	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
+	pluginCxt := backend.PluginConfigFromContext(req.Context())
 	dsInstance, err := ds.getDSInstance(req.Context(), pluginCxt)
 	if err != nil {
 		ds.logger.Error("Error loading datasource", "error", err)
