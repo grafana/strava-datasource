@@ -1,6 +1,6 @@
 arch-split = $(word $2,$(subst _, ,$1))
 
-all: install build test lint
+all: install build test
 
 # Install dependencies
 install: install-frontend install-backend
@@ -9,8 +9,7 @@ install-frontend:
 	yarn install --pure-lockfile
 
 install-backend:
-	go mod vendor
-	GO111MODULE=off go get -u golang.org/x/lint/golint
+	go get -u golang.org/x/lint/golint
 
 build: build-frontend build-backend
 build-frontend:
@@ -45,7 +44,7 @@ run-frontend:
 .PHONY: test
 test: test-frontend test-backend
 test-frontend:
-	yarn test
+	yarn test:ci
 test-backend:
 	go test -v ./pkg/...
 test-ci:

@@ -5,7 +5,6 @@ import {
   MutableField,
   TIME_SERIES_TIME_FIELD_NAME,
   FieldType,
-  ArrayVector,
   TIME_SERIES_VALUE_FIELD_NAME,
   MutableDataFrame,
   TimeSeriesPoints,
@@ -64,7 +63,7 @@ export function transformActivitiesToTimeseries(
     name: TIME_SERIES_TIME_FIELD_NAME,
     type: FieldType.time,
     config: {},
-    values: new ArrayVector(),
+    values: [],
   };
 
   const valueFiled: MutableField<number> = {
@@ -73,7 +72,7 @@ export function transformActivitiesToTimeseries(
     config: {
       unit: getStatUnit(target.activityStat, measurementPreference),
     },
-    values: new ArrayVector(),
+    values: [],
   };
 
   for (let i = 0; i < datapoints.length; i++) {

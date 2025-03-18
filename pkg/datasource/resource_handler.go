@@ -8,8 +8,8 @@ import (
 
 	simplejson "github.com/bitly/go-simplejson"
 
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
-	"github.com/grafana/grafana-plugin-sdk-go/backend/resource/httpadapter"
 )
 
 // Resource handler describes handlers for the resources populated by plugin in plugin.go, like:
@@ -46,7 +46,7 @@ func (ds *StravaDatasourcePlugin) StravaAuthHandler(rw http.ResponseWriter, req 
 		return
 	}
 
-	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
+	pluginCxt := backend.PluginConfigFromContext(req.Context())
 	dsInstance, err := ds.getDSInstance(req.Context(), pluginCxt)
 	if err != nil {
 		ds.logger.Error("Error loading datasource", "error", err)
@@ -65,7 +65,7 @@ func (ds *StravaDatasourcePlugin) StravaAuthHandler(rw http.ResponseWriter, req 
 }
 
 func (ds *StravaDatasourcePlugin) ResetAccessTokenHandler(rw http.ResponseWriter, req *http.Request) {
-	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
+	pluginCxt := backend.PluginConfigFromContext(req.Context())
 	dsInstance, err := ds.getDSInstance(req.Context(), pluginCxt)
 	if err != nil {
 		ds.logger.Error("Error loading datasource", "error", err)
@@ -97,7 +97,7 @@ func (ds *StravaDatasourcePlugin) ResetAccessTokenHandler(rw http.ResponseWriter
 }
 
 func (ds *StravaDatasourcePlugin) ResetCacheHandler(rw http.ResponseWriter, req *http.Request) {
-	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
+	pluginCxt := backend.PluginConfigFromContext(req.Context())
 	dsInstance, err := ds.getDSInstance(req.Context(), pluginCxt)
 	if err != nil {
 		ds.logger.Error("Error loading datasource", "error", err)
@@ -143,7 +143,7 @@ func (ds *StravaDatasourcePlugin) StravaAPIHandler(rw http.ResponseWriter, req *
 		return
 	}
 
-	pluginCxt := httpadapter.PluginConfigFromContext(req.Context())
+	pluginCxt := backend.PluginConfigFromContext(req.Context())
 	dsInstance, err := ds.getDSInstance(req.Context(), pluginCxt)
 	if err != nil {
 		ds.logger.Error("Error loading datasource", "error", err)
