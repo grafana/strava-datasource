@@ -27,7 +27,7 @@ func main() {
 
 	log.DefaultLogger.Debug("Starting Strava datasource")
 
-	err := backend.Serve(backend.ServeOpts{
+	err := backend.Manage(STRAVA_PLUGIN_ID, backend.ServeOpts{
 		CallResourceHandler: httpResourceHandler,
 		QueryDataHandler:    ds,
 		CheckHealthHandler:  ds,
