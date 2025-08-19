@@ -13,38 +13,42 @@ export interface State {
   config: StravaSettings;
 }
 
-export const ConfigEditor = ({ options, onOptionsChange }: Props) => {
+export const ConfigEditor = (props: Props) => {
+  const { onOptionsChange } = props;
+  const optionsWithDefaults = getDefaults(props.options);
   const updateDatasource = useCallback(
     (config: any) => {
-      for (const j in config.jsonData) {
-        if (config.jsonData[j].length === 0) {
-          delete config.jsonData[j];
+      const newJsonData = Object.keys(config.jsonData).reduce((acc, key) => {
+        if (config.jsonData[key].length === 0) {
+          return acc;
         }
-      }
 
-      for (const k in config.secureJsonData) {
-        if (config.secureJsonData[k].length === 0) {
-          delete config.secureJsonData[k];
+        return { ...acc, [key]: config.jsonData[key] };
+      }, {});
+
+      const newSecureJsonData = Object.keys(config.secureJsonData).reduce((acc, key) => {
+        if (config.secureJsonData[key].length === 0) {
+          return acc;
         }
-      }
 
-      onOptionsChange({
-        ...config,
-      });
+        return { ...acc, [key]: config.secureJsonData[key] };
+      }, {});
+
+      onOptionsChange({ ...config, jsonData: { ...newJsonData }, secureJsonData: { ...newSecureJsonData } });
     },
     [onOptionsChange]
   );
 
   useEffect(() => {
-    updateDatasource(getDefaults(options));
+    updateDatasource(optionsWithDefaults);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onCacheTTLChange = (cacheTTL: string) => {
     onOptionsChange({
-      ...options,
+      ...optionsWithDefaults,
       jsonData: {
-        ...options.jsonData,
+        ...optionsWithDefaults.jsonData,
         cacheTTL,
       },
     });
@@ -52,9 +56,9 @@ export const ConfigEditor = ({ options, onOptionsChange }: Props) => {
 
   const onResetClientSecret = () => {
     onOptionsChange({
-      ...options,
+      ...optionsWithDefaults,
       secureJsonFields: {
-        ...options.secureJsonFields,
+        ...optionsWithDefaults.secureJsonFields,
         clientSecret: false,
       },
     });
@@ -62,9 +66,9 @@ export const ConfigEditor = ({ options, onOptionsChange }: Props) => {
 
   const onClientIDChange = (clientID: string) => {
     onOptionsChange({
-      ...options,
+      ...optionsWithDefaults,
       jsonData: {
-        ...options.jsonData,
+        ...optionsWithDefaults.jsonData,
         clientID,
       },
     });
@@ -72,9 +76,9 @@ export const ConfigEditor = ({ options, onOptionsChange }: Props) => {
 
   const onClientSecretChange = (clientSecret: string) => {
     onOptionsChange({
-      ...options,
+      ...optionsWithDefaults,
       secureJsonData: {
-        ...options.secureJsonData,
+        ...optionsWithDefaults.secureJsonData,
         clientSecret,
       },
     });
@@ -91,13 +95,14 @@ export const ConfigEditor = ({ options, onOptionsChange }: Props) => {
   const getConnectWithStravaHref = () => {
     const authUrl = 'https://www.strava.com/oauth/authorize';
     const currentLocation = window.location.origin + window.location.pathname;
-    const clientID = options.jsonData.clientID;
+    const clientID = optionsWithDefaults.jsonData.clientID;
     const authScope = 'read_all,profile:read_all,activity:read_all';
     return `${authUrl}?client_id=${clientID}&response_type=code&redirect_uri=${currentLocation}&approval_prompt=force&scope=${authScope}`;
   };
 
   const connectWithStravaHref = getConnectWithStravaHref();
-  const showConnectWithStravaButton = options.jsonData.clientID && options.secureJsonFields.clientSecret;
+  const showConnectWithStravaButton =
+    optionsWithDefaults.jsonData.clientID && optionsWithDefaults.secureJsonFields.clientSecret;
 
   return (
     <>
@@ -110,12 +115,12 @@ export const ConfigEditor = ({ options, onOptionsChange }: Props) => {
           >
             <InlineSwitch
               id="http-settings-forward-oauth"
-              value={options.jsonData.oauthPassThru || false}
+              value={optionsWithDefaults.jsonData.oauthPassThru || false}
               onChange={(event) =>
                 onOptionsChange({
-                  ...options,
+                  ...optionsWithDefaults,
                   jsonData: {
-                    ...options.jsonData,
+                    ...optionsWithDefaults.jsonData,
                     oauthPassThru: event!.currentTarget.checked,
                   },
                 })
@@ -130,13 +135,13 @@ export const ConfigEditor = ({ options, onOptionsChange }: Props) => {
           <InlineField label="Client ID" labelWidth={16}>
             <Input
               width={50}
-              value={options.jsonData.clientID || ''}
+              value={optionsWithDefaults.jsonData.clientID || ''}
               onChange={(event: ChangeEvent<HTMLInputElement>) => onClientIDChange(event.target.value)}
             />
           </InlineField>
         </InlineFieldRow>
         <InlineFieldRow>
-          {options.secureJsonFields && options.secureJsonFields.clientSecret ? (
+          {optionsWithDefaults.secureJsonFields && optionsWithDefaults.secureJsonFields.clientSecret ? (
             <>
               <InlineField label="Client Secret" labelWidth={16}>
                 <Input placeholder="Configured" width={50} disabled />
@@ -151,7 +156,7 @@ export const ConfigEditor = ({ options, onOptionsChange }: Props) => {
             <InlineField label="Client Secret" labelWidth={16}>
               <Input
                 width={50}
-                value={options.secureJsonData?.clientSecret || ''}
+                value={optionsWithDefaults.secureJsonData?.clientSecret || ''}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => onClientSecretChange(event.target.value)}
               />
             </InlineField>
@@ -167,7 +172,7 @@ export const ConfigEditor = ({ options, onOptionsChange }: Props) => {
           >
             <Input
               width={10}
-              value={options.jsonData.cacheTTL || ''}
+              value={optionsWithDefaults.jsonData.cacheTTL || ''}
               placeholder="1h"
               onChange={(event: ChangeEvent<HTMLInputElement>) => onCacheTTLChange(event.target.value)}
             />
@@ -198,17 +203,5 @@ export const ConfigEditor = ({ options, onOptionsChange }: Props) => {
 };
 
 function getDefaults(options: any) {
-  if (!options.hasOwnProperty('secureJsonData')) {
-    options.secureJsonData = {};
-  }
-
-  if (!options.hasOwnProperty('jsonData')) {
-    options.jsonData = {};
-  }
-
-  if (!options.hasOwnProperty('secureJsonFields')) {
-    options.secureJsonFields = {};
-  }
-
-  return options;
+  return { secureJsonData: {}, jsonData: {}, secureJsonFields: {}, ...options };
 }
