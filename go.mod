@@ -7,7 +7,7 @@ require (
 	github.com/grafana/grafana-plugin-sdk-go v0.274.0
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	golang.org/x/net v0.37.0
+	golang.org/x/net v0.38.0
 )
 
 require (
