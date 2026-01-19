@@ -84,8 +84,8 @@ func (p *StravaPrefetcher) PrefetchActivities(activities []string) {
 }
 
 func (p *StravaPrefetcher) PrefetchActivity(activityId string) {
-	payloadPattern := `{"datasourceUid":%s,"endpoint":"/activities/%s","params":{"include_all_efforts":true}}`
-	payload := fmt.Sprintf(payloadPattern, p.ds.dsInfo.UID, activityId)
+	payloadPattern := `{"endpoint":"/activities/%s","params":{"include_all_efforts":true}}`
+	payload := fmt.Sprintf(payloadPattern, activityId)
 
 	requestHash := HashString(payload)
 	stravaApiQueryFn := p.ds.StravaAPIQueryWithCache(requestHash)
@@ -109,21 +109,21 @@ type PrefetchStreamTask struct {
 func (p *StravaPrefetcher) PrefetchActivityStreams(activityId string) {
 	prefetchTasks := []PrefetchStreamTask{
 		{
-			pattern: `{"datasourceUid":%s,"endpoint":"/activities/%s/streams","params":{"key_by_type":true,"keys":"velocity_smooth,time"}}`,
+			pattern: `{"endpoint":"/activities/%s/streams","params":{"key_by_type":true,"keys":"velocity_smooth,time"}}`,
 			keys: map[string]json.RawMessage{
 				"key_by_type": []byte("true"),
 				"keys":        []byte("velocity_smooth,time"),
 			},
 		},
 		{
-			pattern: `{"datasourceUid":%s,"endpoint":"/activities/%s/streams","params":{"key_by_type":true,"keys":"heartrate,time"}}`,
+			pattern: `{"endpoint":"/activities/%s/streams","params":{"key_by_type":true,"keys":"heartrate,time"}}`,
 			keys: map[string]json.RawMessage{
 				"key_by_type": []byte("true"),
 				"keys":        []byte("heartrate,time"),
 			},
 		},
 		{
-			pattern: `{"datasourceUid":%s,"endpoint":"/activities/%s/streams","params":{"key_by_type":true,"keys":"latlng,time"}}`,
+			pattern: `{"endpoint":"/activities/%s/streams","params":{"key_by_type":true,"keys":"latlng,time"}}`,
 			keys: map[string]json.RawMessage{
 				"key_by_type": []byte("true"),
 				"keys":        []byte("latlng,time"),
@@ -132,7 +132,7 @@ func (p *StravaPrefetcher) PrefetchActivityStreams(activityId string) {
 	}
 
 	for _, task := range prefetchTasks {
-		payload := fmt.Sprintf(task.pattern, p.ds.dsInfo.UID, activityId)
+		payload := fmt.Sprintf(task.pattern, activityId)
 
 		requestHash := HashString(payload)
 		stravaApiQueryFn := p.ds.StravaAPIQueryWithCache(requestHash)
@@ -149,8 +149,8 @@ func (p *StravaPrefetcher) PrefetchActivityStreams(activityId string) {
 
 func (p *StravaPrefetcher) PrefetchActivitiesVariable(limit int) {
 	log.DefaultLogger.Debug("Prefetching variables", "limit", limit)
-	payloadPattern := `{"datasourceUid":%s,"endpoint":"athlete/activities","params":{"limit":%d,"per_page":%d,"page":1}}`
-	payload := fmt.Sprintf(payloadPattern, p.ds.dsInfo.UID, limit, limit)
+	payloadPattern := `{"endpoint":"athlete/activities","params":{"limit":%d,"per_page":%d,"page":1}}`
+	payload := fmt.Sprintf(payloadPattern, limit, limit)
 
 	requestHash := HashString(payload)
 	stravaApiQueryFn := p.ds.StravaAPIQueryWithCache(requestHash)
