@@ -2,16 +2,18 @@ import { getBackendSrv } from '@grafana/runtime';
 import { DataStreamSet, Segment, StravaActivity, StravaAthlete, StreamType } from 'types';
 
 export default class StravaApi {
-  datasourceId: number;
+  datasourceUid: string;
   backendAPIUrl: string;
   backendAuthUrl: string;
+  resourceUrl: string;
   apiUrl: string;
   promises: any;
 
-  constructor(datasourceId: number) {
-    this.datasourceId = datasourceId;
-    this.backendAPIUrl = `/api/datasources/${this.datasourceId}/resources/strava-api`;
-    this.backendAuthUrl = `/api/datasources/${this.datasourceId}/resources/auth`;
+  constructor(uid: string) {
+    this.datasourceUid = uid;
+    this.resourceUrl = `/api/datasources/uid/${this.datasourceUid}/resources`;
+    this.backendAPIUrl = `${this.resourceUrl}/strava-api`;
+    this.backendAuthUrl = `${this.resourceUrl}/auth`;
 
     // this.apiUrl = url;
     this.promises = {};
@@ -78,7 +80,7 @@ export default class StravaApi {
 
   async resetAccessToken() {
     try {
-      const response = await getBackendSrv().get(`/api/datasources/${this.datasourceId}/resources/reset-access-token`);
+      const response = await getBackendSrv().get(`${this.resourceUrl}/reset-access-token`);
       return this.handleTsdbResponse(response);
     } catch (error) {
       console.log(error);
@@ -88,7 +90,7 @@ export default class StravaApi {
 
   async resetCache() {
     try {
-      const response = await getBackendSrv().get(`/api/datasources/${this.datasourceId}/resources/reset-cache`);
+      const response = await getBackendSrv().get(`${this.resourceUrl}/reset-cache`);
       return this.handleTsdbResponse(response);
     } catch (error) {
       console.log(error);
@@ -102,11 +104,7 @@ export default class StravaApi {
 
   async _request(url: string, params?: any) {
     try {
-      const response = await getBackendSrv().datasourceRequest({
-        url: `${this.apiUrl}/strava/${url}`,
-        method: 'GET',
-        params,
-      });
+      const response = await getBackendSrv().get(`${this.apiUrl}/strava/${url}`, params);
       return response.data;
     } catch (error) {
       console.log(error);
@@ -120,14 +118,12 @@ export default class StravaApi {
 
   async _tsdbRequest(endpoint: string, params?: any) {
     try {
-      const response = await getBackendSrv().datasourceRequest({
-        url: this.backendAPIUrl,
-        method: 'POST',
+      const response = await getBackendSrv().post(this.backendAPIUrl, {
         headers: {
           'Content-Type': 'application/json',
         },
         data: {
-          datasourceId: this.datasourceId,
+          datasourceUid: this.datasourceUid, // necessary???
           endpoint,
           params,
         },
@@ -143,11 +139,7 @@ export default class StravaApi {
     const queryType = 'stravaAuth';
 
     try {
-      const response = await getBackendSrv().datasourceRequest({
-        url: this.backendAuthUrl,
-        method: 'POST',
-        data: params,
-      });
+      const response = await getBackendSrv().post(this.backendAuthUrl, params);
       return this.handleTsdbResponse(response, queryType);
     } catch (error) {
       console.log(error);
