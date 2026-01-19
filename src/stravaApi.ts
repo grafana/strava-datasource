@@ -2,7 +2,6 @@ import { getBackendSrv } from '@grafana/runtime';
 import { DataStreamSet, Segment, StravaActivity, StravaAthlete, StreamType } from 'types';
 
 export default class StravaApi {
-  datasourceUid: string;
   backendAPIUrl: string;
   backendAuthUrl: string;
   resourceUrl: string;
@@ -10,8 +9,7 @@ export default class StravaApi {
   promises: any;
 
   constructor(uid: string) {
-    this.datasourceUid = uid;
-    this.resourceUrl = `/api/datasources/uid/${this.datasourceUid}/resources`;
+    this.resourceUrl = `/api/datasources/uid/${uid}/resources`;
     this.backendAPIUrl = `${this.resourceUrl}/strava-api`;
     this.backendAuthUrl = `${this.resourceUrl}/auth`;
 
@@ -123,7 +121,6 @@ export default class StravaApi {
           'Content-Type': 'application/json',
         },
         data: {
-          datasourceUid: this.datasourceUid, // necessary???
           endpoint,
           params,
         },
