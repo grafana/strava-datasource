@@ -6,10 +6,8 @@ jest.mock(
   '@grafana/runtime',
   () => ({
     getBackendSrv: () => ({
-      datasourceRequest: jest.fn().mockResolvedValue({ data: { result: '' } }),
-      fetch: () => ({
-        toPromise: () => jest.fn().mockResolvedValue({ data: { result: '' } }),
-      }),
+      get: jest.fn().mockResolvedValue({ data: { result: '' } }),
+      post: jest.fn().mockResolvedValue({ data: { result: '' } }),
     }),
     getTemplateSrv: () => ({
       replace: jest.fn().mockImplementation((query) => query),
@@ -37,7 +35,7 @@ describe('StravaDatasource', () => {
 
   beforeEach(() => {
     ctx.backendSrv = {
-      datasourceRequest: () => {
+      get: () => {
         return Promise.resolve({
           status: 200,
           data: {},
