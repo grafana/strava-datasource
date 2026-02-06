@@ -26,8 +26,8 @@
     "spellcheck": "cspell -c cspell.config.json \"**/*.{ts,tsx,js,go,md,mdx,yml,yaml,json,scss,css}\""
   },
   "devDependencies": {
-    "@babel/core": "^7.26.10",
-    "@babel/preset-env": "^7.26.9",
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.0",
     "@grafana/e2e": "10.4.12",
     "@grafana/e2e-selectors": "11.5.2",
     "@grafana/eslint-config": "^8.0.0",
@@ -90,7 +90,7 @@
     "tslib": "2.6.2"
   },
   "resolutions": {
-    "@babel/preset-env": "^7.8.7"
+    "@babel/preset-env": "^7.29.0"
   },
   "packageManager": "yarn@1.22.19"
 }
