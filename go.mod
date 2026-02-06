@@ -1,13 +1,15 @@
 module github.com/grafana/strava-datasource
 
-go 1.23.5
+go 1.24.0
+
+toolchain go1.24.13
 
 require (
 	github.com/bitly/go-simplejson v0.5.1
 	github.com/grafana/grafana-plugin-sdk-go v0.274.0
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	golang.org/x/net v0.38.0
+	golang.org/x/net v0.45.0
 )
 
 require (
@@ -85,11 +87,11 @@ require (
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.5.0 // indirect
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
-	golang.org/x/mod v0.24.0 // indirect
-	golang.org/x/sync v0.12.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
-	golang.org/x/tools v0.31.0 // indirect
+	golang.org/x/mod v0.27.0 // indirect
+	golang.org/x/sync v0.17.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
+	golang.org/x/tools v0.36.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
