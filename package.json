@@ -48,7 +48,7 @@
     "cspell": "8.17.5",
     "css-loader": "^7.1.2",
     "@stylistic/eslint-plugin-ts": "^3.1.0",
-    "@types/testing-library__jest-dom": "5.14.8",
+    "@types/testing-library__jest-dom": "5.14.9",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.18.0",
     "eslint": "^8.0.0",
