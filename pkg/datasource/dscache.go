@@ -100,7 +100,7 @@ func (c *DSCache) Load(request string) (string, error) {
 }
 
 func (c *DSCache) buildDSCacheKey(request string) string {
-	return fmt.Sprintf("%v-%s", c.dsInfo.ID, request)
+	return fmt.Sprintf("%v-%s", c.dsInfo.UID, request)
 }
 
 // HashString converts the given text string to hash string
@@ -119,8 +119,8 @@ func HashByte(data []byte) string {
 func HashDatasourceInfo(dsInfo *backend.DataSourceInstanceSettings) string {
 	digester := sha1.New()
 	dsInfoUniq := map[string]interface{}{
-		"Id": dsInfo.ID,
-		// "OrgId": dsInfo.,
+		"UID": dsInfo.UID,
+		//	"OrgId": dsInfo., want namespace
 	}
 	if err := json.NewEncoder(digester).Encode(dsInfoUniq); err != nil {
 		panic(err) // This shouldn't be possible but just in case DatasourceInfo changes
