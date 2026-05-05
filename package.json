@@ -86,7 +86,7 @@
     "@grafana/ui": "11.5.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "rxjs": "7.8.1",
+    "rxjs": "7.8.2",
     "tslib": "2.6.2"
   },
   "resolutions": {
