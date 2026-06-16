@@ -1,0 +1,786 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_STRAVA",
+      "label": "Strava",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "grafana-strava-datasource",
+      "pluginName": "Strava"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "panel",
+      "id": "geomap",
+      "name": "Geomap",
+      "version": ""
+    },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "9.1.1"
+    },
+    {
+      "type": "datasource",
+      "id": "grafana-strava-datasource",
+      "name": "Strava",
+      "version": "1.4.1"
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": false,
+          "showAttribution": true,
+          "showDebug": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "style": {
+                "color": {
+                  "fixed": "#FF780A"
+                },
+                "lineWidth": 2,
+                "opacity": 1,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "fixed": 5,
+                  "max": 15,
+                  "min": 2
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "A"
+            },
+            "name": "Activity",
+            "tooltip": true,
+            "type": "route"
+          },
+          {
+            "config": {
+              "style": {
+                "color": {
+                  "fixed": "#1250B0"
+                },
+                "lineWidth": 2,
+                "opacity": 1,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "fixed": 5,
+                  "max": 15,
+                  "min": 2
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "B"
+            },
+            "location": {
+              "mode": "auto"
+            },
+            "name": "Segment",
+            "tooltip": true,
+            "type": "route"
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "id": "fit",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 15
+        }
+      },
+      "pluginVersion": "9.1.1",
+      "targets": [
+        {
+          "activityData": "geomap",
+          "activityGraph": "velocity_smooth",
+          "activityId": "$activity",
+          "activityStat": "distance",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
+          "extendedStats": [],
+          "fitToTimeRange": false,
+          "format": "time_series",
+          "interval": "auto",
+          "queryType": "Activity",
+          "refId": "A",
+          "selectedActivity": {
+            "description": "Variable",
+            "label": "$activity",
+            "value": "$activity"
+          },
+          "singleActivityStat": "name",
+          "splitStat": "average_speed"
+        },
+        {
+          "activityData": "geomap",
+          "activityGraph": "velocity_smooth",
+          "activityId": "$activity",
+          "activityStat": "distance",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
+          "extendedStats": [],
+          "fitToTimeRange": false,
+          "format": "time_series",
+          "hide": false,
+          "interval": "auto",
+          "queryType": "SegmentEffort",
+          "refId": "B",
+          "segmentData": "geomap",
+          "segmentEffortId": "$segment",
+          "segmentGraph": "pace",
+          "selectedActivity": {
+            "description": "Variable",
+            "label": "$activity",
+            "value": "$activity"
+          },
+          "selectedSegmentEffort": {
+            "description": "Variable",
+            "label": "$segment",
+            "value": "$segment"
+          },
+          "singleActivityStat": "name",
+          "splitStat": "average_speed"
+        }
+      ],
+      "title": "Activity map",
+      "type": "geomap"
+    },
+    {
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": false,
+          "showAttribution": true,
+          "showDebug": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "style": {
+                "color": {
+                  "fixed": "#1250B0"
+                },
+                "lineWidth": 2,
+                "opacity": 1,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "fixed": 5,
+                  "max": 15,
+                  "min": 2
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "name": "Layer 1",
+            "tooltip": true,
+            "type": "route"
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "id": "fit",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 15
+        }
+      },
+      "pluginVersion": "9.1.1",
+      "targets": [
+        {
+          "activityData": "geomap",
+          "activityGraph": "velocity_smooth",
+          "activityId": "$activity",
+          "activityStat": "distance",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
+          "extendedStats": [],
+          "fitToTimeRange": false,
+          "format": "time_series",
+          "interval": "auto",
+          "queryType": "SegmentEffort",
+          "refId": "A",
+          "segmentData": "geomap",
+          "segmentEffortId": "$segment",
+          "segmentGraph": "pace",
+          "selectedActivity": {
+            "description": "Variable",
+            "label": "$activity",
+            "value": "$activity"
+          },
+          "selectedSegmentEffort": {
+            "description": "Variable",
+            "label": "$segment",
+            "value": "$segment"
+          },
+          "singleActivityStat": "name",
+          "splitStat": "average_speed"
+        }
+      ],
+      "title": "Segment map",
+      "type": "geomap"
+    },
+    {
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 70,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "heartrate"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "semi-dark-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "semi-dark-blue",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.1.0",
+      "targets": [
+        {
+          "activityData": "graph",
+          "activityGraph": "heartrate",
+          "activityId": "$activity",
+          "activityStat": "distance",
+          "activityType": "Run",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
+          "extendedStats": [],
+          "fitToTimeRange": false,
+          "format": "time_series",
+          "interval": "auto",
+          "queryType": "SegmentEffort",
+          "refId": "A",
+          "segmentData": "graph",
+          "segmentEffortId": "$segment",
+          "segmentGraph": "heartrate",
+          "selectedActivity": {
+            "description": "Variable",
+            "label": "$activity",
+            "value": "$activity"
+          },
+          "selectedSegmentEffort": {
+            "description": "Variable",
+            "label": "$segment",
+            "value": "$segment"
+          },
+          "singleActivityStat": "name",
+          "splitStat": "average_speed"
+        },
+        {
+          "activityData": "graph",
+          "activityGraph": "pace",
+          "activityId": "$activity",
+          "activityStat": "distance",
+          "activityType": "Run",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
+          "extendedStats": [],
+          "fitToTimeRange": false,
+          "format": "time_series",
+          "hide": false,
+          "interval": "auto",
+          "queryType": "SegmentEffort",
+          "refId": "B",
+          "segmentData": "graph",
+          "segmentEffortId": "$segment",
+          "segmentGraph": "pace",
+          "selectedActivity": {
+            "description": "Variable",
+            "label": "$activity",
+            "value": "$activity"
+          },
+          "selectedSegmentEffort": {
+            "description": "Variable",
+            "label": "$segment",
+            "value": "$segment"
+          },
+          "singleActivityStat": "name",
+          "splitStat": "average_speed"
+        }
+      ],
+      "title": "Heart rate / Speed",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-strava-datasource",
+        "uid": "${DS_STRAVA}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "lengthm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.1.0-pre",
+      "targets": [
+        {
+          "activityData": "graph",
+          "activityGraph": "altitude",
+          "activityId": "$activity",
+          "activityStat": "distance",
+          "activityType": "Run",
+          "datasource": {
+            "type": "grafana-strava-datasource",
+            "uid": "${DS_STRAVA}"
+          },
+          "extendedStats": [],
+          "fitToTimeRange": false,
+          "format": "time_series",
+          "interval": "auto",
+          "queryType": "SegmentEffort",
+          "refId": "A",
+          "segmentData": "graph",
+          "segmentEffortId": "$segment",
+          "segmentGraph": "altitude",
+          "selectedActivity": {
+            "description": "Variable",
+            "label": "$activity",
+            "value": "$activity"
+          },
+          "selectedSegmentEffort": {
+            "description": "Variable",
+            "label": "$segment",
+            "value": "$segment"
+          },
+          "singleActivityStat": "name",
+          "splitStat": "average_speed"
+        }
+      ],
+      "title": "Altitude",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-strava-datasource",
+          "uid": "${DS_STRAVA}"
+        },
+        "definition": "Strava - activity",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Activity",
+        "multi": false,
+        "name": "activity",
+        "options": [],
+        "query": {
+          "activityType": "",
+          "limit": 10,
+          "queryType": "activity"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-strava-datasource",
+          "uid": "${DS_STRAVA}"
+        },
+        "definition": "Strava - segment_effort",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Segment",
+        "multi": false,
+        "name": "segment",
+        "options": [],
+        "query": {
+          "activityId": "$activity",
+          "queryType": "segment_effort"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "2022-08-23T15:52:21.000Z",
+    "to": "2022-08-23T15:56:58.000Z"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Strava Segment Overview",
+  "uid": "StravaSegmentOverview",
+  "version": 1,
+  "weekStart": ""
+}

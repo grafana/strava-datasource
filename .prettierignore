@@ -1,0 +1,8 @@
+.git
+.github
+dist/
+pkg/
+node_modules
+*.d.ts
+coverage/
+ci/
