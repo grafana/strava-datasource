@@ -1,13 +1,15 @@
 import React, { PureComponent } from 'react';
 import { SelectableValue } from '@grafana/data';
-import { VariableQueryTypes, StravaActivityType, VariableQuery } from '../types';
+import { VariableQueryTypes, StravaActivityType, VariableQuery, STRAVA_SPORT_TYPES, getActivityTypeLabel } from '../types';
 import { InlineField, InlineFieldRow, InlineFormLabel, Input, Select } from '@grafana/ui';
 import { DEFAULT_LIMIT } from '../datasource';
 
 const stravaActivityTypeOptions: Array<SelectableValue<StravaActivityType>> = [
   { value: '', label: 'All' },
-  { value: 'Run', label: 'Run' },
-  { value: 'Ride', label: 'Ride' },
+  ...STRAVA_SPORT_TYPES.map((activityType) => ({
+    value: activityType,
+    label: getActivityTypeLabel(activityType),
+  })),
   { value: 'Other', label: 'Other' },
 ];
 
