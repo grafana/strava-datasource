@@ -13,11 +13,11 @@
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "ci-test": "jest --config jest.config.js",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
-    "e2e": "yarn exec cypress install && yarn exec grafana-e2e run",
-    "e2e:update": "yarn exec cypress install && yarn exec grafana-e2e run --update-screenshots",
+    "e2e": "npx cypress install && npx grafana-e2e run",
+    "e2e:update": "npx cypress install && npx grafana-e2e run --update-screenshots",
     "jest": "jest --config jest.config.js --notify --watch",
     "lint": "eslint --cache --ignore-path ./.gitignore --ext .js,.jsx,.ts,.tsx .",
-    "lint:fix": "yarn run lint --fix",
+    "lint:fix": "npm run lint -- --fix",
     "server": "docker-compose up --build",
     "sign": "npx --yes @grafana/sign-plugin@latest",
     "test": "jest --watch --onlyChanged",
@@ -89,8 +89,9 @@
     "rxjs": "7.8.1",
     "tslib": "2.6.2"
   },
-  "resolutions": {
-    "@babel/preset-env": "^7.8.7"
-  },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "npm@11.18.0",
+  "engines": {
+    "node": ">=24",
+    "npm": ">=11.16.0"
+  }
 }
