@@ -6,14 +6,14 @@ all: install build test
 install: install-frontend install-backend
 
 install-frontend:
-	yarn install --pure-lockfile
+	npm ci
 
 install-backend:
 	go get -u golang.org/x/lint/golint
 
 build: build-frontend build-backend
 build-frontend:
-	yarn build
+	npm run build
 
 build-backend:
 	env GOOS=linux go build -o ./dist/strava-plugin_linux_amd64 ./pkg
@@ -27,7 +27,7 @@ run-backend:
 
 dist: dist-frontend dist-backend
 dist-frontend:
-	yarn build
+	npm run build
 dist-backend: dist-backend-linux_amd64 dist-backend-linux_arm dist-backend-linux_arm64 dist-backend-darwin_amd64 dist-backend-darwin_arm64 dist-backend-windows_amd64
 dist-backend-windows_amd64: extension = .exe
 dist-backend-linux_arm:
@@ -39,16 +39,16 @@ dist-backend-%:
 	env GOOS=$(call arch-split,$*,1) GO111MODULE=on GOARCH=$(call arch-split,$*,2) go build -ldflags="-s -w" -o ./dist/$(filename) ./pkg
 
 run-frontend:
-	yarn start
+	npm start
 
 .PHONY: test
 test: test-frontend test-backend
 test-frontend:
-	yarn test:ci
+	npm run test:ci
 test-backend:
 	go test -v ./pkg/...
 test-ci:
-	yarn ci-test
+	npm run ci-test
 	mkdir -p tmp/coverage/golang/
 	go test -race -coverprofile=tmp/coverage/golang/coverage.txt -covermode=atomic ./pkg/...
 

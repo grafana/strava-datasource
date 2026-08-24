@@ -49,9 +49,6 @@ ci/
 *.tmp
 .vscode/
 
-# lockfile
-package-lock.json
-
 tmp/
 **/*.d.ts
 .eslintcache
