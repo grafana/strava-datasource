@@ -70,7 +70,6 @@ export const DEFAULT_ACTIVITIES_CACHE_INTERVAL = 5 * 60;
 
 export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJsonData> {
   type: any;
-  datasourceId: number;
   apiUrl: string;
   stravaApi: StravaApi;
   activities: any[];
@@ -81,9 +80,8 @@ export default class StravaDatasource extends DataSourceApi<StravaQuery, StravaJ
   constructor(instanceSettings: DataSourceInstanceSettings<StravaJsonData>) {
     super(instanceSettings);
     this.type = 'strava';
-    this.datasourceId = instanceSettings.id;
     this.apiUrl = instanceSettings.url!;
-    this.stravaApi = new StravaApi(this.datasourceId);
+    this.stravaApi = new StravaApi(instanceSettings.uid);
     this.activities = [];
     this.measurementPreference = StravaMeasurementPreference.Meters;
     this.oauthPassThru = instanceSettings.jsonData.oauthPassThru;
