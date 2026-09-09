@@ -64,7 +64,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "lodash": "^4.17.11",
     "prettier": "^3.5.3",
-    "react-use": "17.6.0",
+    "react-use": "17.6.1",
     "replace-in-file-webpack-plugin": "^1.0.6",
     "sass": "1.85.1",
     "sass-loader": "16.0.5",
