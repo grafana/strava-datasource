@@ -438,6 +438,12 @@ func (ds *StravaDatasourceInstance) StravaAPIQueryWithCache(requestHash string) 
 }
 
 func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *StravaAPIRequest) (*StravaApiResourceResponse, error) {
+	endpoint := strings.TrimLeft(query.Endpoint, "/")
+
+	if !allowedEndpointPattern.MatchString(endpoint) {
+		return nil, ErrEndpointNotAllowed
+	}
+
 	accessToken := ""
 	var err error
 	if query.AccessToken == "" {
@@ -447,12 +453,6 @@ func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *S
 		}
 	} else {
 		accessToken = query.AccessToken
-	}
-
-	endpoint := strings.TrimLeft(query.Endpoint, "/")
-
-	if !allowedEndpointPattern.MatchString(endpoint) {
-		return nil, ErrEndpointNotAllowed
 	}
 
 	requestUrlStr := fmt.Sprintf("%s/%s", StravaAPIUrl, endpoint)
