@@ -7,7 +7,13 @@
 - Update Go to 1.27.3
 - Update backend and frontend dependencies to resolve security vulnerabilities
 
-## [1.7.1] -
+## [1.7.2] - 2025-03-18
+
+## Changed
+
+- Update backend and frontend dependencies to resolve security vulnerabilities
+
+## [1.7.1] - 2024-04-05
 
 ### Fixed
 
