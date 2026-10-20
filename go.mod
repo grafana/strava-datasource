@@ -1,6 +1,6 @@
 module github.com/grafana/strava-datasource
 
-go 1.25.0
+go 1.27.3
 
 require (
 	github.com/bitly/go-simplejson v0.5.1
