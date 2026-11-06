@@ -3,7 +3,7 @@ version: "3"
 services:
   # Grafana
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:latest@sha256:488984b716c0862639f91a698adbe2862677a5a07bad42da5f03f3030883b205
     ports:
       - "3001:3000"
     volumes:
