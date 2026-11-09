@@ -45,7 +45,7 @@
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "copy-webpack-plugin": "^13.0.0",
-    "cspell": "8.17.5",
+    "cspell": "8.19.4",
     "css-loader": "^7.1.2",
     "@stylistic/eslint-plugin-ts": "^3.1.0",
     "@types/testing-library__jest-dom": "5.14.8",
