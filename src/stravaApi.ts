@@ -103,7 +103,7 @@ export default class StravaApi {
   async _request(url: string, params?: any) {
     try {
       const response = await getBackendSrv().get(`${this.apiUrl}/strava/${url}`, params);
-      return response.data;
+      return response;
     } catch (error) {
       console.log(error);
       throw error;
@@ -117,13 +117,8 @@ export default class StravaApi {
   async _tsdbRequest(endpoint: string, params?: any) {
     try {
       const response = await getBackendSrv().post(this.backendAPIUrl, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        data: {
-          endpoint,
-          params,
-        },
+        endpoint,
+        params,
       });
       return this.handleTsdbResponse(response);
     } catch (error) {
@@ -149,11 +144,11 @@ export default class StravaApi {
       throw Error(response.statusText);
     }
 
-    if (!response || !response.data || !response.data.result) {
+    if (!response || !response.result) {
       return [];
     }
 
-    const responseData = response.data.result;
+    const responseData = response.result;
     if (responseData.error) {
       throw Error(responseData.error);
     }

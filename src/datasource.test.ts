@@ -2,19 +2,15 @@ import { dateMath } from '@grafana/data';
 import StravaDatasource from './datasource';
 import { StravaQueryType } from './types';
 
-jest.mock(
-  '@grafana/runtime',
-  () => ({
-    getBackendSrv: () => ({
-      get: jest.fn().mockResolvedValue({ data: { result: '' } }),
-      post: jest.fn().mockResolvedValue({ data: { result: '' } }),
-    }),
-    getTemplateSrv: () => ({
-      replace: jest.fn().mockImplementation((query) => query),
-    }),
+jest.mock('@grafana/runtime', () => ({
+  getBackendSrv: () => ({
+    get: jest.fn().mockResolvedValue({ result: [] }),
+    post: jest.fn().mockResolvedValue({ result: [] }),
   }),
-  { virtual: true }
-);
+  getTemplateSrv: () => ({
+    replace: jest.fn().mockImplementation((query) => query),
+  }),
+}));
 
 describe('StravaDatasource', () => {
   const ctx: any = {
@@ -36,10 +32,7 @@ describe('StravaDatasource', () => {
   beforeEach(() => {
     ctx.backendSrv = {
       get: () => {
-        return Promise.resolve({
-          status: 200,
-          data: {},
-        });
+        return Promise.resolve({ result: [] });
       },
     };
     ctx.templateSrv = {
@@ -53,6 +46,7 @@ describe('StravaDatasource', () => {
 
     ctx.instanceSettings = {
       id: 123,
+      uid: 'strava-test-uid',
       url: '',
       jsonData: {
         oauthPassThru: false,
