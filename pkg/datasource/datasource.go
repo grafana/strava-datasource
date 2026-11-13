@@ -30,6 +30,13 @@ import (
 const StravaAPIUrl = "https://www.strava.com/api/v3"
 const StravaAPITokenUrl = "https://www.strava.com/api/v3/oauth/token"
 
+// allowedEndpointPattern restricts /strava-api resource calls to the fixed set of endpoints the
+// frontend actually issues (see stravaApi.ts), since this handler forwards requests using the
+// datasource's shared, stored access token rather than the caller's own identity.
+var allowedEndpointPattern = regexp.MustCompile(`^(athlete|athlete/activities|activities/\d+|activities/\d+/streams|segments/\d+)$`)
+
+var ErrEndpointNotAllowed = errors.New("endpoint not allowed")
+
 const StravaApiQueryType = "stravaAPI"
 const StravaAuthQueryType = "stravaAuth"
 
@@ -431,6 +438,12 @@ func (ds *StravaDatasourceInstance) StravaAPIQueryWithCache(requestHash string) 
 }
 
 func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *StravaAPIRequest) (*StravaApiResourceResponse, error) {
+	endpoint := strings.TrimLeft(query.Endpoint, "/")
+
+	if !allowedEndpointPattern.MatchString(endpoint) {
+		return nil, ErrEndpointNotAllowed
+	}
+
 	accessToken := ""
 	var err error
 	if query.AccessToken == "" {
@@ -442,16 +455,14 @@ func (ds *StravaDatasourceInstance) StravaAPIQuery(ctx context.Context, query *S
 		accessToken = query.AccessToken
 	}
 
-	endpoint := query.Endpoint
-	params := query.Params
-
-	requestUrlStr := fmt.Sprintf("%s/%s", StravaAPIUrl, strings.TrimLeft(endpoint, "/"))
+	requestUrlStr := fmt.Sprintf("%s/%s", StravaAPIUrl, endpoint)
 	requestUrl, err := url.Parse(requestUrlStr)
 	if err != nil {
 		return nil, err
 	}
 
 	q := requestUrl.Query()
+	params := query.Params
 	for param, value := range params {
 		valueUnquoted, err := strconv.Unquote(string(value))
 		if err != nil {
