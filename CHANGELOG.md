@@ -1,11 +1,22 @@
 # Change Log
 
-## [1.7.3] - 2026-10-20
+## [1.7.3] - 2026-11-16
+
+### Added
+
+- Add all supported Strava sport types to the activity filters in queries and variables
+
+### Fixed
+
+- Restrict Strava API requests to the endpoints used by the plugin, with validation before access token resolution
+- Prevent the configuration editor from modifying its input settings
 
 ### Changed
 
+- Use datasource UIDs instead of numeric IDs in resource requests
+- Allow Grafana prerelease builds through the minimum-version check, without changing compatibility with stable releases
 - Update Go to 1.27.3
-- Update backend and frontend dependencies to resolve security vulnerabilities
+- Update backend and frontend dependencies, including security fixes
 
 ## [1.7.2] - 2025-03-18
 
