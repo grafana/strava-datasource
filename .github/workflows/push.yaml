@@ -1,0 +1,26 @@
+# Simple example for using the shared workflows for plugins provided by plugin-ci-workflows.
+# All inputs are documented in the workflow files themselves:
+# https://github.com/grafana/plugin-ci-workflows/tree/main/.github/workflows
+# Additional documentation is also available on EngHub, here:
+# https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions/#customizing-the-workflows-with-inputs
+
+name: Plugins - CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions: {}
+
+jobs:
+  ci:
+    name: CI
+    uses: grafana/plugin-ci-workflows/.github/workflows/ci.yml@ci-cd-workflows/v12.1.1
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      plugin-version-suffix: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || '' }}
+      golangci-lint-version: '2.15.0'
