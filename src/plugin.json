@@ -9,6 +9,7 @@
   "executable": "gpx_strava",
   "info": {
     "description": "Strava datasource",
+    "keywords": ["strava", "datasource", "fitness", "activities"],
     "author": {
       "name": "Grafana Labs",
       "url": "https://grafana.com"
